@@ -1,10 +1,16 @@
+/* 1. Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap');
+
+/* 2. Define root-level CSS variables */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --bs-font-primary: 'Prompt', sans-serif;
+
+  font-family: var(--bs-font-primary);
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(233, 186, 186, 0.87);
+  color: rgba(33, 33, 33, 0.87);
   background-color: #ffffff;
 
   font-synthesis: none;
@@ -13,24 +19,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/*.p-menubar .p-submenu-list{*/
-/*  background: #374151 !important;*/
-/*}*/
+/* 3. Apply to body + HTML */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: auto;
   box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f4f6fb; /* fallback */
+  font-family: var(--bs-font-primary);
+  background-color: #f4f6fb;
 }
 
-#root {
-  width: 100%;
-  height: auto;
-}
-#app {
+/* 4. Root containers */
+#root, #app {
   width: 100%;
   height: auto;
 }
