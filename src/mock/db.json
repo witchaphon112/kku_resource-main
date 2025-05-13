@@ -1,0 +1,23 @@
+[
+    {
+      "id": "u001",
+      "username": "john",
+      "password": "1234",
+      "fullName": "John Doe",
+      "role": "user",
+      "department": "แพทยศาสตร์",
+      "profileImage": "/images/john.png",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "a001",
+      "username": "admin",
+      "password": "admin123",
+      "fullName": "Admin User",
+      "role": "admin",
+      "department": "IT",
+      "profileImage": "/images/admin.png",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+  

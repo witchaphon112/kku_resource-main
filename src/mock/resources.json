@@ -1,0 +1,88 @@
+{
+  "resources": [
+    {
+      "id": "r001",
+      "title": "โปสเตอร์กิจกรรม 2024",
+      "description": "สำหรับกิจกรรม Open House",
+      "type": "graphic",
+      "category": "campus",
+      "tags": ["กิจกรรม", "โปสเตอร์"],
+      "fileUrl": "/mock/resources/poster-2024.png",
+      "thumbnailUrl": "/mock/resources/thumb-poster-2024.png",
+      "uploadedBy": "admin",
+      "downloadCount": 15,
+      "createdAt": "2024-04-01T10:00:00Z",
+      "updatedAt": "2024-04-01T10:00:00Z"
+    },
+    {
+      "id": "r002",
+      "title": "วิดีโอแนะนำการเรียนแพทย์",
+      "description": "แนะแนวหลักสูตรแพทย์ มข.",
+      "type": "video",
+      "category": "medical",
+      "tags": ["วิดีโอ", "แพทย์"],
+      "fileUrl": "/mock/resources/video-med.mp4",
+      "thumbnailUrl": "/mock/resources/thumb-video-med.jpg",
+      "uploadedBy": "admin",
+      "downloadCount": 42,
+      "createdAt": "2024-04-01T11:00:00Z",
+      "updatedAt": "2024-04-01T11:00:00Z"
+    },
+    {
+      "id": "r003",
+      "title": "ภาพแสดงกระบวนการผ่าตัดหัวใจ",
+      "description": "ชุดภาพสำหรับการเรียนรู้วิชาแพทย์",
+      "type": "image",
+      "category": "medical",
+      "tags": ["การแพทย์", "หัวใจ"],
+      "fileUrl": "/mock/resources/hero-2.jpg",
+      "thumbnailUrl": "/mock/resources/hero-2.jpg",
+      "uploadedBy": "admin",
+      "downloadCount": 28,
+      "createdAt": "2024-04-03T09:00:00Z",
+      "updatedAt": "2024-04-03T09:00:00Z"
+    },
+    {
+      "id": "r004",
+      "title": "วิดีโอการทดลองวิทยาศาสตร์",
+      "description": "การทดลองเคมีในระดับมัธยมศึกษา",
+      "type": "video",
+      "category": "education",
+      "tags": ["วิทยาศาสตร์", "การทดลอง", "เคมี"],
+      "fileUrl": "/mock/resources/chemistry.mp4",
+      "thumbnailUrl": "/mock/resources/thumb-chemistry.jpg",
+      "uploadedBy": "admin",
+      "downloadCount": 60,
+      "createdAt": "2024-04-04T13:30:00Z",
+      "updatedAt": "2024-04-04T13:30:00Z"
+    },
+    {
+      "id": "r005",
+      "title": "แผ่นพับแนะนำมหาวิทยาลัย",
+      "description": "ภาพกราฟิกประชาสัมพันธ์ มข.",
+      "type": "graphic",
+      "category": "education",
+      "tags": ["ประชาสัมพันธ์", "มหาวิทยาลัย"],
+      "fileUrl": "/mock/resources/kku-brochure.png",
+      "thumbnailUrl": "/mock/resources/thumb-kku-brochure.png",
+      "uploadedBy": "admin",
+      "downloadCount": 12,
+      "createdAt": "2024-04-05T08:45:00Z",
+      "updatedAt": "2024-04-05T08:45:00Z"
+    },
+    {
+      "id": "r006",
+      "title": "ภาพบรรยากาศรอบรั้ว มข.",
+      "description": "ภาพถ่ายบรรยากาศภายในมหาวิทยาลัย",
+      "type": "image",
+      "category": "campus",
+      "tags": ["มหาวิทยาลัย", "สถานที่"],
+      "fileUrl": "/mock/resources/campus-view.jpg",
+      "thumbnailUrl": "/mock/resources/thumb-campus-view.jpg",
+      "uploadedBy": "admin",
+      "downloadCount": 33,
+      "createdAt": "2024-04-06T10:00:00Z",
+      "updatedAt": "2024-04-06T10:00:00Z"
+    }
+  ]
+}
