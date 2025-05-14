@@ -4,15 +4,12 @@ import MainLayout from "./layout/main-layout";
 import Login from "./pages/Login";
 import Profile from "./pages/profile";
 import AdminPage from "./pages/Admin";
+import Images from "./pages/images";
+import Videos from "./pages/videos"
 import Graphics from "./pages/graphics";
-import PageMedical from "./pages/pageimages/medical";
-import PageCampus from "./pages/pageimages/campus";
-import PageEducation from "./pages/pageimages/education";
-import VideoMedical from "./pages/pagevideos/medical";
-import VideoCampus from "./pages/pagevideos/campus";
-import VideoEducation from "./pages/pagevideos/education";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ResourceDetailPage from "./pages/ResourceDetailPage";
+import ScrollToTop from "./components/ScrollToTop"; // import ที่สร้างเมื่อครู่
 
 function AppContent() {
   const { user } = useAuth();
@@ -24,13 +21,9 @@ function AppContent() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<MainPage />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="images" element={<Images />} />
+        <Route path="videos" element={<Videos />} />
         <Route path="graphics" element={<Graphics />} />
-        <Route path="/images/medical" element={<PageMedical />} />
-        <Route path="/images/campus" element={<PageCampus />} />
-        <Route path="/images/education" element={<PageEducation />} />
-        <Route path="/videos/medical" element={<VideoMedical />} />
-        <Route path="/videos/campus" element={<VideoCampus />} />
-        <Route path="/videos/education" element={<VideoEducation />} />
         <Route path="/resource/:id" element={<ResourceDetailPage />} />
         <Route
           path="admin"
@@ -45,6 +38,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <AppContent />
       </BrowserRouter>
     </AuthProvider>

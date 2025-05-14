@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Carousel } from "primereact/carousel";
 import { createUseStyles } from "react-jss";
 import { useRef } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import resourcesData from "../mock/resources.json";
 
@@ -69,15 +70,17 @@ const useStyles = createUseStyles({
       backgroundColor: "#eee",
     },
   },
-  leftButton: { left: "-20px" },
-  rightButton: { right: "-20px" },
+  leftButton: { left: "-50px" },
+  rightButton: { right: "-50px" },
   scrollContainer: {
     display: "flex",
+    flexWrap: "nowrap",
     overflowX: "auto",
-    gap: "1.5rem",
+    gap: "2rem",
     padding: "1rem 0",
     scrollSnapType: "x mandatory",
     scrollBehavior: "smooth",
+    justifyContent: "flex-start",
     "&::-webkit-scrollbar": {
       display: "none",
     },
@@ -118,6 +121,25 @@ const useStyles = createUseStyles({
     "&:hover": {
       transform: "translateY(-4px)",
     },
+  },
+  resourceCardthree: {
+    flex: "0 0 calc(33.333% - 2rem)", 
+    maxWidth: "calc(33.333% - 2rem)",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    scrollSnapAlign: "start",
+    transition: "transform 0.2s",
+    cursor: "pointer",
+    position: "relative",
+  },
+  imagetitle:{
+    width: "100%",
+    height: "280px",
+    objectFit: "cover",
   },
   image: {
     width: "100%",
@@ -180,13 +202,12 @@ const useStyles = createUseStyles({
     bottom: 20,
     left: 0,
     width: "100%",
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     color: "#fff",
     padding: "0.8rem 1rem",
     fontSize: "1rem",
     fontWeight: 600,
     fontFamily: "var(--bs-font-primary)",
-    borderRadius: "0.5rem",
     textAlign: "center", 
     "@media (max-width: 768px)": {
       fontSize: "0.9rem",
@@ -230,6 +251,47 @@ const useStyles = createUseStyles({
     fontWeight: 500,
     fontFamily: "var(--bs-font-primary)",
   },
+  viewCount: {
+    fontSize: "0.8rem",
+    color: "#555",
+    marginTop: "0.3rem", 
+    fontFamily: "var(--bs-font-primary)",
+  },
+  videoCard: {
+    flex: "0 0 300px",
+    maxWidth: "300px",
+    borderRadius: "0.75rem",
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+    transition: "transform 0.3s, box-shadow 0.3s",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 6px 14px rgba(0, 0, 0, 0.15)",
+    },
+  },
+  
+  videoImage: {
+    width: "100%",
+    height: "200px",
+    objectFit: "cover",
+  },
+  
+  videoTitle: {
+    backgroundColor: "#616161",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: "1rem",
+    padding: "1rem",
+    textAlign: "center",
+    fontFamily: "var(--bs-font-primary)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  }  
 });
 
 const heroData = [
@@ -252,23 +314,42 @@ const MainPage = () => {
   const navigate = useNavigate();
 
   const scrollRefPopular = useRef(null);
+  const scrollrefRecommended = useRef(null);
   const scrollRefVideo = useRef(null);
   const scrollRefImage = useRef(null);
-  const recommendedRef = useRef(null);
 
-  const videoResources = resourcesData.resources.filter((r) => r.type === "video");
-  const imageResources = resourcesData.resources.filter(
-    (r) => r.type === "image" || r.type === "graphic"
-  );
-  const recommended = resourcesData.resources.slice(0, 3);
+  const videoResources = resourcesData.resources.filter((r) => r.type === "video").slice(0, 12);
+  const imageResources = resourcesData.resources.filter((r) => r.type === "image" || r.type === "graphic").slice(0, 12);
+  const recommended = resourcesData.resources.slice(0, 12);
+
+  const autoScroll = (ref, speed) => {
+    const el = ref.current;
+    if (!el) return;
+    const scrollStep = 320;
+    const resetScroll = () => {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+    };
+    const interval = setInterval(() => {
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - scrollStep) {
+        resetScroll();
+      } else {
+        el.scrollLeft += scrollStep;
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  };
+  useEffect(() => autoScroll(scrollRefImage, 600000), []);
+  useEffect(() => autoScroll(scrollrefRecommended, 10000), []);
+  useEffect(() => autoScroll(scrollRefVideo, 7000), []);
+  useEffect(() => autoScroll(scrollRefPopular, 9500), []);
 
   const scrollLeft = (ref) => {
     if (ref.current) ref.current.scrollLeft -= 320;
   };
-
   const scrollRight = (ref) => {
     if (ref.current) ref.current.scrollLeft += 320;
   };
+
 
   const heroTemplate = (item) => (
     <div style={{ position: "relative" }}>
@@ -279,6 +360,7 @@ const MainPage = () => {
       </div>
     </div>
   );
+  
 
   return (
     <>
@@ -296,10 +378,13 @@ const MainPage = () => {
       <div className={classes.recommendedSection}>
         <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
         <div className={classes.scrollWrapper}>
-          <button className={`${classes.scrollButton} ${classes.leftButton}`} onClick={scrollLeft}>
+          <button
+            className={`${classes.scrollButton} ${classes.leftButton}`}
+            onClick={() => scrollLeft(scrollrefRecommended)}
+            >
             ‹
           </button>
-          <div className={classes.scrollContainer} ref={recommendedRef}>
+          <div className={classes.scrollContainer} ref={scrollrefRecommended}>
             {recommended.map((item) => (
               <div className={classes.resourceCard} key={item.id}>
                 <img
@@ -312,7 +397,10 @@ const MainPage = () => {
               </div>
             ))}
           </div>
-          <button className={`${classes.scrollButton} ${classes.rightButton}`} onClick={scrollRight}>
+            <button
+            className={`${classes.scrollButton} ${classes.rightButton}`}
+            onClick={() => scrollRight(scrollrefRecommended)}
+            >
             ›
           </button>
         </div>
@@ -341,9 +429,12 @@ const MainPage = () => {
                     {item.category.toUpperCase()} • {item.type.toUpperCase()}
                   </div>
                   <div className={classes.title}>{item.title}</div>
-                  <div className={classes.description}>{item.description}</div>
                   <div className={classes.date}>
                     {new Date(item.createdAt).toLocaleDateString("th-TH")}
+                  </div>
+                  <div className={classes.viewCount}>
+                    <i className="pi pi-eye" style={{ marginRight: "0.5rem" }}></i>
+                    {item.viewCount || 0} ครั้ง
                   </div>
                 </div>
               </div>
@@ -359,7 +450,7 @@ const MainPage = () => {
 
         <div className={classes.sectionHeader}>
         <h2 className={classes.sectionTitle}>คลังภาพแนะนำ</h2>
-        <Link to="/news" className={classes.sectionLink}>
+        <Link to="/images" className={classes.sectionLink}>
         ทั้งหมด <span className={classes.arrow}>→</span>
         </Link>
         </div>
@@ -374,10 +465,10 @@ const MainPage = () => {
             {imageResources.map((item) => (
               <div
                 key={item.id}
-                className={classes.resourceCard}
+                className={classes.resourceCardthree}
                 onClick={() => navigate(`/resource/${item.id}`)}
               >
-                <img src={item.thumbnailUrl} alt={item.title} className={classes.image} />
+                <img src={item.thumbnailUrl} alt={item.title} className={classes.imagetitle} />
                 <div className={classes.caption}>{item.title}</div>
               </div>
             ))}
@@ -391,11 +482,12 @@ const MainPage = () => {
         </div>
 
         <div className={classes.sectionHeader}>
-        <h2 className={classes.sectionTitle}>วิดีโอแนะนำ</h2>
-        <Link to="/news" className={classes.sectionLink}>
-        ทั้งหมด <span className={classes.arrow}>→</span>
-        </Link>
+          <h2 className={classes.sectionTitle}>วิดีโอแนะนำ</h2>
+          <Link to="/videos" className={classes.sectionLink}>
+            ทั้งหมด <span className={classes.arrow}>→</span>
+          </Link>
         </div>
+
         <div className={classes.scrollWrapper}>
           <button
             className={`${classes.scrollButton} ${classes.leftButton}`}
@@ -403,27 +495,24 @@ const MainPage = () => {
           >
             ‹
           </button>
+
           <div className={classes.scrollContainer} ref={scrollRefVideo}>
             {videoResources.map((item) => (
               <div
                 key={item.id}
-                className={classes.resourceCard}
+                className={classes.videoCard}
                 onClick={() => navigate(`/resource/${item.id}`)}
               >
-                <img src={item.thumbnailUrl} alt={item.title} className={classes.image} />
-                <div className={classes.content}>
-                  <div className={classes.categoryText}>
-                    {item.category.toUpperCase()} • {item.type.toUpperCase()}
-                  </div>
-                  <div className={classes.title}>{item.title}</div>
-                  <div className={classes.description}>{item.description}</div>
-                  <div className={classes.date}>
-                    {new Date(item.createdAt).toLocaleDateString("th-TH")}
-                  </div>
-                </div>
+                <img
+                  src={item.thumbnailUrl || "/fallback-thumbnail.jpg"}
+                  alt={item.title}
+                  className={classes.videoImage}
+                />
+                <div className={classes.videoTitle}>{item.title}</div>
               </div>
             ))}
           </div>
+
           <button
             className={`${classes.scrollButton} ${classes.rightButton}`}
             onClick={() => scrollRight(scrollRefVideo)}

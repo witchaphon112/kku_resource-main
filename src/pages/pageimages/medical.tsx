@@ -1,97 +1,147 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { createUseStyles } from "react-jss";
 import resourcesData from "../../mock/resources.json";
 
 const useStyles = createUseStyles({
-  title: {
-    fontSize: "1.8rem",
-    fontWeight: 700,
-    borderLeft: "6px solid #e9004b",
-    paddingLeft: "0.75rem",
-    margin: "2rem 0 1rem 0",
-    color: "#212121",
+  container: {
+    padding: "2rem",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: "1.5rem",
+  },
+  filterGroup: {
+    display: "flex",
+    gap: "1rem",
+    flexWrap: "wrap",
+  },
+  dropdown: {
+    padding: "0.5rem 1rem",
+    borderRadius: "10px",
+    border: "1px solid #ccc",
+    fontSize: "1rem",
+  },
+  viewToggle: {
+    display: "flex",
+    gap: "0.5rem",
+  },
+  icon: {
+    width: "28px",
+    height: "28px",
+    cursor: "pointer",
+    opacity: 0.5,
+    "&.active": {
+      opacity: 1,
+    },
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: "2rem",
   },
   card: {
-    background: "#fff",
-    borderRadius: "0.5rem",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-    overflow: "hidden",
-    cursor: "pointer",
-    transition: "transform 0.2s",
-    "&:hover": {
-      transform: "translateY(-4px)",
-    },
+    textAlign: "center",
   },
   image: {
     width: "100%",
-    height: "200px",
+    height: "160px",
     objectFit: "cover",
+    borderRadius: "6px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
   },
-  content: {
-    padding: "1rem",
-  },
-  categoryText: {
-    fontSize: "0.75rem",
+  title: {
+    marginTop: "0.75rem",
     fontWeight: 600,
-    color: "#e9004b",
-    marginBottom: "0.5rem",
-    textTransform: "uppercase",
+    fontSize: "1rem",
+    lineHeight: 1.3,
   },
-  titleText: {
-    fontSize: "1.2rem",
+  pagination: {
+    marginTop: "2rem",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "1rem",
+  },
+  pageButton: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    border: "none",
+    background: "#ccc",
+    color: "#fff",
     fontWeight: 700,
-    marginBottom: "0.5rem",
-  },
-  description: {
-    fontSize: "0.9rem",
-    color: "#333",
-    marginBottom: "0.5rem",
-  },
-  date: {
-    fontSize: "0.8rem",
-    color: "#777",
+    cursor: "pointer",
+    "&.active": {
+      background: "#b71c1c",
+    },
   },
 });
 
-const PageMedical = () => {
+const PageGallery = () => {
   const classes = useStyles();
-  const navigate = useNavigate();
+  const itemsPerPage = 12;
+  const [page, setPage] = useState(1);
 
-  const medicalImages = resourcesData.resources.filter(
-    (r) => r.category === "medical" && r.type === "image"
+  const images = resourcesData.resources.filter(
+    (item) => item.type === "image" || item.type === "graphic"
+  );
+
+  const totalPages = Math.ceil(images.length / itemsPerPage);
+  const paginatedItems = images.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
   );
 
   return (
-    <div className="p-4">
-      <h2 className={classes.title}>หมวดหมู่การแพทย์</h2>
+    <div className={classes.container}>
+      <h2 style={{ textAlign: "center", fontSize: "2rem", fontWeight: 700 }}>คลังภาพ</h2>
+
+      <div className={classes.header}>
+        <div className={classes.filterGroup}>
+          <select className={classes.dropdown}>
+            <option>หมวดหมู่ทั้งหมด</option>
+            <option>การแพทย์</option>
+            <option>รอบรั้วมหาวิทยาลัย</option>
+            <option>การศึกษา</option>
+          </select>
+          <select className={classes.dropdown}>
+            <option>จัดเรียงตาม</option>
+            <option>วันที่ใหม่สุด</option>
+            <option>ยอดนิยม</option>
+          </select>
+        </div>
+
+        <div className={classes.viewToggle}>
+          <img src="/icons/grid-active.svg" className={`${classes.icon} active`} />
+          <img src="/icons/list-inactive.svg" className={classes.icon} />
+        </div>
+      </div>
+
       <div className={classes.grid}>
-        {medicalImages.map((item) => (
-          <div
-            key={item.id}
-            className={classes.card}
-            onClick={() => navigate(`/resource/${item.id}`)}
-          >
+        {paginatedItems.map((item) => (
+          <div className={classes.card} key={item.id}>
             <img src={item.thumbnailUrl} alt={item.title} className={classes.image} />
-            <div className={classes.content}>
-              <div className={classes.categoryText}>
-                {item.category.toUpperCase()} • {item.type.toUpperCase()}
-              </div>
-              <div className={classes.titleText}>{item.title}</div>
-              <div className={classes.description}>{item.description}</div>
-              <div className={classes.date}>
-                {new Date(item.createdAt).toLocaleDateString("th-TH")}
-              </div>
-            </div>
+            <div className={classes.title}>{item.title}</div>
           </div>
+        ))}
+      </div>
+
+      <div className={classes.pagination}>
+        {[...Array(totalPages)].map((_, index) => (
+          <button
+            key={index}
+            className={`${classes.pageButton} ${page === index + 1 ? "active" : ""}`}
+            onClick={() => setPage(index + 1)}
+          >
+            {index + 1}
+          </button>
         ))}
       </div>
     </div>
   );
 };
 
-export default PageMedical;
+export default PageGallery;

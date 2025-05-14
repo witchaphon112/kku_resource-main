@@ -3,25 +3,57 @@ import { createUseStyles } from "react-jss";
 import resourcesData from "../../mock/resources.json";
 
 const useStyles = createUseStyles({
+  wrapper: {
+    padding: "2rem 1rem",
+    maxWidth: 1440,
+    margin: "0 auto",
+  },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "1.5rem",
+    flexWrap: "wrap",
+    gap: "1rem",
+  },
   title: {
-    fontSize: "1.8rem",
+    fontSize: "2rem",
     fontWeight: 700,
-    borderLeft: "6px solid #e9004b",
-    paddingLeft: "0.75rem",
-    margin: "2rem 0 1rem 0",
     color: "#212121",
+    textAlign: "center",
+    flex: 1,
+  },
+  filterGroup: {
+    display: "flex",
+    gap: "1rem",
+  },
+  filterBtn: {
+    padding: "0.6rem 1rem",
+    border: "1px solid #ccc",
+    borderRadius: "999px",
+    backgroundColor: "white",
+    fontSize: "0.95rem",
+    cursor: "pointer",
+    fontFamily: "var(--bs-font-primary)",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.25rem",
+    '&:hover': {
+      backgroundColor: "#f9f9f9",
+    },
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 10fr))",
+    gap: "2rem",
   },
   card: {
     background: "#fff",
     borderRadius: "0.5rem",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
     overflow: "hidden",
     cursor: "pointer",
+    textAlign: "center",
     transition: "transform 0.2s",
     "&:hover": {
       transform: "translateY(-4px)",
@@ -31,30 +63,17 @@ const useStyles = createUseStyles({
     width: "100%",
     height: "200px",
     objectFit: "cover",
-  },
-  content: {
-    padding: "1rem",
-  },
-  categoryText: {
-    fontSize: "0.75rem",
-    fontWeight: 600,
-    color: "#e9004b",
-    marginBottom: "0.5rem",
-    textTransform: "uppercase",
+    backgroundColor: "#eee",
   },
   titleText: {
-    fontSize: "1.2rem",
-    fontWeight: 700,
-    marginBottom: "0.5rem",
-  },
-  description: {
-    fontSize: "0.9rem",
-    color: "#333",
-    marginBottom: "0.5rem",
-  },
-  date: {
-    fontSize: "0.8rem",
-    color: "#777",
+    fontSize: "1rem",
+    fontWeight: 600,
+    color: "#111",
+    padding: "0.8rem 1rem",
+    backgroundColor: "#f5f5f5",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
   },
 });
 
@@ -62,14 +81,20 @@ const PageCampus = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
-    const campusImages = resourcesData.resources.filter(
+  const campusImages = resourcesData.resources.filter(
     (r) => r.category === "campus" && r.type === "image"
   );
-  
 
   return (
-    <div className="p-4">
-      <h2 className={classes.title}>หมวดหมู่รอบรั้วมหาวิทยาลัย</h2>
+    <div className={classes.wrapper}>
+      <div className={classes.headerRow}>
+        <h2 className={classes.title}>คลังภาพ</h2>
+        <div className={classes.filterGroup}>
+          <button className={classes.filterBtn}>หมวดหมู่ทั้งหมด ▾</button>
+          <button className={classes.filterBtn}>จัดเรียงตาม ▾</button>
+        </div>
+      </div>
+
       <div className={classes.grid}>
         {campusImages.map((item) => (
           <div
@@ -77,17 +102,12 @@ const PageCampus = () => {
             className={classes.card}
             onClick={() => navigate(`/resource/${item.id}`)}
           >
-            <img src={item.thumbnailUrl} alt={item.title} className={classes.image} />
-            <div className={classes.content}>
-              <div className={classes.categoryText}>
-                {item.category.toUpperCase()} • {item.type.toUpperCase()}
-              </div>
-              <div className={classes.titleText}>{item.title}</div>
-              <div className={classes.description}>{item.description}</div>
-              <div className={classes.date}>
-                {new Date(item.createdAt).toLocaleDateString("th-TH")}
-              </div>
-            </div>
+            <img
+              src={item.thumbnailUrl}
+              alt={item.title}
+              className={classes.image}
+            />
+            <div className={classes.titleText}>{item.title}</div>
           </div>
         ))}
       </div>

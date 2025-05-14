@@ -92,7 +92,7 @@ const useStyles = createUseStyles({
   },
   mainContent: {
     flex: 1,
-    padding: "2rem 1rem",
+    padding: "0rem 2.5rem",
     maxWidth: "1200px",
     margin: "0 auto",
     width: "100%",
@@ -176,20 +176,12 @@ const MainLayout = () => {
     {
       label: "รูปภาพ",
       icon: "pi pi-image",
-      items: [
-        { label: "การแพทย์", url: "/images/medical" },
-        { label: "การเรียนการสอน", url: "/images/education" },
-        { label: "รอบรั้วมหาวิทยาลัย", url: "/images/campus" },
-      ],
+      url:  "/images",  
     },
     {
       label: "วิดีโอ",
       icon: "pi pi-video",
-      items: [
-        { label: "การแพทย์", url: "/videos/medical" },
-        { label: "การเรียนการสอน", url: "/videos/education" },
-        { label: "รอบรั้วมหาวิทยาลัย", url: "/videos/campus" },
-      ],
+      url: "/videos",
     },
     {
       label: "กราฟฟิก",
