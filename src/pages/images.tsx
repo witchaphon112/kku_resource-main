@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import resourcesData from "../mock/resources.json";
 
@@ -44,6 +45,11 @@ const useStyles = createUseStyles({
   },
   card: {
     textAlign: "center",
+    cursor: "pointer",
+    transition: "transform 0.2s",
+    "&:hover": {
+      transform: "translateY(-4px)",
+    },
   },
   image: {
     width: "100%",
@@ -82,18 +88,50 @@ const useStyles = createUseStyles({
 
 const PageGallery = () => {
   const classes = useStyles();
+  const navigate = useNavigate();
+
   const itemsPerPage = 12;
   const [page, setPage] = useState(1);
+  const [category, setCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("latest");
 
-  const images = resourcesData.resources.filter(
-    (item) => item.type === "image" || item.type === "graphic"
-  );
+  const images = resourcesData.resources.filter((item) => item.type === "image");
 
-  const totalPages = Math.ceil(images.length / itemsPerPage);
-  const paginatedItems = images.slice(
+  const filteredItems =
+    category === "all"
+      ? images
+      : images.filter((item) => item.category === category);
+
+      const sortedItems = [...filteredItems].sort((a, b) => {
+        if (sortBy === "latest") {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        } else if (sortBy === "oldest") {
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        } else if (sortBy === "popular") {
+          return (b.viewCount || 0) - (a.viewCount || 0);
+        } else if (sortBy === "az") {
+          return a.title.localeCompare(b.title, "th"); // รองรับภาษาไทย
+        } else if (sortBy === "za") {
+          return b.title.localeCompare(a.title, "th");
+        }
+        return 0;
+      });      
+
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+  const paginatedItems = sortedItems.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategory(e.target.value);
+    setPage(1);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
+    setPage(1);
+  };
 
   return (
     <div className={classes.container}>
@@ -101,28 +139,30 @@ const PageGallery = () => {
 
       <div className={classes.header}>
         <div className={classes.filterGroup}>
-          <select className={classes.dropdown}>
-            <option>หมวดหมู่ทั้งหมด</option>
-            <option>การแพทย์</option>
-            <option>รอบรั้วมหาวิทยาลัย</option>
-            <option>การศึกษา</option>
+          <select className={classes.dropdown} onChange={handleCategoryChange} value={category}>
+            <option value="all">หมวดหมู่ทั้งหมด</option>
+            <option value="medical">การแพทย์</option>
+            <option value="campus">รอบรั้วมหาวิทยาลัย</option>
+            <option value="education">การศึกษา</option>
           </select>
-          <select className={classes.dropdown}>
-            <option>จัดเรียงตาม</option>
-            <option>วันที่ใหม่สุด</option>
-            <option>ยอดนิยม</option>
-          </select>
-        </div>
 
-        <div className={classes.viewToggle}>
-          <img src="/icons/grid-active.svg" className={`${classes.icon} active`} />
-          <img src="/icons/list-inactive.svg" className={classes.icon} />
+          <select className={classes.dropdown} onChange={handleSortChange} value={sortBy}>
+            <option value="latest">วันที่ใหม่สุด</option>
+            <option value="oldest">วันที่เก่าสุด</option>
+            <option value="popular">ยอดนิยม</option>
+            <option value="az">ชื่อ A - Z</option>
+            <option value="za">ชื่อ Z - A</option>
+          </select>
         </div>
       </div>
 
       <div className={classes.grid}>
         {paginatedItems.map((item) => (
-          <div className={classes.card} key={item.id}>
+          <div
+            key={item.id}
+            className={classes.card}
+            onClick={() => navigate(`/resource/${item.id}`)}
+          >
             <img src={item.thumbnailUrl} alt={item.title} className={classes.image} />
             <div className={classes.title}>{item.title}</div>
           </div>

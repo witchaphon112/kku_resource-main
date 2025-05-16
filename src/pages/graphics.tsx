@@ -85,19 +85,19 @@ const PageGallery = () => {
   const itemsPerPage = 12;
   const [page, setPage] = useState(1);
 
-  const images = resourcesData.resources.filter(
-    (item) => item.type === "image" || item.type === "graphic"
+  const graphic = resourcesData.resources.filter(
+    (item) => item.type === "graphic"
   );
 
-  const totalPages = Math.ceil(images.length / itemsPerPage);
-  const paginatedItems = images.slice(
+  const totalPages = Math.ceil(graphic.length / itemsPerPage);
+  const paginatedItems = graphic.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
 
   return (
     <div className={classes.container}>
-      <h2 style={{ textAlign: "center", fontSize: "2rem", fontWeight: 700 }}>คลังภาพ</h2>
+      <h2 style={{ textAlign: "center", fontSize: "2rem", fontWeight: 700 }}>คลังกราฟฟิก</h2>
 
       <div className={classes.header}>
         <div className={classes.filterGroup}>

@@ -209,6 +209,9 @@ const useStyles = createUseStyles({
     fontWeight: 600,
     fontFamily: "var(--bs-font-primary)",
     textAlign: "center", 
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     "@media (max-width: 768px)": {
       fontSize: "0.9rem",
     },
@@ -291,7 +294,18 @@ const useStyles = createUseStyles({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-  }  
+  },
+  videoPlayer: {
+    width: "100%",
+    height: "200px",
+    objectFit: "cover",
+    background: "#000",
+    border: 0,
+  },
+  iframePlayer: {
+    composes: "$videoPlayer",
+  },
+  
 });
 
 const heroData = [
@@ -338,9 +352,8 @@ const MainPage = () => {
     }, speed);
     return () => clearInterval(interval);
   };
-  useEffect(() => autoScroll(scrollRefImage, 600000), []);
+  useEffect(() => autoScroll(scrollRefImage, 6000), []);
   useEffect(() => autoScroll(scrollrefRecommended, 10000), []);
-  useEffect(() => autoScroll(scrollRefVideo, 7000), []);
   useEffect(() => autoScroll(scrollRefPopular, 9500), []);
 
   const scrollLeft = (ref) => {
@@ -497,20 +510,58 @@ const MainPage = () => {
           </button>
 
           <div className={classes.scrollContainer} ref={scrollRefVideo}>
-            {videoResources.map((item) => (
-              <div
-                key={item.id}
-                className={classes.videoCard}
-                onClick={() => navigate(`/resource/${item.id}`)}
-              >
-                <img
-                  src={item.thumbnailUrl || "/fallback-thumbnail.jpg"}
-                  alt={item.title}
-                  className={classes.videoImage}
-                />
-                <div className={classes.videoTitle}>{item.title}</div>
-              </div>
-            ))}
+            {videoResources.map((item) => {
+              /* ===== helper ===== */
+              const embedYouTube = (url: string) => {
+                /* รองรับ youtu.be | youtube.com/watch?v= */
+                const id = url.match(/(?:youtu\.be\/|v=)([^?&]+)/)?.[1];
+                return id ? `https://www.youtube.com/embed/${id}` : url;
+              };
+
+              const hasVideoUrl   = !!item.videoUrl;              // youtube / vimeo
+              const isMp4         = !hasVideoUrl && item.fileUrl?.endsWith(".mp4");
+
+              return (
+                <div
+                  key={item.id}
+                  className={classes.resourceCardthree}
+                  onClick={() => navigate(`/resource/${item.id}`)}
+                >
+                  {/* 1) YouTube / Vimeo */}
+                  {hasVideoUrl && (
+                    <iframe
+                      className={classes.iframePlayer}
+                      src={embedYouTube(item.videoUrl)}
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={item.title}
+                    />
+                  )}
+
+                  {/* 2) MP4 ใน server */}
+                  {isMp4 && (
+                    <video
+                      className={classes.videoPlayer}
+                      src={item.fileUrl}
+                      poster={item.thumbnailUrl}
+                      controls
+                      preload="metadata"
+                    />
+                  )}
+
+                  {/* 3) fallback เป็นรูปภาพ */}
+                  {!hasVideoUrl && !isMp4 && (
+                    <img
+                      src={item.thumbnailUrl || "/fallback-thumbnail.jpg"}
+                      alt={item.title}
+                      className={classes.videoImage}
+                    />
+                  )}
+
+                  <div className={classes.videoTitle}>{item.title}</div>
+                </div>
+              );
+            })}
           </div>
 
           <button
