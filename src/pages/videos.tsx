@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import resourcesData from "../mock/resources.json";
 
-/* ----------------------- style ----------------------- */
 const useStyles = createUseStyles({
   container: { padding: "2rem" },
 
@@ -29,13 +28,12 @@ const useStyles = createUseStyles({
     "&:hover": { transform: "translateY(-4px)" },
   },
 
-  /* ---------------- thumbnail / player ---------------- */
   thumb: {
     width: "100%", height: 160, objectFit: "cover",
     borderRadius: 6, boxShadow: "0 2px 6px rgba(0,0,0,.1)",
     background: "#000", border: 0,
   },
-  iframe: { composes: "$thumb" },      // ใช้ style เดียวกับ thumb
+  iframe: { composes: "$thumb" },     
   video : { composes: "$thumb" },
 
   title: {
@@ -44,7 +42,6 @@ const useStyles = createUseStyles({
     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
   },
 
-  /* ---------------- pagination ---------------- */
   pagination: {
     marginTop: "2rem",
     display: "flex", justifyContent: "center", gap: "1rem",
@@ -56,21 +53,17 @@ const useStyles = createUseStyles({
   },
 });
 
-/* ===================================================== */
 const PageGallery = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
-  /* ---------------- state ---------------- */
   const perPage = 12;
   const [page,     setPage]     = useState(1);
   const [category, setCategory] = useState<"all" | "medical" | "campus" | "education">("all");
   const [sortBy,   setSortBy]   = useState<"latest"|"oldest"|"popular"|"az"|"za">("latest");
 
-  /* ---------------- data ---------------- */
   const videos = resourcesData.resources.filter((r)=>r.type==="video");
 
-  /* filter → sort → paginate */
   const filtered = category==="all" ? videos : videos.filter((v)=>v.category===category);
 
   const sorted = [...filtered].sort((a,b)=>{
@@ -85,7 +78,6 @@ const PageGallery = () => {
   const pages = Math.ceil(sorted.length/perPage);
   const list  = sorted.slice((page-1)*perPage, page*perPage);
 
-  /* ---------------- handlers ---------------- */
   const handleCategory = (e:React.ChangeEvent<HTMLSelectElement>)=>{
     setCategory(e.target.value as typeof category); setPage(1);
   };
@@ -93,18 +85,15 @@ const PageGallery = () => {
     setSortBy(e.target.value as typeof sortBy); setPage(1);
   };
 
-  /* ---------------- helper : youtube embed ---------------- */
   const embedYT = (url:string)=>{
     const id = url.match(/(?:youtu\.be\/|v=)([^?&]+)/)?.[1];
     return id ? `https://www.youtube.com/embed/${id}` : url;
   };
 
-  /* =================================================== */
   return (
     <div className={classes.container}>
       <h2 style={{textAlign:"center",fontSize:"2rem",fontWeight:700}}>คลังวิดีโอ</h2>
 
-      {/* ------------ filter / sort ------------ */}
       <div className={classes.header}>
         <div className={classes.filterGroup}>
           <select className={classes.dropdown} value={category} onChange={handleCategory}>
@@ -124,7 +113,6 @@ const PageGallery = () => {
         </div>
       </div>
 
-      {/* ------------ grid ------------ */}
       <div className={classes.grid}>
         {list.map((v)=>{
 
@@ -133,7 +121,6 @@ const PageGallery = () => {
 
           return (
             <div key={v.id} className={classes.card} onClick={()=>navigate(`/resource/${v.id}`)}>
-              {/* YouTube / Vimeo */}
               {hasVideoUrl && (
                 <iframe
                   src={embedYT(v.videoUrl)}
@@ -144,7 +131,6 @@ const PageGallery = () => {
                 />
               )}
 
-              {/* MP4 จาก server */}
               {isMp4 && (
                 <video
                   src={v.fileUrl}
@@ -154,7 +140,6 @@ const PageGallery = () => {
                 />
               )}
 
-              {/* fallback รูปภาพ */}
               {!hasVideoUrl && !isMp4 && (
                 <img
                   src={v.thumbnailUrl || "/fallback-thumbnail.jpg"}
@@ -169,7 +154,6 @@ const PageGallery = () => {
         })}
       </div>
 
-      {/* ------------ pagination ------------ */}
       <div className={classes.pagination}>
         {Array.from({length:pages},(_,i)=>i+1).map(n=>(
           <button
