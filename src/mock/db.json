@@ -16,7 +16,7 @@
       "fullName": "Admin User",
       "role": "admin",
       "department": "IT",
-      "profileImage": "/images/admin.png",
+      "profileImage": "/mock/profile/profile-admin.jpg",
       "createdAt": "2024-01-01T00:00:00Z"
     }
   ]

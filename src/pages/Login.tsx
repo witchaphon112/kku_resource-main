@@ -13,18 +13,19 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    
     try {
       await login(username, password);
       alert("เข้าสู่ระบบสำเร็จ");
-      setTimeout(() => {
-        navigate('/');
-      }, 800);
+      navigate('/');
     } catch (err) {
-      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      setError(err.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
     } finally {
       setLoading(false);
     }
@@ -59,44 +60,58 @@ const Login = () => {
         <p style={{ textAlign: 'center', color: '#555', marginBottom: '2rem' }}>
           One account for all apps.
         </p>
-        <form onSubmit={handleSubmit}>
-          <label
-            style={{ display: 'block', color: '#555', fontSize: '14px', marginBottom: '5px' }}
-          >
-            Username
-          </label>
-          <input
-            type="text"
-            placeholder="ผู้ใช้ / username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginBottom: '1rem',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-            }}
-          />
+        
+        {error && (
+          <div style={{ 
+            color: 'red', 
+            marginBottom: '1rem',
+            textAlign: 'center',
+            fontSize: '14px'
+          }}>
+            {error}
+          </div>
+        )}
 
-          <label style={{ fontSize: '14px', color: '#555', display: 'block' }}>
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="รหัสผ่าน / password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginBottom: '1.5rem',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-            }}
-          />
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', color: '#555', fontSize: '14px', marginBottom: '5px' }}>
+              Username
+            </label>
+            <input
+              type="text"
+              placeholder="ผู้ใช้ / username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ fontSize: '14px', color: '#555', display: 'block', marginBottom: '5px' }}>
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="รหัสผ่าน / password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+              }}
+            />
+          </div>
 
           <button
             type="submit"
@@ -114,23 +129,24 @@ const Login = () => {
               cursor: 'pointer',
               marginBottom: '1rem',
               transition: 'background-color 0.3s ease',
+              opacity: loading ? 0.7 : 1,
             }}
           >
             {loading ? 'กำลังเข้าสู่ระบบ...' : 'Sign in'}
           </button>
         </form>
 
-        <hr style={{ margin: '2rem 0' }} />
+        <hr style={{ margin: '2rem 0', borderColor: '#eee' }} />
 
-        <p style={{ textAlign: 'center', fontSize: '13px' }}>
+        <div style={{ textAlign: 'center', fontSize: '13px' }}>
           <a
             href="https://pdp.kku.ac.th/policy/680656708694016000?lang=th"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onMouseEnter={() => setHoverLink(true)}
             onMouseLeave={() => setHoverLink(false)}
             style={{
-              marginRight: '5rem',
+              marginRight: '1rem',
               textDecoration: 'none',
               color: hoverLink ? '#004ecc' : '#0066ff',
               transition: 'color 0.3s ease',
@@ -142,7 +158,7 @@ const Login = () => {
           <a
             href="https://ssonext.kku.ac.th/support"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onMouseEnter={() => setHoverLink1(true)}
             onMouseLeave={() => setHoverLink1(false)}
             style={{
@@ -154,10 +170,17 @@ const Login = () => {
           >
             Help
           </a>
-        </p>
+        </div>
 
-        <p style={{ textAlign: 'center', fontSize: '11px', color: '#999', marginTop: '1rem' }}>
-          © 2024 Office of Digital Technology, Khon Kaen University
+        <p style={{ 
+          textAlign: 'center', 
+          fontSize: '11px', 
+          color: '#999', 
+          marginTop: '1.5rem',
+          lineHeight: '1.5'
+        }}>
+          © {new Date().getFullYear()} Office of Digital Technology, 
+          <br />Khon Kaen University
         </p>
       </div>
     </div>

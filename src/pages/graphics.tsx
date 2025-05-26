@@ -85,12 +85,12 @@ const PageGallery = () => {
   const itemsPerPage = 12;
   const [page, setPage] = useState(1);
 
-  const graphic = resourcesData.resources.filter(
-    (item) => item.type === "graphic"
+  const Graphics = resourcesData.resources.filter(
+    (item) => item.type === "Graphics"
   );
 
-  const totalPages = Math.ceil(graphic.length / itemsPerPage);
-  const paginatedItems = graphic.slice(
+  const totalPages = Math.ceil(Graphics.length / itemsPerPage);
+  const paginatedItems = Graphics.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );

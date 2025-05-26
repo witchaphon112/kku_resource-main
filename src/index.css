@@ -35,3 +35,11 @@ html, body {
   width: 100%;
   height: auto;
 }
+
+.p-carousel-container {
+  display: block !important; 
+}
+.p-carousel .p-carousel-prev,
+.p-carousel .p-carousel-next {
+  display: none !important; /* ซ่อนปุ่ม default */
+}
