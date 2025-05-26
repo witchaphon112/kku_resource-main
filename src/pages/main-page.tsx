@@ -12,6 +12,90 @@ import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
+const THEME = {
+  colors: {
+    primary: "#b71c1c",
+    primaryLight: "rgba(183,28,28,0.9)",
+    primaryDark: "#8f1616",
+    secondary: "#1a237e",
+    text: {
+      primary: "#212121",
+      secondary: "#666666",
+      light: "#ffffff"
+    },
+    background: {
+      main: "#ffffff",
+      light: "#f8f9fa",
+      gradient: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)"
+    },
+    border: "#eeeeee"
+  },
+  spacing: {
+    xs: "0.5rem",
+    sm: "1rem",
+    md: "1.5rem",
+    lg: "2rem",
+    xl: "3rem"
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "16px",
+    lg: "24px",
+    xl: "32px"
+  },
+  shadows: {
+    card: "0 4px 20px rgba(0,0,0,0.08)",
+    cardHover: "0 8px 30px rgba(0,0,0,0.12)",
+    button: "0 2px 8px rgba(0,0,0,0.15)"
+  },
+  typography: {
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    h1: {
+      fontSize: "2.5rem",
+      fontWeight: 700,
+      lineHeight: 1.2
+    },
+    h2: {
+      fontSize: "2rem",
+      fontWeight: 700,
+      lineHeight: 1.3
+    },
+    h3: {
+      fontSize: "1.1rem",
+      fontWeight: 600,
+      lineHeight: 1.4
+    },
+    body1: {
+      fontSize: "1rem",
+      lineHeight: 1.6
+    },
+    body2: {
+      fontSize: "0.9rem",
+      lineHeight: 1.5
+    },
+    caption: {
+      fontSize: "0.85rem",
+      lineHeight: 1.4
+    }
+  },
+  transitions: {
+    fast: "0.15s ease",
+    normal: "0.25s ease",
+    slow: "0.35s ease"
+  },
+  layout: {
+    maxWidth: "1400px",
+    containerPadding: "2rem",
+    sectionSpacing: "5rem",
+    cardMinWidth: "320px",
+  },
+  aspectRatios: {
+    hero: "56.25%", // 16:9
+    card: "66%",    // 3:2
+    thumbnail: "75%" // 4:3
+  }
+};
+
 const HERO_DATA = [
   {
     id: "h1",
@@ -41,19 +125,17 @@ const ANIMATION_DURATION = {
 
 const useStyles = createUseStyles({
   sectionTitle: {
-    fontSize: "2rem",
-    fontWeight: 700,
-    color: "#212121",
+    ...THEME.typography.h2,
+    color: THEME.colors.text.primary,
     textAlign: "center",
-    marginBottom: "0.5rem",
+    marginBottom: THEME.spacing.sm,
     position: "relative",
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)", 
     "&::after": {
       content: '""',
       display: "block",
       width: "55px",
       height: "6px",
-      backgroundColor: "#b71c1c",
+      backgroundColor: THEME.colors.primary,
       margin: "0.5rem auto 0",
       borderRadius: "4px",
     },
@@ -64,20 +146,19 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "column",
-    marginBottom: "1.5rem",
+    marginBottom: THEME.spacing.xl,
     position: "relative",
   },
   
   sectionLink: {
     display: "inline-block",
-    marginTop: "0.25rem",
-    color: "#b71c1c",
+    marginTop: THEME.spacing.xs,
+    color: THEME.colors.primary,
     textDecoration: "none",
     fontStyle: "italic",
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
     fontWeight: 500,
-    fontSize: "1rem",
-    transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
+    fontSize: THEME.typography.body1.fontSize,
+    transition: THEME.transitions.fast,
     "&:hover": {
       textDecoration: "underline",
       transform: "translateX(4px)",
@@ -90,20 +171,27 @@ const useStyles = createUseStyles({
     marginLeft: "calc(-50vw + 50%)",
     position: "relative",
     overflow: "hidden",
-    marginBottom: "3rem",
-    minHeight: 420,
-    background: "#eee",
+    marginBottom: THEME.layout.sectionSpacing,
+    minHeight: "calc(100vh - 80px)",
+    background: THEME.colors.background.light,
     marginTop: "-80px",
+    "@media (max-width: 768px)": {
+      minHeight: "60vh",
+    }
   },
   
   heroImage: {
     width: "100%",
     height: "calc(100vh - 80px)",
-    maxHeight: "540px",
-    minHeight: "700px",
+    maxHeight: "800px",
+    minHeight: "600px",
     objectFit: "cover",
     objectPosition: "center center",
-    filter: "brightness(0.97) saturate(1.08)",
+    filter: "brightness(0.85)",
+    "@media (max-width: 768px)": {
+      height: "60vh",
+      minHeight: "400px",
+    }
   },
   
   captionMain: {
@@ -220,8 +308,23 @@ const useStyles = createUseStyles({
   },
   
   resourceCard: {
-    extend: "baseCard",
-    flex: "0 0 auto",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    overflow: "hidden",
+    boxShadow: THEME.shadows.card,
+    transition: THEME.transitions.normal,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    cursor: "pointer",
+    transform: "translateY(0)",
+    "&:hover": {
+      transform: "translateY(-8px)",
+      boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+      "& $cardImage img": {
+        transform: "scale(1.05)",
+      }
+    }
   },
   
   resourceCardThree: {
@@ -265,21 +368,18 @@ const useStyles = createUseStyles({
     overflow: "hidden",
   },
   tag: {
-    background: "#f0f0f0", 
-    color: "#555", 
-    fontSize: "0.7rem",
+    background: THEME.colors.background.light,
+    color: THEME.colors.text.secondary,
+    padding: "4px 12px",
     borderRadius: "12px",
-    padding: "3px 10px",
-    fontWeight: 500,
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
-    letterSpacing: 0.2,
-    lineHeight: 1.5,
+    fontSize: THEME.typography.caption.fontSize,
     display: "inline-flex",
     alignItems: "center",
-    transition: "background-color 0.2s, color 0.2s",
+    gap: "4px",
+    transition: THEME.transitions.fast,
     "&:hover": {
-      background: "#b71c1c",
-      color: "#fff",
+      background: THEME.colors.primaryLight,
+      color: THEME.colors.text.light,
     }
   },
   content: { 
@@ -339,34 +439,26 @@ const useStyles = createUseStyles({
   // Video components
   videoModal: {
     background: "transparent",
-    maxWidth: 1000,
-    width: "calc(100% - 40px)",
-    height: "auto",
+    maxWidth: "1200px",
+    width: "90%",
     margin: "auto",
-    padding: 0, 
-    position: "relative", 
+    padding: 0,
+    position: "relative",
     outline: "none",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-    borderRadius: "12px",
-    overflow: "hidden",
+    "@media (max-width: 768px)": {
+      width: "95%"
+    }
   },
   
   videoModalOverlay: {
     position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.85)",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.9)",
     zIndex: 10000,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "20px",
+    padding: THEME.spacing.md
   },
 
   carouselArrowCustom: {
@@ -459,6 +551,125 @@ const useStyles = createUseStyles({
     "&:hover": {
       background: "#b71c1c",
       transform: "scale(1.1)",
+    }
+  },
+
+  cardImage: {
+    position: "relative",
+    paddingTop: THEME.aspectRatios.card,
+    overflow: "hidden",
+    background: THEME.colors.background.light,
+    "& img": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transition: "transform 0.5s ease"
+    }
+  },
+
+  cardContent: {
+    padding: THEME.spacing.lg,
+    display: "flex",
+    flexDirection: "column",
+    gap: THEME.spacing.md,
+    flexGrow: 1,
+    "@media (max-width: 768px)": {
+      padding: THEME.spacing.md
+    }
+  },
+
+  cardTitle: {
+    fontSize: "1.25rem",
+    fontWeight: 600,
+    color: THEME.colors.text.primary,
+    margin: 0,
+    lineHeight: 1.4,
+    "@media (max-width: 768px)": {
+      fontSize: "1.1rem"
+    }
+  },
+
+  cardDescription: {
+    fontSize: "0.95rem",
+    color: THEME.colors.text.secondary,
+    margin: 0,
+    lineHeight: 1.6,
+    display: "-webkit-box",
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden"
+  },
+
+  cardFooter: {
+    marginTop: "auto",
+    paddingTop: THEME.spacing.sm,
+    borderTop: `1px solid ${THEME.colors.border}`,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  // Section Containers
+  sectionContainer: {
+    maxWidth: THEME.layout.maxWidth,
+    margin: "0 auto",
+    padding: `0 ${THEME.layout.containerPadding}`,
+    "@media (max-width: 768px)": {
+      padding: "0 1rem"
+    }
+  },
+
+  // Grid Layouts
+  gridContainer: {
+    display: "grid",
+    gridTemplateColumns: `repeat(auto-fit, minmax(${THEME.layout.cardMinWidth}, 1fr))`,
+    gap: THEME.spacing.xl,
+    alignItems: "stretch",
+    "@media (max-width: 768px)": {
+      gap: THEME.spacing.md
+    }
+  },
+
+  // Tags
+  tagContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+    marginTop: "auto",
+    paddingTop: THEME.spacing.md
+  },
+
+  tag: {
+    background: THEME.colors.background.light,
+    color: THEME.colors.text.secondary,
+    padding: "0.4rem 0.8rem",
+    borderRadius: "20px",
+    fontSize: "0.85rem",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.3rem",
+    transition: THEME.transitions.fast,
+    fontWeight: 500,
+    "&:hover": {
+      background: THEME.colors.primaryLight,
+      color: THEME.colors.text.light,
+      transform: "translateY(-2px)"
+    }
+  },
+
+  // Stats
+  statsContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: THEME.spacing.sm,
+    color: THEME.colors.text.secondary,
+    fontSize: "0.9rem",
+    "& i": {
+      color: THEME.colors.primary,
+      fontSize: "1rem"
     }
   },
 });
@@ -854,55 +1065,161 @@ console.log("กราฟฟิกใน mock", graphicItems);
 
       {/* RECOMMENDED SECTION */}
       {recommended.length > 0 && (
-        <section style={{ padding: "2rem 0", textAlign: "center", background: "#fdfdfd", marginBottom: "2rem" }}>
-          <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
-          
-          <div className={classes.scrollWrapper} style={{ maxWidth: 1200 }}>
-            <button
-              className={`${classes.scrollButton} ${classes.leftButton}`}
-              onClick={() => handleScrollHorizontally(scrollRefRecommended, -1)}
-              aria-label="เลื่อนซ้าย"
-            >
-              ‹
-            </button>
-            
-            <div className={classes.scrollContainer} ref={scrollRefRecommended}>
-              {recommended.map((item) => (
-                <div
-                  className={classes.resourceCard}
+        <section style={{ 
+          padding: "4rem 0", 
+          background: "linear-gradient(to bottom, #fff 0%, #f8f9fa 100%)",
+          borderBottom: "1px solid #eee" 
+        }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}>
+            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+              <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
+              <p style={{
+                fontSize: "1.1rem",
+                color: "#666",
+                maxWidth: "600px",
+                margin: "1rem auto",
+                lineHeight: 1.6
+              }}>
+                รวบรวมเนื้อหาที่น่าสนใจและเป็นที่นิยม เพื่อการเรียนรู้ที่หลากหลาย
+              </p>
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "2rem",
+              alignItems: "stretch"
+            }}>
+              {recommended.slice(0, 6).map((item) => (
+                <article
                   key={item.id}
-                  style={{ width: "220px" }}
                   onClick={() => navigate(`/resource/${item.id}`)}
-                  title={item.title}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                    height: "100%",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)";
+                  }}
                 >
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.title}
-                    className={classes.recommendedImage}
-                    loading="lazy"
-                  />
-                  <div style={{ 
-                    marginTop: "0.75rem",
-                    padding: "0 0.5rem 0.5rem 0.5rem",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
-                    color: "#444",
-                    lineHeight: 1.3,
+                  <div style={{
+                    position: "relative",
+                    paddingTop: "66%",
+                    overflow: "hidden"
                   }}>
-                    {item.title}
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      loading="lazy"
+                    />
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%)",
+                    }} />
+                    {item.type && (
+                      <div style={{
+                        position: "absolute",
+                        top: "1rem",
+                        right: "1rem",
+                        background: "rgba(183,28,28,0.9)",
+                        color: "#fff",
+                        padding: "0.4rem 0.8rem",
+                        borderRadius: "20px",
+                        fontSize: "0.8rem",
+                        fontWeight: 500,
+                        backdropFilter: "blur(4px)",
+                        textTransform: "capitalize"
+                      }}>
+                        {CATEGORY_OPTIONS.find(c => c.value === item.type)?.label || item.type}
+                      </div>
+                    )}
                   </div>
-                </div>
+
+                  <div style={{
+                    padding: "1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                    flexGrow: 1,
+                  }}>
+                    <h3 style={{
+                      fontSize: "1.1rem",
+                      fontWeight: 600,
+                      margin: 0,
+                      lineHeight: 1.4,
+                      color: "#1a237e",
+                    }}>
+                      {item.title}
+                    </h3>
+
+                    {item.description && (
+                      <p style={{
+                        fontSize: "0.9rem",
+                        color: "#666",
+                        margin: 0,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        lineHeight: 1.5
+                      }}>
+                        {item.description}
+                      </p>
+                    )}
+
+                    <div style={{
+                      marginTop: "auto",
+                      paddingTop: "1rem",
+                      borderTop: "1px solid #eee",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      fontSize: "0.85rem",
+                      color: "#666",
+                    }}>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}>
+                        <i className="pi pi-eye" style={{ fontSize: "0.9rem" }} />
+                        {item.viewCount || 0} ครั้ง
+                      </div>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}>
+                        <i className="pi pi-download" style={{ fontSize: "0.9rem" }} />
+                        {item.downloadCount || 0} ดาวน์โหลด
+                      </div>
+                    </div>
+                  </div>
+                </article>
               ))}
             </div>
-            
-            <button
-              className={`${classes.scrollButton} ${classes.rightButton}`}
-              onClick={() => handleScrollHorizontally(scrollRefRecommended, 1)}
-              aria-label="เลื่อนขวา"
-            >
-              ›
-            </button>
           </div>
         </section>
       )}
