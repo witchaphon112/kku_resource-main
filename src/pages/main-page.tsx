@@ -463,30 +463,6 @@ const useStyles = createUseStyles({
   },
 });
 
-const getFeaturedCategories = (resources, count = 3) => {
-  const categoryMap = {};
-  
-  resources.forEach((resource) => {
-    if (!categoryMap[resource.category]) {
-      categoryMap[resource.category] = { 
-        count: 0, 
-        image: resource.thumbnailUrl 
-      };
-    }
-    categoryMap[resource.category].count++;
-  });
-  
-  return Object.entries(categoryMap)
-    .sort(([, a], [, b]) => b.count - a.count)
-    .slice(0, count)
-    .map(([category, data]) => ({
-      category,
-      count: data.count,
-      image: data.image, 
-      link: `/gallery?category=${encodeURIComponent(category)}`
-    }));
-};
-
 const embedYouTube = (url) => {
   if (!url) return "";
   const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
@@ -495,6 +471,190 @@ const embedYouTube = (url) => {
     : url;
 };
 
+interface Photo {
+  id: string;
+  src: string;
+  key: string;
+  title: string;
+  width: number;
+  height: number;
+  category?: string;
+  tags?: string[];
+}
+
+interface PhotoGalleryProps {
+  photos: Photo[];
+  classes: {
+    photoGalleryContainer: string;
+    sectionHeader: string;
+    sectionTitle: string;
+    sectionLink: string;
+  };
+}
+
+const renderPhotoGallery = ({ photos, classes }: PhotoGalleryProps) => (
+  <section style={{ 
+    background: "#fff",
+    padding: "4rem 0",
+    borderTop: "1px solid #eee"
+  }}>
+    <div style={{
+      maxWidth: 1200,
+      margin: "0 auto",
+      padding: "0 1.5rem"
+    }}>
+      <div style={{
+        textAlign: "center",
+        marginBottom: "3rem"
+      }}>
+        <h2 style={{
+          fontSize: "2.5rem",
+          fontWeight: 700,
+          color: "#111",
+          margin: "0 0 0.5rem 0",
+          fontFamily: "'Sarabun', sans-serif"
+        }}>
+          คลังภาพแนะนำ
+        </h2>
+        <div style={{
+          width: "40px",
+          height: "4px",
+          background: "#b71c1c",
+          margin: "0 auto 1rem auto",
+          borderRadius: "2px"
+        }} />
+        <Link 
+          to="/gallery" 
+          style={{
+            color: "#b71c1c",
+            fontSize: "1.1rem",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            fontWeight: 500
+          }}
+        >
+          ชมภาพทั้งหมด
+          <i className="pi pi-arrow-right" style={{ fontSize: "0.9em" }} />
+        </Link>
+      </div>
+
+      <PhotoProvider>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: "2rem",
+          marginBottom: "2rem"
+        }}>
+          {photos.map((photo, index) => (
+            <div
+              key={photo.id}
+              style={{
+                position: "relative",
+                borderRadius: "1rem",
+                overflow: "hidden",
+                cursor: "pointer",
+                aspectRatio: "4/3",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                transition: "all 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                const target = e.currentTarget;
+                target.style.transform = "translateY(-8px)";
+                target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                const target = e.currentTarget;
+                target.style.transform = "translateY(0)";
+                target.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)";
+              }}
+            >
+              <PhotoView index={index} src={photo.src}>
+                <img
+                  src={photo.src}
+                  alt={photo.title}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.3s ease"
+                  }}
+                />
+              </PhotoView>
+              
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)",
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                opacity: 0,
+                transition: "opacity 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "0";
+              }}
+              >
+                <h3 style={{
+                  color: "#fff",
+                  fontSize: "1.25rem",
+                  fontWeight: 600,
+                  margin: "0 0 0.5rem 0",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)"
+                }}>
+                  {photo.title}
+                </h3>
+                
+                {photo.category && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    color: "#fff",
+                    fontSize: "0.9rem",
+                    opacity: 0.9
+                  }}>
+                    <i className="pi pi-folder" style={{ fontSize: "0.9rem" }} />
+                    {photo.category}
+                  </div>
+                )}
+
+                {photo.tags && photo.tags.length > 0 && (
+                  <div style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    marginTop: "0.75rem",
+                    flexWrap: "wrap"
+                  }}>
+                    {photo.tags.slice(0, 3).map((tag, index) => (
+                      <span key={index} style={{
+                        background: "rgba(255,255,255,0.2)",
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: "1rem",
+                        fontSize: "0.8rem",
+                        color: "#fff",
+                        backdropFilter: "blur(4px)"
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </PhotoProvider>
+    </div>
+  </section>
+);
+
 const MainPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
@@ -502,16 +662,11 @@ const MainPage = () => {
   const scrollRefRecommended = useRef(null);
 
   const [heroIndex, setHeroIndex] = useState(0);
-  const [imageResources, setImageResources] = useState([]);
+  const [imageResources, setImageResources] = useState<Photo[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [currentVideo, setCurrentVideo] = useState(null);
+  const [currentVideo, setCurrentVideo] = useState<Photo | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("image");
-
-  const featuredCategories = useMemo(
-    () => getFeaturedCategories(resourcesData.resources, 3),
-    []
-  );
 
   const recommended = useMemo(
     () => [...resourcesData.resources]
@@ -520,17 +675,15 @@ const MainPage = () => {
     []
   );
 
-const filteredNewItems = useMemo(() => {
-  return resourcesData.resources
-    .filter(resource =>
-      resource && resource.type &&
-      resource.type.toLowerCase() === selectedCategory.toLowerCase()
-    )
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 6);
-}, [selectedCategory, resourcesData.resources]);
-
-
+  const filteredNewItems = useMemo(() => {
+    return resourcesData.resources
+      .filter(resource =>
+        resource && resource.type &&
+        resource.type.toLowerCase() === selectedCategory.toLowerCase()
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 6);
+  }, [selectedCategory, resourcesData.resources]);
 
   const videoResources = useMemo(
     () => resourcesData.resources
@@ -846,316 +999,221 @@ console.log("กราฟฟิกใน mock", graphicItems);
         </section>
       )}
 
-      {imageResources.length > 0 && (
-        <section style={{ 
-          background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)", 
-          padding: "56px 0 70px 0" 
-        }}>
-          <div className={classes.photoGalleryContainer}>
-            <div className={classes.sectionHeader}>
-              <h2 className={classes.sectionTitle}>คลังภาพแนะนำ</h2>
-              <Link to="/gallery" className={classes.sectionLink}>
-                ชมภาพทั้งหมด <span style={{ marginLeft: "0.3rem" }}>→</span>
-              </Link>
-            </div>
-            
-            <PhotoProvider
-              overlayRender={({ index, imagesCount, overlay }) => (
-                <div style={{
-                  position: "fixed",
-                  bottom: "30px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  color: "white",
-                  background: "rgba(0,0,0,0.7)",
-                  padding: "8px 18px",
-                  borderRadius: "20px",
-                  fontSize: "15px",
-                  fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
-                  zIndex: 10001,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
-                  textAlign: "center",
-                }}>
-                  {overlay?.title && (
-                    <span style={{ display: "block", marginBottom: "3px" }}>
-                      {overlay.title}
-                    </span>
-                  )}
-                  ({index + 1} / {imagesCount})
-                </div>
-              )}
-            >
-              <PhotoAlbum
-  layout="rows"
-  photos={imageResources}
-  spacing={20}                   // เพิ่ม spacing ระหว่างภาพ
-  padding={10}                    // เพิ่ม padding รอบ gallery
-  targetRowHeight={260}
-  renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
-    <div
-      style={{
-        ...wrapperStyle,
-        marginBottom: 16,
-        borderRadius: 18,
-        overflow: "hidden",
-        boxShadow: "0 4px 18px rgba(0,0,0,0.12)", // เพิ่ม shadow
-        position: "relative",
-        cursor: "pointer",
-        transition: "transform 0.25s ease, box-shadow 0.25s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.04)";
-        e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.25)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.12)";
-      }}
-      title={photo.title}
-    >
-      <PhotoView src={photo.src} key={photo.key} overlay={photo}>
-        {renderDefaultPhoto({ wrapped: true })}
-      </PhotoView>
-      <div style={{
-        position: "absolute",
-        left: 0,
-        bottom: 0,
-        width: "100%",
-        background: "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.05) 100%)",
-        color: "#fff",
-        fontWeight: 600,
-        fontSize: "1rem",
-        padding: "0.75rem 1rem",
-        textShadow: "0 1px 5px rgba(0,0,0,0.5)",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      }}>
-        <span style={{ marginRight: 6 }}>📷</span>{photo.title}
-      </div>
-    </div>
-  )}
-/>
-            </PhotoProvider>
-          </div>
-        </section>
-      )}
-
-      {/* FEATURED CATEGORIES */}
-      <section style={{ 
-        background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)", 
-        padding: "54px 0 60px 0" 
-      }}>
-        <div style={{ background: "transparent", boxShadow: "none", maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div className={classes.sectionHeader}>
-            <h2 className={classes.sectionTitle}>หมวดหมู่ยอดนิยม</h2>
-          </div>
-          
-          <div className={classes.featuredCardRow}>
-            {featuredCategories.map((category) => (
-              <article
-                className={classes.featuredCard}
-                key={category.category}
-                onClick={() => navigate(category.link)}
-                title={category.category}
-              >
-                <img
-                  src={category.image}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    position: "absolute",
-                    filter: "brightness(0.93) saturate(1.06)",
-                    transition: `filter ${ANIMATION_DURATION.FAST}ms ease`
-                  }}
-                  alt={category.category}
-                />
-                <div style={{
-                  position: "absolute",
-                  left: 0,
-                  bottom: 0,
-                  width: "100%",
-                  padding: "0 0 22px 0",
-                  zIndex: 2,
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  justifyContent: "space-between",
-                  background: "linear-gradient(0deg,rgba(0,0,0,0.56) 50%,rgba(0,0,0,0.03) 100%)"
-                }}>
-                  <div style={{
-                    color: "#fff",
-                    padding: "20px 0 0 22px",
-                    textShadow: "0 1px 10px rgba(0,0,0,0.33)",
-                    lineHeight: 1.2,
-                    fontWeight: 700,
-                    fontSize: "1.28rem"
-                  }}>
-                    {category.category}
-                    <div style={{
-                      fontSize: "1rem",
-                      color: "#e0ffde",
-                      opacity: 0.91,
-                      fontWeight: 400,
-                      marginTop: "6px",
-                      textShadow: "0 2px 8px rgba(0,0,0,0.35)"
-                    }}>
-                      {category.count.toLocaleString()} รายการ
-                    </div>
-                  </div>
-                  <button style={{
-                    background: "linear-gradient(90deg,#71f089 60%,#a2ffd0 100%)",
-                    color: "#134a23",
-                    fontWeight: 700,
-                    border: 0,
-                    borderRadius: 18,
-                    fontSize: "1.07rem",
-                    padding: "9px 32px",
-                    marginRight: 22,
-                    marginBottom: 14,
-                    boxShadow: "0 3px 18px rgba(122,245,145,0.16)",
-                    cursor: "pointer",
-                    transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
-                  }}>
-                    Explore
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-          
-          <div style={{ textAlign: "center", marginTop: 18 }}>
-            <button 
-              onClick={() => navigate("/gallery")}
-              style={{
-                background: "#fff",
-                color: "#1e8148",
-                border: "1.5px solid #bbf5ce",
-                borderRadius: 22,
-                padding: "0.75rem 2.2rem",
-                fontSize: "1.14rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 1px 10px rgba(176,244,210,0.16)",
-                transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
-              }}
-            >
-              Explore more
-            </button>
-          </div>
-        </div>
-      </section>
+      {imageResources.length > 0 && renderPhotoGallery({ photos: imageResources, classes })}
 
       {/* VIDEO RECOMMEND SECTION */}
       {videoResources.length > 0 && (
         <section style={{
           background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)",
           padding: "54px 0 60px 0",
+          borderTop: "1px solid #eee",
+          borderBottom: "1px solid #eee",
         }}>
           <div className={classes.photoGalleryContainer}>
             <div className={classes.sectionHeader}>
               <h2 className={classes.sectionTitle}>วิดีโอแนะนำ</h2>
+              <p style={{
+                fontSize: "1.1rem",
+                color: "#666",
+                marginTop: "0.5rem",
+                marginBottom: "2rem",
+                textAlign: "center",
+                maxWidth: "600px",
+                margin: "0.5rem auto 2rem"
+              }}>
+                รวมวิดีโอที่น่าสนใจเกี่ยวกับมหาวิทยาลัยขอนแก่น
+              </p>
               <Link to="/gallery?category=video" className={classes.sectionLink}>
-                ดูวิดีโอทั้งหมด <span style={{ marginLeft: "0.3rem" }}>→</span>
+                ดูวิดีโอทั้งหมด <i className="pi pi-arrow-right" style={{ marginLeft: "0.3rem" }} />
               </Link>
             </div>
             
             <div style={{
-              display: "flex",
-              gap: 24,
-              flexWrap: "wrap",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "2rem",
               justifyContent: "center",
-              alignItems: "stretch",
+              margin: "0 auto",
+              maxWidth: "1400px",
+              padding: "1rem",
             }}>
               {videoResources.slice(0, 6).map((item, index) => (
                 <article
-                  className={classes.resourceCardThree}
                   key={item.id}
                   onClick={() => handleOpenModal(item, index)}
                   title={item.title}
                   style={{
-                    cursor: "pointer",
-                    minWidth: 290,
-                    maxWidth: 340,
-                    width: "100%",
-                    position: "relative",
+                    background: "#fff",
+                    borderRadius: "16px",
                     overflow: "hidden",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    transition: "all 0.3s ease",
                     display: "flex",
                     flexDirection: "column",
-                    boxShadow: "0 3px 12px rgba(156,39,176,0.05)",
+                    height: "100%",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 8px 30px rgba(183,28,28,0.15)",
+                    }
                   }}
                 >
                   <div style={{ 
-                    position: "relative", 
-                    width: "100%", 
-                    height: 0, 
-                    paddingBottom: "56.25%" 
+                    position: "relative",
+                    paddingBottom: "56.25%",
+                    background: "#000",
                   }}>
-                    <img
+                    <img 
                       src={item.thumbnailUrl}
                       alt={item.title}
                       style={{
                         position: "absolute",
-                        left: 0,
                         top: 0,
+                        left: 0,
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
-                        borderTopLeftRadius: 14,
-                        borderTopRightRadius: 14,
                       }}
                       loading="lazy"
                     />
                     <div style={{
                       position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%)",
+                    }} />
+                    <div style={{
+                      position: "absolute",
                       top: "50%",
                       left: "50%",
-                      transform: "translate(-50%,-50%)",
-                      background: "rgba(255,255,255,0.9)",
+                      transform: "translate(-50%, -50%)",
+                      width: "60px",
+                      height: "60px",
+                      background: "rgba(183,28,28,0.9)",
                       borderRadius: "50%",
-                      width: 46,
-                      height: 46,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                      fontSize: 28,
-                      color: "#b71c1c",
-                      transition: `transform ${ANIMATION_DURATION.FAST}ms ease`,
+                      transition: "all 0.3s ease",
+                      boxShadow: "0 4px 15px rgba(183,28,28,0.3)",
+                      "&:hover": {
+                        transform: "translate(-50%, -50%) scale(1.1)",
+                        background: "rgba(183,28,28,1)",
+                      }
                     }}>
-                      <i className="pi pi-play" />
+                      <i className="pi pi-play" style={{ 
+                        fontSize: "1.5rem", 
+                        color: "#fff",
+                        marginLeft: "4px"
+                      }} />
                     </div>
+                    {item.duration && (
+                      <div style={{
+                        position: "absolute",
+                        bottom: "10px",
+                        right: "10px",
+                        background: "rgba(0,0,0,0.8)",
+                        color: "#fff",
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        fontSize: "0.8rem",
+                      }}>
+                        {item.duration}
+                      </div>
+                    )}
                   </div>
                   
                   <div style={{
-                    backgroundColor: "#424242",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    padding: "0.75rem 1rem",
-                    textAlign: "center",
-                    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    borderTop: "3px solid #b71c1c",
+                    padding: "1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1rem",
+                    flexGrow: 1,
                   }}>
-                    {item.title}
-                  </div>
-                  
-                  <div style={{ 
-                    padding: "0 1.1rem 1.1rem 1.1rem", 
-                    display: "flex", 
-                    justifyContent: "space-between" 
-                  }}>
-                    <span style={{ fontSize: 13, color: "#b71c1c", fontWeight: 500 }}>
-                      {item.category}
-                    </span>
-                    <span style={{ fontSize: 13, color: "#666" }}>
-                      <i className="pi pi-eye" style={{ fontSize: 13, marginRight: 3 }} />
-                      {item.viewCount || 0}
-                    </span>
+                    <h3 style={{
+                      fontSize: "1.1rem",
+                      fontWeight: 600,
+                      color: "#1a237e",
+                      lineHeight: 1.4,
+                      margin: 0,
+                    }}>
+                      {item.title}
+                    </h3>
+                    
+                    {item.description && (
+                      <p style={{
+                        fontSize: "0.9rem",
+                        color: "#666",
+                        margin: 0,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}>
+                        {item.description}
+                      </p>
+                    )}
+
+                    {item.tags && item.tags.length > 0 && (
+                      <div style={{
+                        display: "flex",
+                        gap: "0.5rem",
+                        flexWrap: "wrap",
+                        marginTop: "auto",
+                      }}>
+                        {item.tags.map((tag, tagIndex) => (
+                          <span
+                            key={tagIndex}
+                            style={{
+                              background: "#f5f5f5",
+                              color: "#666",
+                              padding: "4px 10px",
+                              borderRadius: "12px",
+                              fontSize: "0.8rem",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                            }}
+                          >
+                            <i className="pi pi-tag" style={{ fontSize: "0.7rem" }} />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginTop: "auto",
+                      paddingTop: "1rem",
+                      borderTop: "1px solid #eee",
+                    }}>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color: "#666",
+                        fontSize: "0.85rem",
+                      }}>
+                        <i className="pi pi-calendar" style={{ fontSize: "0.9rem" }} />
+                        {new Date(item.createdAt).toLocaleDateString("th-TH", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color: "#666",
+                        fontSize: "0.85rem",
+                      }}>
+                        <i className="pi pi-eye" style={{ fontSize: "0.9rem" }} />
+                        {item.viewCount || 0} ครั้ง
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}
