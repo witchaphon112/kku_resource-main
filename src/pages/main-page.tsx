@@ -886,50 +886,56 @@ console.log("กราฟฟิกใน mock", graphicItems);
               )}
             >
               <PhotoAlbum
-                layout="rows"
-                photos={imageResources}
-                spacing={16}
-                padding={8}
-                targetRowHeight={260}
-                renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
-                  <div
-                    style={{
-                      ...wrapperStyle,
-                      marginBottom: 16,
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      boxShadow: "0 2px 12px rgba(34,34,34,0.1)",
-                      background: "#fcfcfc",
-                      position: "relative",
-                      cursor: "pointer",
-                      transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
-                    }}
-                    title={photo.title}
-                  >
-                    <PhotoView src={photo.src} key={photo.key} overlay={photo}>
-                      {renderDefaultPhoto({ wrapped: true })}
-                    </PhotoView>
-                    <div style={{
-                      position: "absolute",
-                      left: 0,
-                      bottom: 0,
-                      width: "100%",
-                      background: "linear-gradient(0deg,rgba(0,0,0,0.66) 0%,rgba(0,0,0,0.03) 100%)",
-                      color: "#fff",
-                      fontWeight: 600,
-                      fontSize: "1.04rem",
-                      padding: "1rem 1rem 0.6rem 1rem",
-                      textShadow: "0 1px 5px rgba(0,0,0,0.37)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}>
-                      <span style={{ marginRight: 8 }}>📷</span>
-                      {photo.title}
-                    </div>
-                  </div>
-                )}
-              />
+  layout="rows"
+  photos={imageResources}
+  spacing={20}                   // เพิ่ม spacing ระหว่างภาพ
+  padding={10}                    // เพิ่ม padding รอบ gallery
+  targetRowHeight={260}
+  renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
+    <div
+      style={{
+        ...wrapperStyle,
+        marginBottom: 16,
+        borderRadius: 18,
+        overflow: "hidden",
+        boxShadow: "0 4px 18px rgba(0,0,0,0.12)", // เพิ่ม shadow
+        position: "relative",
+        cursor: "pointer",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.04)";
+        e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.25)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 4px 18px rgba(0,0,0,0.12)";
+      }}
+      title={photo.title}
+    >
+      <PhotoView src={photo.src} key={photo.key} overlay={photo}>
+        {renderDefaultPhoto({ wrapped: true })}
+      </PhotoView>
+      <div style={{
+        position: "absolute",
+        left: 0,
+        bottom: 0,
+        width: "100%",
+        background: "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.05) 100%)",
+        color: "#fff",
+        fontWeight: 600,
+        fontSize: "1rem",
+        padding: "0.75rem 1rem",
+        textShadow: "0 1px 5px rgba(0,0,0,0.5)",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}>
+        <span style={{ marginRight: 6 }}>📷</span>{photo.title}
+      </div>
+    </div>
+  )}
+/>
             </PhotoProvider>
           </div>
         </section>

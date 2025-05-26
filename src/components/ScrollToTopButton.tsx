@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaArrowUp } from "react-icons/fa";
 
-// สไตล์เดียวกับของคุณ
 const btnStyle: React.CSSProperties = {
   position: "fixed",
   bottom: "2.2rem",
@@ -39,9 +38,7 @@ export default function ScrollToTopButton() {
       style={{
         ...btnStyle,
         background: visible ? "#6e7682" : "#c7c7c7",
-        ...(visible
-          ? { boxShadow: "0 4px 18px #b71c1c22" }
-          : { opacity: 0 }),
+
       }}
       aria-label="เลื่อนขึ้นบนสุด"
       onClick={() =>

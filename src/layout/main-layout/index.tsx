@@ -25,14 +25,13 @@ const useStyles = createUseStyles({
     position: "relative",
     zIndex: 0,
   },
-  // --- Header ---
   header: {
     position: "fixed",
     top: 0,
     left: 0,
     width: "100vw",
     zIndex: 1000,
-    background: "rgba(106,106,106,0.55)",
+    background: "rgba(131, 130, 130, 0.55)",
     backdropFilter: "blur(8px)",
     color: "#fff",
     minHeight: 56,
@@ -42,12 +41,13 @@ const useStyles = createUseStyles({
     transition: "background 0.35s cubic-bezier(.4,.8,.4,1), box-shadow 0.27s cubic-bezier(.4,.8,.4,1), backdrop-filter 0.45s cubic-bezier(.4,.8,.4,1)",
   },
   headerScrolled: {
-    background: "rgba(35, 35, 42, 0.98)",
+    background: "rgba(64, 64, 75, 0.98)",
     boxShadow: "0 3px 22px 0 #23232a70",
     backdropFilter: "blur(10px)",
   },
   headerContent: {
     width: "100%",
+    position: "relative",
     maxWidth: 1300,
     margin: "0 auto",
     display: "flex",
@@ -74,7 +74,7 @@ const useStyles = createUseStyles({
     letterSpacing: 1.05,
     "& img": {
       marginRight: 9,
-      height: 44,
+      height: 65,
       filter: "drop-shadow(0 2px 7px #ffba5950)",
     },
   },
@@ -106,7 +106,6 @@ const useStyles = createUseStyles({
       boxShadow: "0 1px 7px 0 #9993",
     }
   },
-  // --- Right (Search + User) ---
   rightIcons: {
     display: "flex",
     alignItems: "center",
@@ -139,12 +138,11 @@ const useStyles = createUseStyles({
     boxShadow: "0 1px 5px #fff1",
     transition: "border 0.16s, background 0.14s",
   },
-  // --- Search Box ---
   headerSearchBox: {
     display: "flex",
     alignItems: "center",
     background: "linear-gradient(90deg,#232526,#191b1f 90%)",
-    borderRadius: 3,
+    borderRadius: 10,
     padding: "0.1rem 1rem 0.1rem 1.1rem",
     minWidth: 320,
     maxWidth: 460,
@@ -163,7 +161,7 @@ const useStyles = createUseStyles({
     border: "none",
     background: "transparent",
     color: "#fff",
-    fontSize: 20,
+    fontSize: 14,
     outline: "none",
     width: 220,
     fontFamily: "inherit",
@@ -174,7 +172,7 @@ const useStyles = createUseStyles({
     },
   },
   headerSearchIcon: {
-    fontSize: 27,
+    fontSize: 20,
     color: "#fff",
     marginRight: 8,
     opacity: 0.92,
@@ -187,11 +185,10 @@ const useStyles = createUseStyles({
     opacity: 0.74,
     "&:hover": { opacity: 1, color: "#e66" }
   },
-  // --- User Menu Popper ---
   userMenuPopper: {
     position: "absolute",
-    top: 46,
-    right: 0,
+    top: 60,
+    right: 5,
     minWidth: 185,
     background: "#23232a",
     borderRadius: 11,
@@ -201,7 +198,13 @@ const useStyles = createUseStyles({
     fontSize: 16,
     fontFamily: "inherit",
     color: "#fff",
+    transition: "opacity 0.18s, transform 0.18s",
+    transform: "translateY(-5px)",
     animation: "$fadeIn 0.13s",
+    "&.show": {
+    opacity: 1,
+    transform: "translateY(0)",
+    },
     "&::before": {
       content: '""',
       display: "block",
@@ -240,7 +243,6 @@ const useStyles = createUseStyles({
     from: { opacity: 0, transform: "translateY(-15px)" },
     to: { opacity: 1, transform: "none" },
   },
-  // --- Main Content ---
   mainContent: {
     flex: 1,
     maxWidth: 1300,
@@ -249,7 +251,6 @@ const useStyles = createUseStyles({
     padding: "90px 0 0 0",
     "@media (max-width: 900px)": { padding: "105px 0 0 0" }
   },
-  // --- Footer ---
   footerRow: {
     width: "100%",
     background: 'url("/mock/background1.jpg") center/cover no-repeat, #a13d23',
@@ -359,14 +360,14 @@ const MainLayout = () => {
   const isLoggedIn = !!user;
   const [scrolled, setScrolled] = useState(false);
 
-  // --- Effect: header scroll shadow
+  const isMainPage = location.pathname === "/";
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 16);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // --- Effect: focus search input
   useEffect(() => {
     if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 70);
   }, [searchOpen]);
@@ -452,8 +453,8 @@ const MainLayout = () => {
   return (
     <div className={classes.mainLayout}>
       {/* ---------- HEADER ---------- */}
-      <header className={`${classes.header} ${scrolled ? classes.headerScrolled : ""}`}>
-        <div className={classes.headerContent}>
+      <header className={`${classes.header} ${(!isMainPage || scrolled) ? classes.headerScrolled : ""}`}>
+      <div className={classes.headerContent}>
           <Link to="/" className={classes.logo}>
             <img src={logo} alt="KKU Logo" />
           </Link>
@@ -496,7 +497,7 @@ const MainLayout = () => {
                 <i className="pi pi-search" />
               </span>
             )}
-            {/* --- User avatar --- */}
+            
             <span ref={avatarRef}>
               <span
                 className={classes.userAvatar}
@@ -532,7 +533,6 @@ const MainLayout = () => {
                 </div>
               )}
             </span>
-            {/* --- Hamburger Sidebar --- */}
             <span
               className={`${classes.icon} md:hidden`}
               onClick={() => setSidebarVisible(true)}
@@ -544,7 +544,6 @@ const MainLayout = () => {
         </div>
       </header>
 
-      {/* Sidebar (Mobile) */}
       <Sidebar
         visible={sidebarVisible}
         onHide={() => setSidebarVisible(false)}
