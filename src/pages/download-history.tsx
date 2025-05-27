@@ -6,6 +6,9 @@ import React, { useState, useMemo } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 
+const KKU_RED = "#b71c1c";
+const KKU_RED_GRADIENT = "linear-gradient(135deg,rgba(161, 61, 35, 0.98)0%,rgba(150, 63, 41, 0.98) 100%)";
+
 const useStyles = {
   container: {
     maxWidth: 1200,
@@ -22,13 +25,13 @@ const useStyles = {
   title: {
     fontSize: 32,
     fontWeight: 800,
-    color: "#1a237e",
+    color: KKU_RED,
     marginBottom: 12,
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: "#1976d2",
+    color: KKU_RED,
     maxWidth: 480,
     margin: "0 auto 20px auto",
     lineHeight: 1.5,
@@ -64,21 +67,24 @@ const useStyles = {
     boxShadow: "0 2px 12px rgba(30,60,120,0.05)",
     transition: "transform 0.2s",
     cursor: "pointer",
+    border: `1.5px solid ${KKU_RED}22`,
     "&:hover": {
       transform: "translateY(-5px)",
+      boxShadow: `0 4px 18px ${KKU_RED}22`,
     },
   },
   statTitle: {
     fontSize: 14,
-    color: "#666",
+    color: KKU_RED,
     marginBottom: 8,
     textTransform: "uppercase" as const,
     letterSpacing: 0.5,
+    fontWeight: 700,
   },
   statValue: {
     fontSize: 24,
     fontWeight: 700,
-    color: "#1a237e",
+    color: KKU_RED,
   },
   tableContainer: {
     overflowX: "auto" as const,
@@ -92,7 +98,7 @@ const useStyles = {
     minWidth: 820,
   },
   tableHeader: {
-    background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+    background: KKU_RED_GRADIENT,
     color: "#fff",
     fontWeight: 600,
     textAlign: "left" as const,
@@ -101,10 +107,12 @@ const useStyles = {
     position: "sticky" as const,
     top: 0,
     zIndex: 2,
+    letterSpacing: 0.5,
+    borderBottom: `2.5px solid ${KKU_RED}cc`,
   },
   tableCell: {
     padding: "16px",
-    borderBottom: "1px solid #f0f0f0",
+    borderBottom: `1px solid ${KKU_RED}22`,
     fontSize: 15,
     verticalAlign: "middle" as const,
   },
@@ -117,10 +125,10 @@ const useStyles = {
     transition: "background 0.2s",
   },
   rowHover: {
-    background: "#e3f2fd",
+    background: `${KKU_RED}11`,
   },
   downloadButton: {
-    background: "linear-gradient(45deg, #1976d2 0%, #2196f3 100%)",
+    background: KKU_RED_GRADIENT,
     color: "#fff",
     padding: "8px 20px",
     borderRadius: 20,
@@ -128,7 +136,7 @@ const useStyles = {
     fontWeight: 600,
     fontSize: 14,
     border: "none",
-    boxShadow: "0 2px 8px rgba(25,118,210,0.25)",
+    boxShadow: `0 2px 8px ${KKU_RED}22`,
     display: "inline-flex",
     alignItems: "center",
     gap: 8,
@@ -136,12 +144,12 @@ const useStyles = {
     transition: "all 0.2s",
   },
   downloadButtonHover: {
-    background: "linear-gradient(45deg, #1565c0 0%, #1976d2 100%)",
+    background: `linear-gradient(45deg,${KKU_RED} 0%,#a13d23 100%)`,
     transform: "translateY(-2px)",
-    boxShadow: "0 4px 12px rgba(25,118,210,0.35)",
+    boxShadow: `0 4px 12px ${KKU_RED}44`,
   },
   fileLink: {
-    color: "#1976d2",
+    color: KKU_RED,
     fontWeight: 500,
     textDecoration: "none",
     display: "inline-flex",
@@ -150,17 +158,17 @@ const useStyles = {
     fontSize: 15,
     transition: "color 0.2s",
     "&:hover": {
-      color: "#1565c0",
+      color: "#a13d23",
     },
   },
   emptyState: {
     textAlign: "center" as const,
     padding: "60px 20px",
-    color: "#bdbdbd",
+    color: KKU_RED,
   },
   emptyIcon: {
     fontSize: 48,
-    color: "#e0e0e0",
+    color: KKU_RED,
     marginBottom: 16,
   },
   emptyText: {
@@ -221,11 +229,11 @@ const btnHoverStyle = {
 const typeIcon = (type: string) => {
   switch (type) {
     case "image":
-      return <FaFileImage color="#b71c1c" title="Image" style={{ marginRight: 8 }} />;
+      return <FaFileImage color={KKU_RED} title="Image" style={{ marginRight: 8 }} />;
     case "video":
-      return <FaFileVideo color="#2962ff" title="Video" style={{ marginRight: 8 }} />;
+      return <FaFileVideo color="#a13d23" title="Video" style={{ marginRight: 8 }} />;
     default:
-      return <FaFileAlt color="#455a64" title="File" style={{ marginRight: 8 }} />;
+      return <FaFileAlt color={KKU_RED} title="File" style={{ marginRight: 8 }} />;
   }
 };
 

@@ -6,8 +6,8 @@ export interface User {
   role: string;
   profileImage?: string;
   createdAt: string;
-  stats: {
-    uploadCount: number;
-    downloadCount: number;
+  stats?: {
+    uploadCount?: number;
+    downloadCount?: number;
   };
 } 

@@ -1,7 +1,5 @@
-/* 1. Import Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap');
 
-/* 2. Define root-level CSS variables */
 :root {
   --bs-font-primary: 'Prompt', sans-serif;
 
@@ -19,7 +17,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 3. Apply to body + HTML */
 html, body {
   margin: 0;
   padding: 0;
@@ -30,7 +27,6 @@ html, body {
   background-color: #f4f6fb;
 }
 
-/* 4. Root containers */
 #root, #app {
   width: 100%;
   height: auto;
@@ -41,5 +37,5 @@ html, body {
 }
 .p-carousel .p-carousel-prev,
 .p-carousel .p-carousel-next {
-  display: none !important; /* ซ่อนปุ่ม default */
+  display: none !important;
 }

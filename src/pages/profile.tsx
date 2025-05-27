@@ -13,6 +13,9 @@ interface QuickAction {
   color: string;
 }
 
+const KKU_RED = "#b71c1c";
+const KKU_RED_GRADIENT = "linear-gradient(135deg,rgba(161, 61, 35, 0.98)0%,rgba(150, 63, 41, 0.98) 100%)";
+
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -29,22 +32,10 @@ const Profile = () => {
 
   const quickActions: QuickAction[] = [
     { 
-      label: 'อัพโหลดรูปภาพ', 
-      icon: 'pi pi-upload', 
-      action: () => navigate('/upload'),
-      color: '#4CAF50'
-    },
-    { 
-      label: 'จัดการรูปภาพ', 
-      icon: 'pi pi-images', 
-      action: () => navigate('/images'),
-      color: '#2196F3'
-    },
-    { 
       label: 'ออกจากระบบ', 
       icon: 'pi pi-sign-out', 
       action: logout,
-      color: '#f44336'
+      color: KKU_RED
     }
   ];
 
@@ -54,7 +45,7 @@ const Profile = () => {
       justifyContent: "center",
       alignItems: "flex-start",
       padding: "3rem 1rem",
-      background: "linear-gradient(135deg, #f6f7fb 0%, #f0f4f8 100%)",
+      background: "#f6f7fb",
       minHeight: "calc(100vh - 64px)",
       fontFamily: "'Sarabun', sans-serif"
     }}>
@@ -62,7 +53,7 @@ const Profile = () => {
         width: 320,
         background: "#fff",
         borderRadius: "1rem",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+        boxShadow: `0 4px 24px ${KKU_RED}22`,
         padding: "2rem 1.5rem",
         marginRight: "2rem"
       }}>
@@ -81,8 +72,8 @@ const Profile = () => {
                 height: "100%",
                 borderRadius: "50%",
                 objectFit: "cover",
-                border: "4px solid #fff",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.15)"
+                border: `4px solid ${KKU_RED}`,
+                boxShadow: `0 4px 14px ${KKU_RED}33`
               }}
             />
             {user.role === 'admin' && (
@@ -90,13 +81,13 @@ const Profile = () => {
                 position: "absolute",
                 bottom: 0,
                 right: 0,
-                background: "#ff5722",
+                background: KKU_RED,
                 color: "#fff",
                 padding: "4px 12px",
                 borderRadius: "12px",
                 fontSize: "0.75rem",
                 fontWeight: 600,
-                boxShadow: "0 2px 8px rgba(255,87,34,0.3)"
+                boxShadow: `0 2px 8px ${KKU_RED}55`
               }}>
                 Admin
               </div>
@@ -107,13 +98,13 @@ const Profile = () => {
             margin: "0 0 0.5rem 0",
             fontSize: "1.5rem",
             fontWeight: 700,
-            color: "#1a237e"
+            color: KKU_RED
           }}>
             {user.fullName}
           </h2>
           
           <div style={{
-            color: "#666",
+            color: KKU_RED,
             fontSize: "0.9rem",
             marginBottom: "1rem"
           }}>
@@ -121,13 +112,12 @@ const Profile = () => {
           </div>
         </div>
 
-        <Divider />
+        <Divider style={{ borderTop: `2.5px solid ${KKU_RED}cc` }} />
 
-        {/* Quick Actions */}
         <div style={{ marginTop: "1.5rem" }}>
           <h3 style={{
             fontSize: "0.9rem",
-            color: "#666",
+            color: KKU_RED,
             fontWeight: 600,
             marginBottom: "1rem",
             textTransform: "uppercase"
@@ -152,7 +142,8 @@ const Profile = () => {
                   justifyContent: "flex-start",
                   color: action.color,
                   borderColor: action.color,
-                  transition: "all 0.2s ease"
+                  transition: "all 0.2s ease",
+                  fontWeight: 700
                 }}
               />
             ))}
@@ -160,20 +151,19 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Right Column - Details & Stats */}
       <div style={{
         flex: 1,
         maxWidth: 800,
         background: "#fff",
         borderRadius: "1rem",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+        boxShadow: `0 4px 24px ${KKU_RED}22`,
         padding: "2rem"
       }}>
         <h2 style={{
           margin: "0 0 1.5rem 0",
           fontSize: "1.75rem",
           fontWeight: 700,
-          color: "#1a237e"
+          color: KKU_RED
         }}>
           ข้อมูลผู้ใช้
         </h2>
@@ -188,19 +178,19 @@ const Profile = () => {
             <div style={{ textAlign: "center" }}>
               <i className="pi pi-images" style={{ 
                 fontSize: "2rem",
-                color: "#2196F3",
+                color: KKU_RED,
                 marginBottom: "0.5rem"
               }}></i>
               <h3 style={{ 
                 margin: "0.5rem 0",
-                color: "#333",
+                color: KKU_RED,
                 fontSize: "1.75rem"
               }}>
                 {user.stats?.uploadCount || 0}
               </h3>
               <p style={{ 
                 margin: 0,
-                color: "#666",
+                color: KKU_RED,
                 fontSize: "0.9rem"
               }}>
                 รูปภาพที่อัพโหลด
@@ -212,19 +202,19 @@ const Profile = () => {
             <div style={{ textAlign: "center" }}>
               <i className="pi pi-download" style={{ 
                 fontSize: "2rem",
-                color: "#4CAF50",
+                color: KKU_RED,
                 marginBottom: "0.5rem"
               }}></i>
               <h3 style={{ 
                 margin: "0.5rem 0",
-                color: "#333",
+                color: KKU_RED,
                 fontSize: "1.75rem"
               }}>
                 {user.stats?.downloadCount || 0}
               </h3>
               <p style={{ 
                 margin: 0,
-                color: "#666",
+                color: KKU_RED,
                 fontSize: "0.9rem"
               }}>
                 การดาวน์โหลด
@@ -233,12 +223,12 @@ const Profile = () => {
           </Card>
         </div>
 
-        <Divider />
+        <Divider style={{ borderTop: `2.5px solid ${KKU_RED}cc` }} />
 
         <div style={{ marginTop: "1.5rem" }}>
           <h3 style={{
             fontSize: "1rem",
-            color: "#666",
+            color: KKU_RED,
             fontWeight: 600,
             marginBottom: "1rem"
           }}>
@@ -252,17 +242,17 @@ const Profile = () => {
             fontSize: "0.9rem"
           }}>
             <div>
-              <div style={{ color: "#666", marginBottom: "0.25rem" }}>Username</div>
+              <div style={{ color: KKU_RED, marginBottom: "0.25rem" }}>Username</div>
               <div style={{ fontWeight: 600 }}>{user.username}</div>
             </div>
             
             <div>
-              <div style={{ color: "#666", marginBottom: "0.25rem" }}>รหัสผู้ใช้</div>
+              <div style={{ color: KKU_RED, marginBottom: "0.25rem" }}>รหัสผู้ใช้</div>
               <div style={{ fontWeight: 600 }}>{user.id}</div>
             </div>
             
             <div>
-              <div style={{ color: "#666", marginBottom: "0.25rem" }}>วันที่สร้างบัญชี</div>
+              <div style={{ color: KKU_RED, marginBottom: "0.25rem" }}>วันที่สร้างบัญชี</div>
               <div style={{ fontWeight: 600 }}>
                 {new Date(user.createdAt).toLocaleDateString("th-TH", {
                   year: "numeric",

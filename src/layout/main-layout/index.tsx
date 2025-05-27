@@ -11,6 +11,7 @@ import { createUseStyles } from "react-jss";
 import { useAuth } from "../../contexts/AuthContext";
 import logo from "../../assets/logo.png";
 import ScrollToTopButton from "../../components/ScrollToTopButton";
+
 const isActive = (pathname, path) =>
   pathname === path || pathname.startsWith(path + "/");
 
@@ -31,7 +32,7 @@ const useStyles = createUseStyles({
     left: 0,
     width: "100vw",
     zIndex: 1000,
-    background: "linear-gradient(90deg, rgba(161, 61, 35, 0.95), rgba(161, 61, 35, 0.85))",
+    background: "linear-gradient(90deg, rgba(161, 60, 35, 0.72), rgba(161, 61, 35, 0.85))",
     backdropFilter: "blur(10px)",
     color: "#fff",
     minHeight: 56,
@@ -421,7 +422,6 @@ const MainLayout = () => {
     if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 70);
   }, [searchOpen]);
 
-  // --- Effect: esc to close search/menu
   useEffect(() => {
     if (!searchOpen && !userMenuOpen) return;
     const handleKey = (e) => {
@@ -434,7 +434,6 @@ const MainLayout = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [searchOpen, userMenuOpen]);
 
-  // --- Effect: close userMenu on click outside
   useEffect(() => {
     if (!userMenuOpen) return;
     function handleClick(e) {
@@ -446,7 +445,6 @@ const MainLayout = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [userMenuOpen]);
 
-  // --- Search handler
   const handleSearch = () => {
     if (searchValue.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
@@ -454,7 +452,6 @@ const MainLayout = () => {
     }
   };
 
-  // --- User menu model
   const userMenu = [
     ...(isLoggedIn
       ? [
@@ -480,7 +477,6 @@ const MainLayout = () => {
     },
   ];
 
-  // --- Menu bar items
   const menuItems = [
     { label: "หน้าหลัก", icon: "pi pi-home", url: "/" },
     { label: "รูปภาพ", icon: "pi pi-image", url: "/images" },
@@ -501,7 +497,6 @@ const MainLayout = () => {
 
   return (
     <div className={classes.mainLayout}>
-      {/* ---------- HEADER ---------- */}
       <header className={`${classes.header} ${(!isMainPage || scrolled) ? classes.headerScrolled : ""}`}>
       <div className={classes.headerContent}>
           <Link to="/" className={classes.logo}>
@@ -515,7 +510,6 @@ const MainLayout = () => {
             <Link to="/about" className={`${classes.navLink}${isActive(location.pathname, "/about") ? " active" : ""}`}>เกี่ยวกับเรา</Link>
           </nav>
           <div className={classes.rightIcons}>
-            {/* --- Search Button & Box --- */}
             {searchOpen ? (
               <div className={classes.headerSearchBox}>
                 <i className={"pi pi-search " + classes.headerSearchIcon} />

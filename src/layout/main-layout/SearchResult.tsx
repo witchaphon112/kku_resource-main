@@ -11,130 +11,173 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
+import dayjs from "dayjs";
 
 const useStyles = createUseStyles({
   container: {
     display: "flex",
-    gap: 32,
-    margin: "32px auto",
-    maxWidth: 1240,
+    gap: 36,
+    margin: "40px auto",
+    maxWidth: 1280,
     alignItems: "flex-start",
-    '@media (max-width: 900px)': { flexDirection: "column", gap: 20 },
+    '@media (max-width: 900px)': { flexDirection: "column" },
   },
   sidebar: {
     width: 320,
-    background: "#fff",
+    background: "#fffdfa",
     borderRadius: 18,
-    padding: "2.2rem 1.5rem 2rem 1.5rem",
-    boxShadow: "0 6px 32px #00000015",
+    padding: "2.3rem 1.5rem 2rem 1.5rem",
+    boxShadow: "0 6px 24px #b71c1c18",
     fontFamily: "var(--bs-font-primary)",
-    fontSize: "1.07rem",
+    fontSize: "1.08rem",
     minHeight: 540,
     position: "sticky",
-    border: "none",
+    top: 32,
+    border: "1.5px solid #f5c6a5",
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 24,
+    transition: "box-shadow 0.2s, background 0.2s",
   },
   label: {
     fontWeight: 800,
     fontSize: 18,
-    color: "#3c2210",
-    marginBottom: 8,
+    color: "#b71c1c",
+    marginBottom: 10,
     marginTop: 5,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    letterSpacing: 0.01,
   },
   searchBox: {
     width: "100%",
-    padding: "0.7rem 1.1rem",
-    borderRadius: 10,
-    border: "1.6px solid #eee",
-    fontSize: 17,
-    marginBottom: 14,
+    padding: "1rem 1.2rem",
+    borderRadius: 12,
+    border: "1.7px solid #e0cfc0",
+    fontSize: 16,
+    marginBottom: 16,
     outline: "none",
-    transition: "border 0.18s",
-    "&:focus": { border: "1.6px solid #d1410c" }
+    background: "#fff",
+    boxShadow: "0 1.5px 8px #e0cfc033",
+    transition: "border 0.18s, box-shadow 0.18s",
+    fontWeight: 600,
+    color: "#b71c1c",
+    "&:focus": { border: "1.7px solid #b71c1c", boxShadow: "0 2px 12px #b71c1c22" }
   },
   radioGroup: {
     display: "flex",
-    gap: 18,
+    gap: 16,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 10,
+    background: "#fff7f0",
+    padding: "10px 14px",
+    borderRadius: 12,
   },
   radioLabel: {
     display: "flex",
     alignItems: "center",
-    fontWeight: 600,
+    fontWeight: 700,
     gap: 7,
     cursor: "pointer",
-    fontSize: 16
+    fontSize: 15,
+    borderRadius: 9,
+    padding: "4px 12px 4px 4px",
+    transition: "background 0.15s, color 0.15s",
+    color: "#b85c38",
+    "&:hover": { background: "#fbeee6", color: "#b71c1c" },
   },
   radioInput: {
-    accentColor: "#d1410c",
-    width: 19, height: 19, marginRight: 6
+    accentColor: "#b71c1c",
+    width: 20, height: 20, marginRight: 7,
+    boxShadow: "0 1px 4px #b71c1c22",
+    borderRadius: 10,
+    background: "#fff",
+    border: "1.2px solid #b85c38",
+    transition: "box-shadow 0.15s",
   },
   select: {
     width: "100%",
-    padding: "0.6rem 0.7rem",
-    borderRadius: 8,
-    border: "1.4px solid #eee",
-    fontSize: 16,
-    background: "#fff7f0",
+    padding: "0.7rem 1rem",
+    borderRadius: 10,
+    border: "1.2px solid #e0cfc0",
+    fontSize: 15,
+    background: "#fff",
     outline: "none",
-    marginBottom: 10,
-    color: "#892d05",
-    fontWeight: 700
+    marginBottom: 12,
+    color: "#b85c38",
+    fontWeight: 600,
+    boxShadow: "0 1.5px 8px #e0cfc033",
+    transition: "border 0.18s, box-shadow 0.18s",
+    "&:focus": { border: "1.2px solid #b71c1c", boxShadow: "0 2px 12px #b71c1c22" },
   },
   checkboxGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: 7,
+    gap: 10,
     marginBottom: 10,
+    background: "#fff7f0",
+    padding: "14px 12px 10px 12px",
+    borderRadius: 12,
+    boxShadow: "0 1.5px 8px #b71c1c11",
   },
   checkboxLabel: {
-    display: "flex", alignItems: "center", gap: 7,
-    fontWeight: 600, cursor: "pointer",
-    borderRadius: 7, padding: "3px 0 3px 3px",
-    "&:hover": { background: "#fff2e3" },
+    display: "flex", alignItems: "center", gap: 8,
+    fontWeight: 700, cursor: "pointer",
+    borderRadius: 8, padding: "6px 0 6px 6px",
     fontSize: 15,
+    transition: "background 0.15s, color 0.15s",
+    color: "#b85c38",
+    "&:hover": { background: "#fbeee6", color: "#b71c1c" },
   },
   checkboxInput: {
-    accentColor: "#d1410c",
-    width: 19, height: 19, marginRight: 7
+    accentColor: "#b71c1c",
+    width: 18, height: 18, marginRight: 8,
+    boxShadow: "0 1px 4px #b71c1c22",
+    borderRadius: 7,
+    background: "#fff",
+    border: "1.2px solid #b85c38",
+    transition: "box-shadow 0.15s",
   },
   button: {
-    background: "#d1410c",
+    background: "linear-gradient(90deg, #b71c1c 60%, #b85c38 100%)",
     color: "#fff",
-    borderRadius: 24,
-    fontSize: 20,
+    borderRadius: 18,
+    fontSize: 17,
     fontWeight: 800,
-    padding: "14px 0",
-    marginTop: 10,
+    padding: "12px 0",
+    marginTop: 16,
     width: "100%",
     border: "none",
-    boxShadow: "0 2px 18px #892d0533",
+    boxShadow: "0 2px 12px #b71c1c22",
     cursor: "pointer",
-    letterSpacing: 0.6,
-    "&:hover": { background: "#a93605" }
+    letterSpacing: 0.5,
+    transition: "background 0.18s, box-shadow 0.18s",
+    "&:hover": { background: "#892d05", boxShadow: "0 4px 14px #b85c3844" }
   },
   main: {
     flex: 1,
     background: "#fff",
-    borderRadius: 14,
-    boxShadow: "0 2px 16px #892d0511",
-    padding: "2.1rem 1.7rem",
+    borderRadius: 16,
+    boxShadow: "0 2px 14px #b71c1c11",
+    padding: "2.2rem 1.7rem",
     minHeight: 400,
     fontFamily: "var(--bs-font-primary)",
     '@media (max-width: 900px)': { padding: "1.2rem 0.6rem" }
   },
   resultHeader: {
     fontWeight: 900,
-    fontSize: 22,
+    fontSize: 21,
     marginBottom: 18,
-    color: "#892d05",
-    letterSpacing: 0.2,
+    color: "#b71c1c",
+    letterSpacing: 0.1,
     display: "flex",
     alignItems: "center",
-    gap: 10
+    gap: 10,
+    padding: "13px 16px",
+    background: "#fff7f0",
+    borderRadius: 12,
+    boxShadow: "0 1.5px 8px #b71c1c11",
   },
   list: {
     margin: 0,
@@ -142,28 +185,28 @@ const useStyles = createUseStyles({
     listStyle: "none"
   },
   listItem: {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 24,
-  borderRadius: 16,
-  marginBottom: 18,
-  background: "#fff",
-  boxShadow: "0 2px 12px #0001",
-  padding: "1.5rem 1rem",
-  transition: "box-shadow 0.18s, background 0.18s, transform 0.15s",
-  cursor: "pointer",
-  border: "none",
-  "&:hover": {
-    background: "#fff7f0",
-    boxShadow: "0 6px 24px #b71c1c22",
-    transform: "scale(1.015)"
-  }
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 18,
+    borderRadius: 13,
+    marginBottom: 18,
+    background: "#fffdfa",
+    boxShadow: "0 2px 12px #b85c3811",
+    padding: "1.3rem 1.1rem",
+    transition: "box-shadow 0.18s, background 0.18s, transform 0.15s",
+    cursor: "pointer",
+    border: "none",
+    "&:hover": {
+      background: "#fbeee6",
+      boxShadow: "0 6px 18px #b71c1c22",
+      transform: "scale(1.012)"
+    }
   },
   index: {
     minWidth: 32,
-    color: "#d1410c",
+    color: "#b71c1c",
     fontWeight: 800,
-    fontSize: "1.18rem",
+    fontSize: "1.08rem",
     textAlign: "right",
     marginTop: 6,
   },
@@ -172,7 +215,7 @@ const useStyles = createUseStyles({
     height: 100,
     marginBottom: 8,
     objectFit: "cover",
-    borderRadius: 12,
+    borderRadius: 10,
     background: "#f8f8f8",
     border: "1.2px solid #f5c6a5",
     boxShadow: "0 2px 8px #0001"
@@ -186,20 +229,20 @@ const useStyles = createUseStyles({
   },
   title: {
     fontWeight: 900,
-    fontSize: "1.15rem",
-    color: "#d1410c",
+    fontSize: "1.09rem",
+    color: "#b71c1c",
     marginBottom: 5,
     cursor: "pointer",
-    "&:hover": { textDecoration: "underline", color: "#892d05" },
+    "&:hover": { textDecoration: "underline", color: "#b85c38" },
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
     maxWidth: 450,
-    letterSpacing: 0.2
+    letterSpacing: 0.1
   },
   author: {
-    fontSize: "1.01rem",
-    color: "#892d05",
+    fontSize: "0.98rem",
+    color: "#b85c38",
     marginBottom: 1,
     fontWeight: 600,
     display: "flex",
@@ -207,8 +250,8 @@ const useStyles = createUseStyles({
     gap: 7
   },
   desc: {
-    fontSize: "0.99rem",
-    color: "#666",
+    fontSize: "0.97rem",
+    color: "#555",
     marginBottom: 2,
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -220,7 +263,7 @@ const useStyles = createUseStyles({
     color: "#b85c38",
     display: "flex",
     alignItems: "center",
-    gap: 8
+    gap: 10
   },
   typeTag: {
     display: "inline-flex",
@@ -231,7 +274,7 @@ const useStyles = createUseStyles({
     padding: "3px 12px",
     fontWeight: 700,
     marginRight: 8,
-    fontSize: 14,
+    fontSize: 13,
   },
   catTag: {
     display: "inline-flex",
@@ -241,35 +284,33 @@ const useStyles = createUseStyles({
     borderRadius: 8,
     padding: "3px 12px",
     fontWeight: 700,
-    fontSize: 14,
+    fontSize: 13,
   },
   pagination: {
     display: "flex",
     justifyContent: "center",
-    marginTop: 34,
-    gap: 6
+    marginTop: 28,
+    gap: 7
   },
   pageBtn: {
     padding: "8px 15px",
-    borderRadius: 20,
-    border: "1.6px solid #f5c6a5",
+    borderRadius: 14,
+    border: "1.2px solid #f5c6a5",
     background: "#fff",
-    color: "#892d05",
+    color: "#b85c38",
     fontWeight: 700,
-    fontSize: 16,
+    fontSize: 15,
     cursor: "pointer",
     transition: "background 0.19s, color 0.19s, box-shadow 0.12s",
-    boxShadow: "0 1.5px 10px #892d0509",
-    "&:hover": { background: "#d1410c", color: "#fff" }
+    boxShadow: "0 1.5px 8px #b85c3809",
+    "&:hover": { background: "#b85c38", color: "#fff" }
   },
   pageBtnActive: {
-    background: "#d1410c",
+    background: "#b71c1c",
     color: "#fff",
-    border: "1.6px solid #d1410c",
-    boxShadow: "0 3px 14px #d1410c33"
+    border: "1.2px solid #b71c1c",
+    boxShadow: "0 3px 10px #b71c1c33"
   }
-
-
 });
 
 function useQuery() {
@@ -278,14 +319,35 @@ function useQuery() {
 
 const resourceTypes = [
   "ทั้งหมด",
-  "หนังสือ",
-  "นิตยสารศิลปากร",
-  "วารสารศิลปากร",
-  "มัลติมีเดีย",
-  "เอกสารภายใน"
+  "image",
+  "video",
+  "graphic"
 ];
 
 const ITEMS_PER_PAGE = 20;
+
+const getYearCounts = (resources: { createdAt: string }[]) => {
+  const counts: Record<string, number> = {};
+  resources.forEach(item => {
+    const year = (new Date(item.createdAt).getFullYear() + 543).toString();
+    counts[year] = (counts[year] || 0) + 1;
+  });
+  return counts;
+};
+
+const getUniqueYears = (resources: { createdAt: string }[]) => {
+  const years = resources.map(item => (new Date(item.createdAt).getFullYear() + 543).toString());
+  return Array.from(new Set(years)).sort((a, b) => Number(b) - Number(a));
+};
+
+const getUniqueMonths = (resources: { createdAt: string }[]): number[] => {
+  const months = resources.map(item => new Date(item.createdAt).getMonth() + 1);
+  return Array.from(new Set(months));
+};
+const getUniqueDays = (resources: { createdAt: string }[]): number[] => {
+  const days = resources.map(item => new Date(item.createdAt).getDate());
+  return Array.from(new Set(days));
+};
 
 const SearchResult = () => {
   const classes = useStyles();
@@ -298,9 +360,15 @@ const SearchResult = () => {
   const [searchBy, setSearchBy] = useState("title");
   const [sort, setSort] = useState("newest");
   const [types, setTypes] = useState(resourceTypes);
+  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedDay, setSelectedDay] = useState<string>("");
 
   // Pagination state
   const [page, setPage] = useState(1);
+
+  const yearCounts = getYearCounts(resourcesData.resources);
+  const uniqueYears = getUniqueYears(resourcesData.resources);
 
   // Filter resource ตาม keyword เงื่อนไขประเภทและอื่นๆ
   const results = useMemo(() => {
@@ -309,7 +377,7 @@ const SearchResult = () => {
       filtered = filtered.filter(item => {
         const target = searchBy === "title"
           ? item.title
-          : item.author || "";
+          : item.uploadedBy || "";
         return logic === "AND"
           ? target.toLowerCase().includes(keyword.toLowerCase())
           : target.toLowerCase().includes(keyword.toLowerCase());
@@ -319,24 +387,39 @@ const SearchResult = () => {
     if (!types.includes("ทั้งหมด")) {
       filtered = filtered.filter(item => types.includes(item.type));
     }
+    // filter by year
+    if (selectedYears.length > 0) {
+      filtered = filtered.filter(item => selectedYears.includes((new Date(item.createdAt).getFullYear() + 543).toString()));
+    }
+    // filter by month
+    if (selectedMonth) {
+      filtered = filtered.filter(item => (new Date(item.createdAt).getMonth() + 1).toString() === selectedMonth);
+    }
+    // filter by day
+    if (selectedDay) {
+      filtered = filtered.filter(item => new Date(item.createdAt).getDate().toString() === selectedDay);
+    }
     // sort
     if (sort === "newest") {
-      filtered = filtered.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      filtered = filtered.slice().sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
     } else if (sort === "oldest") {
-      filtered = filtered.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      filtered = filtered.slice().sort((a, b) => new Date(a.createdAt).valueOf() - new Date(b.createdAt).valueOf());
     }
     return filtered;
-  }, [keyword, logic, searchBy, sort, types]);
+  }, [keyword, logic, searchBy, sort, types, selectedYears, selectedMonth, selectedDay]);
 
   // Pagination logic
-  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
-  const pagedResults = results.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(Number(results.length) / Number(ITEMS_PER_PAGE));
+  const pagedResults = results.slice(
+    (Number(page) - 1) * Number(ITEMS_PER_PAGE),
+    Number(page) * Number(ITEMS_PER_PAGE)
+  );
 
   // Reset page on filter change
-  useEffect(() => { setPage(1); }, [keyword, logic, searchBy, sort, types]);
+  useEffect(() => { setPage(1); }, [keyword, logic, searchBy, sort, types, selectedYears, selectedMonth, selectedDay]);
 
   // จัดการ checkbox ประเภททรัพยากร
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: string) => {
     if (type === "ทั้งหมด") {
       setTypes(types.includes("ทั้งหมด") ? [] : [...resourceTypes]);
     } else {
@@ -351,7 +434,7 @@ const SearchResult = () => {
   };
 
   // ฟอร์ม submit (กรณีอยากลิงก์กับ query string)
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // navigate(`?q=${encodeURIComponent(keyword)}`); // ตัวอย่างถ้าจะลิงก์
   };
@@ -445,6 +528,29 @@ const SearchResult = () => {
               </label>
             ))}
           </div>
+
+          <div className={classes.label}>ปีพิมพ์</div>
+          <div className={classes.checkboxGroup} style={{ maxHeight: 260, overflowY: 'auto' }}>
+            {uniqueYears.map(year => (
+              <label key={year} className={classes.checkboxLabel} style={{ justifyContent: 'space-between' }}>
+                <span>
+                  <input
+                    type="checkbox"
+                    checked={selectedYears.includes(year)}
+                    onChange={() => setSelectedYears(selectedYears.includes(year)
+                      ? selectedYears.filter(y => y !== year)
+                      : [...selectedYears, year])}
+                    className={classes.checkboxInput}
+                  />
+                  {year}
+                </span>
+                <span style={{ color: '#222', fontWeight: 500, fontSize: 15, marginLeft: 8 }}>
+                  ({yearCounts[year] || 0})
+                </span>
+              </label>
+            ))}
+          </div>
+
           <button type="submit" className={classes.button}>
             Advanced Search
           </button>
@@ -480,7 +586,7 @@ const SearchResult = () => {
       </div>
       <div className={classes.author}>
         <FaUser style={{ fontSize: 15, color: "#90caf9" }} />{" "}
-        {item.author || <span style={{ color: "#bbb" }}>ไม่ระบุผู้แต่ง</span>}
+        {item.uploadedBy || "ไม่ระบุผู้สร้าง"}
       </div>
       <div className={classes.desc}>{item.description}</div>
       <div className={classes.meta}>

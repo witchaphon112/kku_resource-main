@@ -1,555 +1,1464 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import logo from "../../assets/logo.png";
-import ScrollToTopButton from "../../components/ScrollToTopButton";
-import { useAuth } from "../../contexts/AuthContext";
+import PhotoAlbum from "react-photo-album";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import Modal from "react-modal";
+import resourcesData from "../mock/resources.json";
+import "react-photo-view/dist/react-photo-view.css";
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import { FaArrowUp } from "react-icons/fa";
 
-// ========== JSS Styles ==========
 const useStyles = createUseStyles({
-  mainLayout: {
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100vh",
-    background: "#f8f9fb",
-    fontFamily: "var(--bs-font-primary, 'Sarabun', 'Prompt', Arial, sans-serif)",
-    position: "relative",
-    zIndex: 0,
-  },
-  // --- Header ---
-  header: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    zIndex: 1000,
-    background: "rgba(106,106,106,0.55)",
-    backdropFilter: "blur(8px)",
-    color: "#fff",
-    minHeight: 56,
-    display: "flex",
-    alignItems: "center",
-    boxShadow: "0 1.5px 12px 0 #2222",
-    transition: "background 0.35s cubic-bezier(.4,.8,.4,1), box-shadow 0.27s cubic-bezier(.4,.8,.4,1), backdrop-filter 0.45s cubic-bezier(.4,.8,.4,1)",
-  },
-  headerScrolled: {
-    background: "rgba(35, 35, 42, 0.98)",
-    boxShadow: "0 3px 22px 0 #23232a70",
-    backdropFilter: "blur(10px)",
-  },
-  headerContent: {
-    width: "100%",
-    maxWidth: 1300,
-    margin: "0 auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 20,
-    padding: "0 1vw",
-    minHeight: 52,
-    "@media (max-width: 900px)": {
-      flexDirection: "column",
-      alignItems: "stretch",
-      gap: 7,
-      padding: "6px 2vw",
-      minHeight: "auto",
-    },
-  },
-  logo: {
-    display: "flex",
-    alignItems: "center",
-    textDecoration: "none",
-    color: "#fff",
+  sectionTitle: {
+    fontSize: "2rem",
     fontWeight: 700,
-    fontSize: 21,
-    letterSpacing: 1.05,
-    "& img": {
-      marginRight: 9,
-      height: 44,
-      filter: "drop-shadow(0 2px 7px #ffba5950)",
+    color: "#212121",
+    textAlign: "center",
+    marginBottom: "0.5rem",
+    position: "relative",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)", 
+    "&::after": {
+      content: '""',
+      display: "block",
+      width: "55px",
+      height: "6px",
+      backgroundColor: "#b71c1c",
+      margin: "0.5rem auto 0",
+      borderRadius: "4px",
     },
   },
-  nav: {
+  sectionHeader: {
     display: "flex",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 30,
-    flex: 1,
-    "@media (max-width: 900px)": {
-      gap: 13,
-      fontSize: 17,
-    },
+    flexDirection: "column",
+    marginBottom: "1.5rem",
+    position: "relative",
   },
-  navLink: {
-    color: "#fff",
-    fontWeight: 400,
-    fontSize: 17,
+  sectionLink: {
+    display: "inline-block",
+    marginTop: "0.25rem",
+    color: "#b71c1c",
     textDecoration: "none",
-    borderRadius: 12,
-    padding: "5px 17px",
-    letterSpacing: 0.01,
-    opacity: 0.93,
-    background: "none",
-    transition: "background 0.14s, color 0.12s, box-shadow 0.14s",
-    "&:hover, &.active": {
-      background: "rgba(167, 167, 167, 0.23)",
-      color: "#fff",
-      opacity: 1,
-      boxShadow: "0 1px 7px 0 #9993",
-    }
+    fontStyle: "italic",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    fontWeight: 500,
+    fontSize: "1rem",
+    "&:hover": {
+      textDecoration: "underline",
+    },
   },
-  // --- Right (Search + User) ---
-  rightIcons: {
-    display: "flex",
-    alignItems: "center",
-    gap: 13,
-    "@media (max-width: 900px)": {
-      marginTop: 5,
-      gap: 8,
-      justifyContent: "center"
-    }
+  arrow: {
+    marginLeft: "0.3rem",
   },
-  icon: {
-    color: "#fff",
-    fontSize: 27,
+  scrollWrapper: {
+    position: "relative",
+    margin: "0 auto",
+    padding: "0 50px",
+    boxSizing: "content-box",
+  },
+  scrollButton: {
+    position: "absolute",
+    top: "50%",
+    transform: "translateY(-50%)",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    border: "1px solid #ddd",
+    borderRadius: "50%",
+    width: "40px",
+    height: "40px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+    zIndex: 2,
+    fontSize: "1.8rem",
     cursor: "pointer",
-    opacity: 0.94,
-    margin: "0 1px",
-    transition: "color 0.13s, opacity 0.12s",
-    background: "none",
-    borderRadius: 8,
-  },
-  userAvatar: {
-    borderRadius: 8,
-    width: 34,
-    height: 34,
-    background: "rgba(255,255,255,0.09)",
+    color: "#333",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 6,
-    cursor: "pointer",
-    border: "2px solid rgba(255,255,255,0.45)",
-    boxShadow: "0 1px 5px #fff1",
-    transition: "border 0.16s, background 0.14s",
-  },
-  // --- Search Box ---
-  headerSearchBox: {
-    display: "flex",
-    alignItems: "center",
-    background: "linear-gradient(90deg,#232526,#191b1f 90%)",
-    borderRadius: 3,
-    padding: "0.1rem 1rem 0.1rem 1.1rem",
-    minWidth: 320,
-    maxWidth: 460,
-    marginLeft: 18,
-    boxShadow: "0 2px 10px #10101040",
-    position: "relative",
-    zIndex: 11,
-    "@media (max-width: 700px)": {
-      minWidth: 150,
-      maxWidth: 210,
-      fontSize: 17,
-      padding: "0.1rem 0.6rem 0.1rem 0.8rem",
-    },
-  },
-  headerSearchInput: {
-    border: "none",
-    background: "transparent",
-    color: "#fff",
-    fontSize: 20,
-    outline: "none",
-    width: 220,
-    fontFamily: "inherit",
-    marginRight: 10,
-    "&::placeholder": {
-      color: "#bbb",
-      opacity: 0.88,
-    },
-  },
-  headerSearchIcon: {
-    fontSize: 27,
-    color: "#fff",
-    marginRight: 8,
-    opacity: 0.92,
-  },
-  closeSearch: {
-    color: "#fff",
-    marginLeft: 10,
-    fontSize: 22,
-    cursor: "pointer",
-    opacity: 0.74,
-    "&:hover": { opacity: 1, color: "#e66" }
-  },
-  // --- User Menu Popper ---
-  userMenuPopper: {
-    position: "absolute",
-    top: 46,
-    right: 0,
-    minWidth: 185,
-    background: "#23232a",
-    borderRadius: 11,
-    boxShadow: "0 6px 32px 0 #23232a31",
-    padding: "7px 0",
-    zIndex: 1200,
-    fontSize: 16,
-    fontFamily: "inherit",
-    color: "#fff",
-    animation: "$fadeIn 0.13s",
-    "&::before": {
-      content: '""',
-      display: "block",
-      position: "absolute",
-      top: -9,
-      right: 22,
-      width: 18,
-      height: 18,
-      background: "#23232a",
-      transform: "rotate(45deg)",
-      zIndex: 0,
-    },
-  },
-  userMenuItem: {
-    padding: "9px 22px 9px 19px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    border: "none",
-    background: "none",
-    width: "100%",
-    fontSize: 15.5,
-    color: "#fff",
+    transition: "background-color 0.2s, box-shadow 0.2s",
     "&:hover": {
-      background: "#2d2d37",
-      color: "#f4975a"
+      backgroundColor: "#b71c1c",
+      color: "#fff",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    },
+    "&:disabled": {
+      opacity: 0.5,
+      cursor: "not-allowed",
+      backgroundColor: "#f0f0f0",
+      color: "#888",
+      "&:hover": {
+        backgroundColor: "#f0f0f0",
+        color: "#888",
+      }
     }
   },
-  userMenuDivider: {
-    height: 1,
-    background: "#484850",
-    margin: "5px 0"
+  leftButton: { left: "0px" },
+  rightButton: { right: "0px" },
+  scrollContainer: {
+    display: "flex",
+    flexWrap: "nowrap",
+    overflowX: "auto",
+    gap: "2rem",
+    padding: "1rem 0.5rem",
+    scrollSnapType: "x mandatory",
+    scrollBehavior: "smooth",
+    justifyContent: "flex-start",
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+    scrollbarWidth: "none",
+    "-ms-overflow-style": "none",
   },
-  "@keyframes fadeIn": {
-    from: { opacity: 0, transform: "translateY(-15px)" },
-    to: { opacity: 1, transform: "none" },
+  resourceCard: {
+    flex: "0 0 auto",
+    borderRadius: "0.75rem",
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    display: "flex",
+    flexDirection: "column",
+    scrollSnapAlign: "start",
+    transition: "transform 0.25s ease-out, box-shadow 0.25s ease-out",
+    cursor: "pointer",
+    position: "relative",
+    "&:hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 8px 18px rgba(0,0,0,0.12)",
+    },
   },
-  // --- Main Content ---
-  mainContent: {
-    flex: 1,
-    maxWidth: 1300,
-    margin: "0 auto",
+  resourceCardThree: {
+    flex: "0 0 calc(33.333% - (2rem * 2 / 3))",
+    maxWidth: "calc(33.333% - (2rem * 2 / 3))",
+    minWidth: "280px",
+    borderRadius: "0.75rem",
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    display: "flex",
+    flexDirection: "column",
+    scrollSnapAlign: "start",
+    transition: "transform 0.25s ease-out, box-shadow 0.25s ease-out",
+    cursor: "pointer",
+    position: "relative",
+    "&:hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 8px 18px rgba(0,0,0,0.12)",
+    },
+    '@media (max-width: 1024px)': {
+      flex: '0 0 calc(50% - 1rem)',
+      maxWidth: 'calc(50% - 1rem)',
+    },
+    '@media (max-width: 767px)': {
+      flex: '0 0 calc(100% - 1rem)',
+      maxWidth: 'calc(100% - 1rem)',
+      scrollSnapAlign: 'center',
+    },
+  },
+  image: {
     width: "100%",
-    padding: "90px 0 0 0",
-    "@media (max-width: 900px)": { padding: "105px 0 0 0" }
+    height: "200px",
+    objectFit: "cover",
+    borderBottom: "1px solid #eee",
   },
-  // --- Footer ---
-  footerRow: {
+  content: { 
+    padding: "1rem",
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
+  },
+  categoryText: {
+    fontSize: "0.7rem",
+    fontWeight: 600,
+    color: "#b71c1c",
+    marginBottom: "0.3rem",
+    textTransform: "uppercase",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    letterSpacing: "0.5px",
+  },
+  title: {
+    fontSize: "1.1rem",
+    fontWeight: 700,
+    marginBottom: "0.5rem",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    color: "#333",
+    lineHeight: 1.3,
+  },
+  fullWidthHero: {
+    width: "100vw",
+    marginLeft: "calc(-50vw + 50%)",
+    position: "relative",
+    overflow: "hidden",
+    marginBottom: "3rem",
+  },
+  heroImage: {
     width: "100%",
-    background: 'url("/mock/background1.jpg") center/cover no-repeat, #a13d23',
+    height: "calc(100vh - 80 px)",
+    objectFit: "cover",
+  },
+  captionMain: {
+    position: "absolute",
+    bottom: "3rem",
+    left: "3rem",
+    color: "#fff",
+    background: "rgba(0,0,0,0.65)",
+    padding: "1.5rem 2rem",
+    borderRadius: "0.75rem",
+    maxWidth: "650px",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+    "@media (max-width: 992px)": {
+      maxWidth: "80%",
+      left: "2rem",
+      bottom: "2rem",
+    },
+    "@media (max-width: 768px)": {
+      maxWidth: "calc(100% - 2rem)",
+      fontSize: "0.9rem",
+      bottom: "1rem",
+      left: "1rem",
+      right: "1rem",
+      padding: "1rem 1.25rem",
+      textAlign: "center",
+    },
+  },
+  heroTitle: {
+    fontSize: "2.2rem",
+    fontWeight: 700,
+    marginBottom: "0.75rem",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    lineHeight: 1.2,
+    "@media (max-width: 768px)": {
+      fontSize: "1.8rem",
+    }
+  },
+  subtitle: {
+    fontSize: "1.1rem",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    lineHeight: 1.5,
+    "@media (max-width: 768px)": {
+      fontSize: "1rem",
+    }
+  },
+  recommendedSection: {
+    padding: "2rem 0", 
+    textAlign: "center",
+    background: "#fdfdfd",
+    marginBottom: "2rem",
+  },
+  recommendedImage: {
+    width: "100%",
+    height: "180px",
+    objectFit: "cover",
+  },
+  recommendedTitle: {
+    marginTop: "0.75rem",
+    padding: "0 0.5rem 0.5rem 0.5rem",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    color: "#444",
+    lineHeight: 1.3,
+  },
+  viewCount: {
+    fontSize: "0.8rem",
+    color: "#666",
+    marginTop: "auto",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    textAlign: "right",
+    paddingTop: "0.5rem",
+  },
+  videoImage: {
+    width: "100%",
+    height: "180px",
+    objectFit: "cover",
+    position: "relative",
+  },
+  videoTitle: {
+    backgroundColor: "#424242",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: "1rem",
+    padding: "0.75rem 1rem",
+    textAlign: "center",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    borderTop: "3px solid #b71c1c",
+  },
+  videoPlayer: {
+    width: "100%",
+    aspectRatio: "16 / 9",
+    background: "#000",
+    border: 0,
+    display: "block",
+  },
+  videoModal: {
+    background: "transparent",
+    maxWidth: 1000,
+    width: "calc(100% - 40px)",
+    height: "auto",
+    margin: "auto",
+    padding: 0, 
+    position: "relative", 
+    outline: "none",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+    borderRadius: "12px",
+    overflow: "hidden",
+  },
+  videoModalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    zIndex: 10000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+  },
+  closeModalButton: {
+    position: "absolute",
+    top: -15,
+    right: -15,
+    zIndex: 10020,
+    width: 36,
+    height: 36,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "none",
+    borderRadius: "50%",
+    background: "rgba(20,20,20,0.8)",
+    color: "#fff",
+    fontSize: 24,
+    lineHeight: '36px',
+    cursor: "pointer",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+    transition: "background 0.2s, transform 0.2s",
+    "&:hover": {
+      background: "#b71c1c",
+      transform: "scale(1.1)",
+    },
+  },
+  videoIconWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.2)",
+    opacity: 0,
+    transition: "opacity 0.2s ease-in-out",
+    "$resourceCardThree:hover &": {
+      opacity: 1,
+    },
+  },
+  videoIcon: {
+    background: "rgba(255,255,255,0.9)",
+    borderRadius: "50%",
+    width: 56, 
+    height: 56,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+    pointerEvents: "none", 
+    "& > svg": {
+      fill: "#b71c1c",
+      width: 28,
+      height: 28,
+      marginLeft: "3px",
+    }
+  },
+  modalNavBar: { 
+    position: "absolute",
+    bottom: -50,
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "rgba(20,20,20,0.85)", 
+    borderRadius: 25,
+    padding: "8px 20px",
+    display: "flex",
+    alignItems: "center",
+    zIndex: 10015, 
+    fontSize: 15,
+    color: "#eee",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    fontWeight: 500,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+  },
+  modalNavBtn: {
+    background: "none",
+    border: "none",
+    color: "#fff",
+    fontSize: 26,
+    cursor: "pointer",
+    padding: "0 10px",
+    transition: "color 0.2s, transform 0.2s",
+    "&:hover:not(:disabled)": {
+      color: "#b71c1c",
+      transform: "scale(1.1)",
+    },
+    "&:disabled": {
+      color: "#777",
+      cursor: "default",
+    }
+  
+  },
+  modalNavCount: {
+    margin: "0 15px",
+    minWidth: "50px",
+    textAlign: "center",
+  },
+  tagList: {
+    marginTop: "auto",
+    paddingTop: "0.5rem",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.4rem",
+    justifyContent: "flex-start",
+    maxHeight: "4.5em",
+    overflow: "hidden",
+  },
+  tag: {
+    background: "#f0f0f0", 
+    color: "#555", 
+    fontSize: "0.7rem",
+    borderRadius: "12px",
+    padding: "3px 10px",
+    fontWeight: 500,
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    letterSpacing: 0.2,
+    lineHeight: 1.5,
+    display: "inline-flex",
+    alignItems: "center",
+    transition: "background-color 0.2s, color 0.2s",
+    "&:hover": {
+      background: "#b71c1c",
+      color: "#fff",
+    }
+  },
+  metaRow: { 
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "3.2rem 4vw 2.4rem 4vw",
-    minHeight: 200,
-    position: "relative",
-    fontFamily: "inherit",
-    boxShadow: "0 4px 32px 0 #a13d2322",
-    marginTop: 60,
-    "@media (max-width: 900px)": {
-      flexDirection: "column",
-      alignItems: "center",
-      padding: "2.4rem 1vw 1.6rem 1vw",
-      minHeight: 220,
-    }
+    marginBottom: "0.75rem",
+    width: "100%",
   },
-  footerLeft: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 10,
-    minWidth: 170,
-    "& img": { width: 60, borderRadius: 16, marginBottom: 5 }
-  },
-  footerTagline: {
-    color: "#ffd9b3",
-    fontSize: 16,
+  metaDate: {
+    color: "#777",
+    fontSize: "0.8rem",
     fontWeight: 500,
-    lineHeight: 1.4,
-    opacity: 0.94,
-    marginBottom: 6,
-    textAlign: "left"
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
   },
-  footerCenter: {
+  metaViews: {
+    color: "#777",
+    fontSize: "0.8rem",
     display: "flex",
-    gap: "2.5rem",
-    fontSize: 20,
-    fontWeight: 600,
-    "@media (max-width: 900px)": { margin: "18px 0", gap: "1.4rem" },
-    "& a": {
-      color: "#fff",
-      textDecoration: "none",
-      transition: "color 0.17s, text-decoration 0.17s",
-      padding: "4px 16px",
-      borderRadius: 7,
-      fontSize: 18,
-      fontWeight: 500,
+    alignItems: "center",
+    gap: "0.3rem",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    fontWeight: 500,
+  },
+  photoGalleryContainer: {
+    maxWidth: 1100,
+    margin: "0 auto 60px auto",
+    background: "#fff",
+    borderRadius: 18,
+    boxShadow: "0 8px 30px rgba(137, 45, 5, 0.08)",
+    padding: "24px",
+    "@media (max-width: 768px)": {
+      padding: "16px",
+      borderRadius: 12,
     }
   },
-  footerRight: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    minWidth: 180,
-    gap: 8,
-    "@media (max-width: 900px)": { alignItems: "center" }
+  photoItemWrapper: {
+    position: "relative",
+    cursor: "pointer",
+    borderRadius: 10,
+    overflow: "hidden",
+    boxShadow: "0 3px 8px rgba(0,0,0,0.07)",
+    transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out",
+    "&:hover": {
+      transform: "scale(1.03)",
+      boxShadow: "0 5px 15px rgba(0,0,0,0.12)",
+    }
   },
-  footerSocial: {
+  photoTitleOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 100%)",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+    padding: "1rem 0.8rem 0.6rem 0.8rem",
+    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    textShadow: "0 1px 5px rgba(0,0,0,0.5)",
+    boxSizing: "border-box",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  featuredCardRow: {
     display: "flex",
-    gap: "1.2rem",
-    marginBottom: 4,
-    "& a": {
-      color: "#fff",
-      background: "#ffffff20",
-      borderRadius: "50%",
-      width: 44,
-      height: 44,
-      fontSize: 24,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      transition: "all 0.18s",
-      boxShadow: "0 2px 8px #411a0340",
+    gap: 36,
+    justifyContent: "center",
+    alignItems: "stretch",
+    flexWrap: "wrap",
+    margin: "0 auto 1.8rem auto",
+    '@media (max-width: 900px)': { gap: 18 },
+  },
+  featuredCard: {
+    position: "relative",
+    borderRadius: 24,
+    overflow: "hidden",
+    minWidth: 290,
+    width: 340,
+    maxWidth: "90vw",
+    aspectRatio: "1 / 1.1",
+    boxShadow: "0 8px 36px rgba(137,45,5,0.10), 0 2px 8px #2222",
+    cursor: "pointer",
+    background: "#fff",
+    transition: "transform 0.23s, box-shadow 0.23s",
+    "&:hover": {
+      transform: "translateY(-6px) scale(1.04)",
+      boxShadow: "0 16px 42px #b71c1c22, 0 4px 12px #3333"
+    }
+  },
+  featuredCardBg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    position: "absolute",
+    left: 0, top: 0, right: 0, bottom: 0,
+    zIndex: 1,
+    filter: "brightness(0.93) saturate(1.06)",
+    transition: "filter .2s"
+  },
+  featuredCardOverlay: {
+    position: "absolute",
+    left: 0, bottom: 0, width: "100%",
+    padding: "0 0 22px 0",
+    zIndex: 2,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    background: "linear-gradient(0deg,rgba(0,0,0,0.56) 50%,rgba(0,0,0,0.03) 100%)"
+  },
+  featuredTitleBox: {
+    color: "#fff",
+    padding: "20px 0 0 22px",
+    textShadow: "0 1px 10px rgba(0,0,0,0.33)",
+    lineHeight: 1.2,
+    fontWeight: 700,
+    fontSize: "1.28rem"
+  },
+  featuredCount: {
+    fontSize: "1rem",
+    color: "#e0ffde",
+    opacity: 0.91,
+    fontWeight: 400,
+    marginTop: "6px",
+    textShadow: "0 2px 8px rgba(0,0,0,0.35)"
+  },
+  featuredExploreBtn: {
+    background: "linear-gradient(90deg,#71f089 60%,#a2ffd0 100%)",
+    color: "#134a23",
+    fontWeight: 700,
+    border: 0,
+    borderRadius: 18,
+    fontSize: "1.07rem",
+    padding: "9px 32px",
+    marginRight: 22,
+    marginBottom: 14,
+    boxShadow: "0 3px 18px #7af59128",
+    cursor: "pointer",
+    transition: "background 0.2s, color 0.18s",
+    "&:hover": {
+      background: "linear-gradient(90deg,#41ea69 70%,#8df7bc 100%)",
+      color: "#0e2b13"
+    }
+  },
+  featuredExploreMore: {
+    textAlign: "center",
+    marginTop: 18,
+    "& button": {
+      background: "#fff",
+      color: "#1e8148",
+      border: "1.5px solid #bbf5ce",
+      borderRadius: 22,
+      padding: "0.75rem 2.2rem",
+      fontSize: "1.14rem",
+      fontWeight: 600,
+      cursor: "pointer",
+      boxShadow: "0 1px 10px #b0f4d228",
+      transition: "background 0.18s, color 0.17s",
       "&:hover": {
-        color: "#a13d23",
-        transform: "scale(1.12)"
+        background: "#b8fbe6",
+        color: "#16583b",
+        borderColor: "#6cf5b3"
       }
     }
   },
-  footerCopyright: {
-    color: "#fff",
-    fontSize: 14,
-    opacity: 0.92,
-    marginTop: 5,
-    textAlign: "right",
-    "@media (max-width: 900px)": { textAlign: "center" }
+  carouselArrowCustom: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    background: 'rgba(255,255,255,0.92)',
+    border: 'none',
+    borderRadius: 30,
+    boxShadow: '0 3px 18px #3333',
+    width: 50,
+    height: 50,
+    fontSize: 26,
+    color: '#b71c1c',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background .22s, color .22s, transform .16s',
+    '&:hover': {
+      background: '#b71c1c',
+      color: '#fff',
+      transform: 'scale(1.12)',
+    }
   },
+  carouselArrowLeft: { left: 36 },
+  carouselArrowRight: { right: 36 },
+  carouselIndicators: {
+    position: 'absolute',
+    bottom: 28,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    gap: 14,
+    zIndex: 2,
+  },
+  carouselDot: {
+    width: 14,
+    height: 14,
+    borderRadius: '50%',
+    background: '#c7cad7',
+    transition: 'background .22s',
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px #fff8',
+    border: 'none',
+  },
+  carouselDotActive: {
+    background: '#4057ef',
+  }
 });
 
-// Helper: Active nav link
-const isActive = (pathname, match) => (match === "/" ? pathname === "/" : pathname.startsWith(match));
+const heroData = [
+  {
+    id: "h1",
+    titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
+    subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
+    imageUrl: "/mock/hero-1.jpg",
+  },
+  {
+    id: "h2",
+    titlemain: "งานวิจัยเปลี่ยนโลก",
+    subtitle: "สำรวจงานวิจัยสุดล้ำจากมหาวิทยาลัยขอนแก่น",
+    imageUrl: "/mock/hero-2.jpg",
+  },
+];
 
-// ==================== COMPONENT ====================
-const MainLayout = () => {
-  const classes = useStyles();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const isLoggedIn = !!user;
+const categoryOptions = [
+  { label: "รูปภาพ", value: "image" },
+  { label: "วิดีโอ", value: "video" },
+  { label: "กราฟิก", value: "graphic" },
+];
 
-  // --- State ---
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const searchInputRef = useRef(null);
-
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const avatarRef = useRef(null);
-
-  const [scrolled, setScrolled] = useState(false);
-
-  // --- Effect: header blur on scroll
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // --- Effect: focus search input
-  useEffect(() => {
-    if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 70);
-  }, [searchOpen]);
-
-  // --- Effect: esc to close search/menu
-  useEffect(() => {
-    if (!searchOpen && !userMenuOpen) return;
-    const handleKey = (e) => {
-      if (e.key === "Escape") {
-        setSearchOpen(false);
-        setUserMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [searchOpen, userMenuOpen]);
-
-  // --- Effect: close userMenu on click outside
-  useEffect(() => {
-    if (!userMenuOpen) return;
-    function handleClick(e) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
-      }
+function getFeaturedCategories(resources, count = 3) {
+  const categoryMap = {};
+  resources.forEach((r) => {
+    if (!categoryMap[r.category]) {
+      categoryMap[r.category] = { count: 0, image: r.thumbnailUrl };
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [userMenuOpen]);
+    categoryMap[r.category].count++;
+  });
+  return Object.entries(categoryMap)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, count)
+    .map(([category, data]) => ({
+      category,
+      count: data.count,
+      image: data.image, 
+      link: `/gallery?category=${encodeURIComponent(category)}`
+    }));
+}
 
-  // --- Search handler
-  const handleSearch = () => {
-    if (searchValue.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
-      setSearchOpen(false);
+const MainPage = () => {
+  const classes = useStyles();
+  const navigate = useNavigate();
+
+  // ---- REFS ----
+  const scrollRefRecommended = useRef(null);
+
+  // ---- STATE ----
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [imageResources, setImageResources] = useState([]);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState(null);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("image");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const featuredCategories = useMemo(
+    () => getFeaturedCategories(resourcesData.resources, 3),
+    []
+  );
+
+  const goHero = (dir) => {
+    setHeroIndex((prev) =>
+      dir === 1
+        ? (prev + 1) % heroData.length
+        : (prev - 1 + heroData.length) % heroData.length
+    );
+  };
+
+  const recommended = useMemo(
+    () => [...resourcesData.resources].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 10),
+    []
+  );
+
+  const filteredNewItems = useMemo(
+    () =>
+      resourcesData.resources
+        .filter((r) => r.type === selectedCategory)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 6),
+    [selectedCategory]
+  );
+
+  const videoResources = useMemo(
+    () => resourcesData.resources.filter((r) => r.type === "video").slice(0, 12),
+    []
+  );
+
+  // ---- FUNCTIONS ----
+  // Horizontal scroll for recommended section
+  const scrollHorizontally = (ref, direction) => {
+    if (ref.current) {
+      const scrollAmount = (ref.current.children[0]?.offsetWidth || 300) + 32;
+      ref.current.scrollLeft += direction * scrollAmount;
     }
   };
 
-  const userMenu = [
-    ...(isLoggedIn
-      ? [
-          { label: "โปรไฟล์", icon: "pi pi-user", action: () => navigate("/profile") },
-          { label: "ประวัติการดาวน์โหลด", icon: "pi pi-download", action: () => navigate("/downloads-history") },
-          ...(user?.role === "admin"
-            ? [{ label: "อัปโหลด (แอดมิน)", icon: "pi pi-upload", action: () => navigate("/admin") }]
-            : []),
-          { separator: true },
-        ]
-      : []),
-    {
-      label: isLoggedIn ? "ออกจากระบบ" : "เข้าสู่ระบบ SSO",
-      icon: isLoggedIn ? "pi pi-sign-out" : "pi pi-sign-in",
-      action: () => {
-        if (isLoggedIn) {
-          logout();
-          navigate("/");
-        } else {
-          navigate("/login");
-        }
-        setUserMenuOpen(false);
-      },
-    },
-  ];
+  // Open video modal
+  const openModal = (item, index) => {
+    setModalOpen(true);
+    setCurrentVideo(item);
+    setCurrentVideoIndex(index);
+    document.body.style.overflow = "hidden";
+  };
 
+  // Close modal
+  const closeModal = () => {
+    setModalOpen(false);
+    setCurrentVideo(null);
+    document.body.style.overflow = "auto";
+  };
+
+  // Navigate videos in modal
+  const navigateModalVideo = (direction) => {
+    const newIndex = currentVideoIndex + direction;
+    if (newIndex >= 0 && newIndex < videoResources.length) {
+      setCurrentVideo(videoResources[newIndex]);
+      setCurrentVideoIndex(newIndex);
+    }
+  };
+
+  // Youtube embed util
+  const embedYouTube = (url) => {
+    if (!url) return "";
+    const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
+    return idMatch?.[1]
+      ? `https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&rel=0&modestbranding=1`
+      : url;
+  };
+
+  // ---- IMAGE PRELOAD ----
+  useEffect(() => {
+    const images = resourcesData.resources
+      .filter((r) => r.type === "image" || r.type === "graphic")
+      .slice(0, 15);
+
+    Promise.all(
+      images.map((img) =>
+        new Promise((resolve) => {
+          const im = new window.Image();
+          im.src = img.thumbnailUrl;
+          im.onload = () =>
+            resolve({
+              ...img,
+              src: img.thumbnailUrl,
+              width: im.naturalWidth || 400,
+              height: im.naturalHeight || 300,
+              key: img.id,
+              title: img.title,
+            });
+          im.onerror = () =>
+            resolve({
+              ...img,
+              src: img.thumbnailUrl,
+              width: 800,
+              height: 600,
+              key: img.id,
+              title: img.title,
+            });
+        })
+      )
+    ).then(setImageResources);
+  }, []);
+
+  useEffect(() => {
+  const handleScroll = () => {
+    setShowScrollTop(window.scrollY > 220);
+  };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+    
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ---- HERO TEMPLATE ----
+  const heroTemplate = (item) => (
+    <div style={{ position: "relative", minHeight: 420 }}>
+      <img
+        src={item.imageUrl}
+        alt={item.titlemain}
+        className={classes.heroImage}
+        style={{
+          height: "65vh",
+          minHeight: 400,
+          maxHeight: 540,
+          objectPosition: "center center",
+          filter: "brightness(0.97) saturate(1.08)",
+          width: "100%",
+        }}
+      />
+      <div className={classes.captionMain}>
+        <div className={classes.heroTitle}>{item.titlemain}</div>
+        <div className={classes.subtitle}>{item.subtitle}</div>
+      </div>
+    </div>
+  );
+
+  // ========== RENDER ==========
   return (
-    <div className={classes.mainLayout}>
-      {/* ---------- HEADER ---------- */}
-      <header className={`${classes.header} ${scrolled ? classes.headerScrolled : ""}`}>
-        <div className={classes.headerContent}>
-          <Link to="/" className={classes.logo}>
-            <img src={logo} alt="KKU Logo" />
-          </Link>
-          <nav className={classes.nav}>
-            <Link to="/" className={`${classes.navLink}${isActive(location.pathname, "/") ? " active" : ""}`}>หน้าหลัก</Link>
-            <Link to="/images" className={`${classes.navLink}${isActive(location.pathname, "/images") ? " active" : ""}`}>รูปภาพ</Link>
-            <Link to="/videos" className={`${classes.navLink}${isActive(location.pathname, "/videos") ? " active" : ""}`}>วิดีโอ</Link>
-            <Link to="/graphics" className={`${classes.navLink}${isActive(location.pathname, "/graphics") ? " active" : ""}`}>กราฟฟิก</Link>
-            <Link to="/about" className={`${classes.navLink}${isActive(location.pathname, "/about") ? " active" : ""}`}>เกี่ยวกับเรา</Link>
-          </nav>
-          <div className={classes.rightIcons}>
-            {/* --- Search --- */}
-            {searchOpen ? (
-              <div className={classes.headerSearchBox}>
-                <i className={"pi pi-search " + classes.headerSearchIcon} />
-                <input
-                  ref={searchInputRef}
-                  className={classes.headerSearchInput}
-                  placeholder="ค้นหารูปภาพ วิดีโอ กราฟฟิก..."
-                  value={searchValue}
-                  onChange={e => setSearchValue(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") handleSearch();
-                    if (e.key === "Escape") setSearchOpen(false);
-                  }}
-                />
-                <i
-                  className={"pi pi-times " + classes.closeSearch}
-                  onClick={() => setSearchOpen(false)}
-                  title="ปิด"
-                  tabIndex={0}
-                  role="button"
-                  aria-label="ปิดค้นหา"
-                />
-              </div>
-            ) : (
-              <i
-                className={"pi pi-search " + classes.icon}
-                onClick={() => setSearchOpen(true)}
-                title="ค้นหา"
-                tabIndex={0}
-                role="button"
-                aria-label="ค้นหา"
-              />
-            )}
-          
-            {/* --- User Avatar/Menu --- */}
-            <span
-              className={classes.userAvatar}
-              ref={avatarRef}
-              onClick={() => setUserMenuOpen((v) => !v)}
-              tabIndex={0}
-              aria-haspopup="true"
-              aria-expanded={userMenuOpen}
-              style={{ outline: userMenuOpen ? "2.5px solid #ffbc9c" : "none" }}
+    <>
+      {/* HERO BANNER */}
+      <div className={classes.fullWidthHero} style={{ minHeight: 420, position: "relative", background: "#eee" }}>
+        {/* ภาพและข้อความ */}
+        {heroTemplate(heroData[heroIndex])}
+        {/* Arrow ซ้าย */}
+        <button
+          className={`${classes.carouselArrowCustom} ${classes.carouselArrowLeft}`}
+          onClick={() => goHero(-1)}
+          style={{ left: 36 }}
+          aria-label="เลื่อนไปก่อนหน้า"
+        >
+          <i className="pi pi-chevron-left" />
+        </button>
+        {/* Arrow ขวา */}
+        <button
+          className={`${classes.carouselArrowCustom} ${classes.carouselArrowRight}`}
+          onClick={() => goHero(1)}
+          style={{ right: 36 }}
+          aria-label="เลื่อนไปถัดไป"
+        >
+          <i className="pi pi-chevron-right" />
+        </button>
+        {/* Indicators */}
+        <div className={classes.carouselIndicators}>
+          {heroData.map((_, i) => (
+            <div
+              key={i}
+              className={`${classes.carouselDot} ${i === heroIndex ? classes.carouselDotActive : ""}`}
+              onClick={() => setHeroIndex(i)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* RECOMMENDED SECTION */}
+      {recommended.length > 0 && (
+        <div className={classes.recommendedSection}>
+          <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
+          <div className={classes.scrollWrapper} style={{ maxWidth: 1200 }}>
+            <button
+              className={`${classes.scrollButton} ${classes.leftButton}`}
+              onClick={() => scrollHorizontally(scrollRefRecommended, -1)}
+              aria-label="เลื่อนซ้าย"
             >
-              <i className="pi pi-user" style={{ fontSize: 18 }} />
-            </span>
-            {userMenuOpen && (
-              <div className={classes.userMenuPopper} style={{ right: 0, minWidth: 185 }}>
-                {userMenu.map((item, idx) =>
-                  item.separator ? (
-                    <div className={classes.userMenuDivider} key={idx} />
-                  ) : (
-                    <button 
-                      className={classes.userMenuItem} 
-                      key={item.label} 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        item.action();
-                        setUserMenuOpen(false);
+              ‹
+            </button>
+            <div className={classes.scrollContainer} ref={scrollRefRecommended}>
+              {recommended.map((item) => (
+                <div
+                  className={classes.resourceCard}
+                  key={item.id}
+                  style={{ width: "220px" }}
+                  onClick={() => navigate(`/resource/${item.id}`)}
+                  title={item.title}
+                >
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.title}
+                    className={classes.recommendedImage}
+                    loading="lazy"
+                  />
+                  <div className={classes.recommendedTitle}>{item.title}</div>
+                </div>
+              ))}
+            </div>
+            <button
+              className={`${classes.scrollButton} ${classes.rightButton}`}
+              onClick={() => scrollHorizontally(scrollRefRecommended, 1)}
+              aria-label="เลื่อนขวา"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* NEW ITEMS SECTION */}
+      {filteredNewItems.length > 0 && (
+        <div
+          style={{
+            background: "#fff",
+            padding: "2rem 1rem 3rem 1rem",
+            marginBottom: "2rem",
+          }}
+        >
+          <h2 className={classes.sectionTitle}>
+            รายการใหม่ ({categoryOptions.find((c) => c.value === selectedCategory)?.label})
+          </h2>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "1rem",
+              marginBottom: "2.5rem",
+              flexWrap: "wrap",
+            }}
+          >
+            {categoryOptions.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedCategory(cat.value)}
+                style={{
+                  padding: "0.6rem 1.75rem",
+                  borderRadius: 24,
+                  border:
+                    selectedCategory === cat.value
+                      ? "2px solid #b71c1c"
+                      : "2px solid #ddd",
+                  background:
+                    selectedCategory === cat.value ? "#b71c1c" : "#fff",
+                  color: selectedCategory === cat.value ? "#fff" : "#333",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  boxShadow:
+                    selectedCategory === cat.value
+                      ? "0 3px 10px rgba(183,28,28,0.25)"
+                      : "0 2px 5px rgba(0,0,0,0.05)",
+                  cursor: "pointer",
+                  transition: "all 0.25s",
+                }}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: "2rem",
+              maxWidth: 1200,
+              margin: "0 auto",
+            }}
+          >
+            {filteredNewItems.map((item) => (
+              <div
+                key={item.id}
+                className={classes.resourceCard}
+                onClick={() => navigate(`/resource/${item.id}`)}
+                style={{ width: "100%" }}
+                title={item.title}
+              >
+                <img
+                  src={item.thumbnailUrl}
+                  alt={item.title}
+                  className={classes.image}
+                  loading="lazy"
+                />
+                <div className={classes.content}>
+                  <div className={classes.categoryText}>
+                    {item.category?.toUpperCase() || "ทั่วไป"} •{" "}
+                    {categoryOptions.find((c) => c.value === item.type)?.label ||
+                      item.type?.toUpperCase()}
+                  </div>
+                  <h3 className={classes.title}>{item.title}</h3>
+                  <div className={classes.metaRow}>
+                    <div className={classes.metaDate}>
+                      <i
+                        className="pi pi-calendar"
+                        style={{
+                          marginRight: "0.4rem",
+                          fontSize: "0.9em",
+                          color: "#888",
+                        }}
+                      ></i>
+                      {new Date(item.createdAt).toLocaleDateString("th-TH", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </div>
+                    <div className={classes.metaViews}>
+                      <i
+                        className="pi pi-eye"
+                        style={{
+                          marginRight: "0.3rem",
+                          fontSize: "0.9em",
+                          color: "#888",
+                        }}
+                      ></i>
+                      {item.viewCount || 0} ครั้ง
+                    </div>
+                  </div>
+                  {item.tags && item.tags.length > 0 && (
+                    <div className={classes.tagList}>
+                      {item.tags.slice(0, 4).map((tag, idx) => (
+                        <span key={idx} className={classes.tag}>
+                          <i
+                            className="pi pi-tag"
+                            style={{
+                              marginRight: 4,
+                              fontSize: "0.8em",
+                              verticalAlign: "middle",
+                            }}
+                          />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+      {imageResources.length > 0 && (
+        <div
+          style={{
+            background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)",
+            padding: "56px 0 70px 0",
+          }}
+        >
+          <div
+            className={classes.photoGalleryContainer}
+            style={{
+              maxWidth: 1150,
+              margin: "0 auto",
+              background: "#fff",
+              borderRadius: 22,
+              boxShadow: "0 6px 28px #892d0522",
+              padding: "40px 28px 50px 28px",
+            }}
+          >
+            <div className={classes.sectionHeader} style={{ marginTop: "0rem" }}>
+              <h2 className={classes.sectionTitle}>คลังภาพแนะนำ</h2>
+              <Link to="/gallery" className={classes.sectionLink}>
+                ชมภาพทั้งหมด <span className={classes.arrow}>→</span>
+              </Link>
+            </div>
+            <PhotoProvider
+              overlayRender={({ index, imagesCount, overlay }) => (
+                <div
+                  style={{
+                    position: "fixed",
+                    bottom: "30px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    color: "white",
+                    background: "rgba(0,0,0,0.7)",
+                    padding: "8px 18px",
+                    borderRadius: "20px",
+                    fontSize: "15px",
+                    fontFamily:
+                      "var(--bs-font-primary, 'Sarabun', sans-serif)",
+                    zIndex: 10001,
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                    textAlign: "center",
+                  }}
+                >
+                  {overlay?.title && (
+                    <span style={{ display: "block", marginBottom: "3px" }}>
+                      {overlay.title}
+                    </span>
+                  )}
+                  ({index + 1} / {imagesCount})
+                </div>
+              )}
+              toolbarRender={({ onScale, scale }) => (
+                <>
+                  <i
+                    className="pi pi-refresh PhotoView-Slider__toolbarIcon"
+                    onClick={() => onScale(1)}
+                    title="Reset Zoom"
+                  />
+                  <i
+                    className="pi pi-search-minus PhotoView-Slider__toolbarIcon"
+                    onClick={() => onScale(scale - 0.5)}
+                    title="Zoom Out"
+                  />
+                  <i
+                    className="pi pi-search-plus PhotoView-Slider__toolbarIcon"
+                    onClick={() => onScale(scale + 0.5)}
+                    title="Zoom In"
+                  />
+                </>
+              )}
+            >
+              <PhotoAlbum
+                layout="rows"
+                photos={imageResources}
+                spacing={16}
+                padding={8}
+                targetRowHeight={260}
+                renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
+                  <div
+                    className={classes.photoItemWrapper}
+                    style={{
+                      ...wrapperStyle,
+                      marginBottom: 16,
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      boxShadow: "0 2px 12px #2222",
+                      background: "#fcfcfc",
+                      position: "relative",
+                      cursor: "pointer",
+                      transition: "box-shadow .16s, transform .15s",
+                    }}
+                    title={photo.title}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.boxShadow =
+                        "0 8px 24px #b71c1c2a")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.boxShadow = "0 2px 12px #2222")
+                    }
+                  >
+                    <PhotoView src={photo.src} key={photo.key} overlay={photo}>
+                      {renderDefaultPhoto({
+                        wrapped: true,
+                        style: {
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        },
+                      })}
+                    </PhotoView>
+                    <div
+                      className={classes.photoTitleOverlay}
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        bottom: 0,
+                        width: "100%",
+                        background:
+                          "linear-gradient(0deg,rgba(0,0,0,0.66) 0%,rgba(0,0,0,0.03) 100%)",
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: "1.04rem",
+                        padding: "1rem 1rem 0.6rem 1rem",
+                        textShadow: "0 1px 5px rgba(0,0,0,0.37)",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
                       }}
                     >
-                      <i className={item.icon} />
-                      <span>{item.label}</span>
-                    </button>
-                  )
+                      <span style={{ marginRight: 8 }}>📷</span>
+                      {photo.title}
+                    </div>
+                  </div>
                 )}
+              />
+            </PhotoProvider>
+          </div>
+        </div>
+      )}
+
+      {/* FEATURED CATEGORY CARDS (Video/Gallery) */}
+      <div
+        style={{
+          background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)",
+          padding: "54px 0 60px 0",
+        }}
+      >
+        <div
+          className={classes.photoGalleryContainer}
+          style={{ background: "transparent", boxShadow: "none" }}
+        >
+          <div className={classes.sectionHeader}>
+            <h2 className={classes.sectionTitle}>หมวดหมู่ยอดนิยม</h2>
+          </div>
+          <div className={classes.featuredCardRow}>
+            {featuredCategories.map((cat) => (
+              <div
+                className={classes.featuredCard}
+                key={cat.category}
+                onClick={() => navigate(cat.link)}
+                title={cat.category}
+              >
+                <img
+                  src={cat.image}
+                  className={classes.featuredCardBg}
+                  alt={cat.category}
+                />
+                <div className={classes.featuredCardOverlay}>
+                  <div className={classes.featuredTitleBox}>
+                    {cat.category}
+                    <div className={classes.featuredCount}>
+                      {cat.count.toLocaleString()} รายการ
+                    </div>
+                  </div>
+                  <button className={classes.featuredExploreBtn}>
+                    Explore
+                  </button>
+                </div>
               </div>
-            )}
+            ))}
+          </div>
+          <div className={classes.featuredExploreMore}>
+            <button onClick={() => navigate("/gallery")}>Explore more</button>
           </div>
         </div>
-      </header>
+      </div>
+      
+      {/* VIDEO RECOMMEND SECTION */}
+      {videoResources.length > 0 && (
+        <div
+          style={{
+            background: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)",
+            padding: "54px 0 60px 0",
+          }}
+        >
+          <div
+            className={classes.photoGalleryContainer}
+            style={{ background: "#fff", borderRadius: 18, boxShadow: "0 8px 30px #892d0522" }}
+          >
+            <div className={classes.sectionHeader}>
+              <h2 className={classes.sectionTitle}>วิดีโอแนะนำ</h2>
+              <Link to="/gallery?category=video" className={classes.sectionLink}>
+                ดูวิดีโอทั้งหมด <span className={classes.arrow}>→</span>
+              </Link>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 24,
+                flexWrap: "wrap",
+                justifyContent: "center",
+                alignItems: "stretch",
+              }}
+            >
+              {videoResources.slice(0, 6).map((item, idx) => (
+                <div
+                  className={classes.resourceCardThree}
+                  key={item.id}
+                  onClick={() => openModal(item, idx)}
+                  title={item.title}
+                  style={{
+                    cursor: "pointer",
+                    minWidth: 290,
+                    maxWidth: 340,
+                    width: "100%",
+                    position: "relative",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    boxShadow: "0 3px 12px #9c27b00d",
+                  }}
+                >
+                  <div style={{ position: "relative", width: "100%", height: 0, paddingBottom: "56.25%" }}>
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      style={{
+                        position: "absolute",
+                        left: 0, top: 0, width: "100%", height: "100%",
+                        objectFit: "cover",
+                        borderTopLeftRadius: 14,
+                        borderTopRightRadius: 14,
+                      }}
+                      loading="lazy"
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "50%", left: "50%",
+                        transform: "translate(-50%,-50%)",
+                        background: "rgba(255,255,255,0.8)",
+                        borderRadius: "50%",
+                        width: 46,
+                        height: 46,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 2px 8px #0003",
+                        fontSize: 28,
+                        color: "#b71c1c",
+                      }}
+                    >
+                      <i className="pi pi-play" />
+                    </div>
+                  </div>
+                  <div className={classes.videoTitle} title={item.title}>{item.title}</div>
+                  <div style={{ padding: "0 1.1rem 1.1rem 1.1rem", display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#b71c1c" }}>{item.category}</span>
+                    <span style={{ fontSize: 13, color: "#666" }}>
+                      <i className="pi pi-eye" style={{ fontSize: 13, marginRight: 3 }} />
+                      {item.viewCount || 0}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* ---------- CONTENT ---------- */}
-      <main className={classes.mainContent}>
-        <Outlet />
-      </main>
-
-      {/* ---------- FOOTER ---------- */}
-      <footer className={classes.footerRow}>
-        <div className={classes.footerLeft}>
-          <img src={logo} alt="KKU Resource" />
-          <div className={classes.footerTagline}>
-            คลังทรัพยากรดิจิทัลเพื่อการศึกษา<br />มหาวิทยาลัยขอนแก่น
-          </div>
-        </div>
-        <div className={classes.footerCenter}>
-          <a href="#">เกี่ยวกับเรา</a>
-          <a href="#">นโยบายความเป็นส่วนตัว</a>
-          <a href="#">เงื่อนไขการใช้งาน</a>
-          <a href="#">ติดต่อเรา</a>
-        </div>
-        <div className={classes.footerRight}>
-          <div className={classes.footerSocial}>
-            <a href="#"><i className="pi pi-facebook" /></a>
-            <a href="#"><i className="pi pi-youtube" /></a>
-            <a href="#"><i className="pi pi-instagram" /></a>
-          </div>
-          <div className={classes.footerCopyright}>
-            © {new Date().getFullYear()} Khon Kaen University. All rights reserved.
-          </div>
-        </div>
-      </footer>
-
-      <ScrollToTopButton />
-    </div>
+      {/* VIDEO MODAL */}
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        contentLabel="Video Player Modal"
+        className={classes.videoModal}
+        overlayClassName={classes.videoModalOverlay}
+        shouldCloseOnOverlayClick={true}
+        shouldCloseOnEsc={true}
+      >
+        {currentVideo && (
+          <>
+            <button
+              onClick={closeModal}
+              className={classes.closeModalButton}
+              aria-label="ปิด"
+            >
+              ×
+            </button>
+            <div
+              style={{
+                width: "100%",
+                aspectRatio: "16/9",
+                background: "#000",
+                borderRadius: "10px",
+                overflow: "hidden",
+              }}
+            >
+              {currentVideo.videoUrl &&
+              currentVideo.videoUrl.includes("youtu") ? (
+                <iframe
+                  key={currentVideo.id}
+                  className={classes.videoPlayer}
+                  src={embedYouTube(currentVideo.videoUrl)}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  title={currentVideo.title}
+                />
+              ) : (
+                <video
+                  key={currentVideo.id}
+                  className={classes.videoPlayer}
+                  src={currentVideo.fileUrl || currentVideo.videoUrl}
+                  poster={currentVideo.thumbnailUrl}
+                  controls
+                  preload="metadata"
+                  autoPlay
+                />
+              )}
+            </div>
+            <div className={classes.modalNavBar}>
+              <button
+                className={classes.modalNavBtn}
+                onClick={() => navigateModalVideo(-1)}
+                disabled={currentVideoIndex === 0}
+                aria-label="วิดีโอก่อนหน้า"
+              >
+                &#8249;
+              </button>
+              <span className={classes.modalNavCount}>
+                {currentVideoIndex + 1} / {videoResources.length}
+              </span>
+              <button
+                className={classes.modalNavBtn}
+                onClick={() => navigateModalVideo(1)}
+                disabled={currentVideoIndex === videoResources.length - 1}
+                aria-label="วิดีโอถัดไป"
+              >
+                &#8250;
+              </button>
+            </div>
+            {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          style={{
+            position: "fixed",
+            bottom: 34,
+            right: 34,
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "#6e7682",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 4px 16px #3335",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 28,
+            zIndex: 12345,
+            cursor: "pointer",
+            transition: "background 0.18s",
+          }}
+          aria-label="เลื่อนขึ้นบนสุด"
+          title="ขึ้นบนสุด"
+        >
+          <FaArrowUp />
+        </button>
+      )}
+          </>
+        )}
+      </Modal>
+    </>
   );
 };
 
-export default MainLayout;
+export default MainPage;
