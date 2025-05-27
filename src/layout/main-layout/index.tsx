@@ -31,19 +31,20 @@ const useStyles = createUseStyles({
     left: 0,
     width: "100vw",
     zIndex: 1000,
-    background: "rgba(131, 130, 130, 0.55)",
-    backdropFilter: "blur(8px)",
+    background: "linear-gradient(90deg, rgba(161, 61, 35, 0.95), rgba(161, 61, 35, 0.85))",
+    backdropFilter: "blur(10px)",
     color: "#fff",
     minHeight: 56,
     display: "flex",
     alignItems: "center",
-    boxShadow: "0 1.5px 12px 0 #2222",
-    transition: "background 0.35s cubic-bezier(.4,.8,.4,1), box-shadow 0.27s cubic-bezier(.4,.8,.4,1), backdrop-filter 0.45s cubic-bezier(.4,.8,.4,1)",
+    boxShadow: "0 2px 15px rgba(161, 61, 35, 0.2)",
+    transition: "all 0.35s cubic-bezier(.4,.8,.4,1)",
   },
   headerScrolled: {
-    background: "rgba(64, 64, 75, 0.98)",
-    boxShadow: "0 3px 22px 0 #23232a70",
-    backdropFilter: "blur(10px)",
+    background: "linear-gradient(90deg, rgba(161, 61, 35, 0.98), rgba(161, 61, 35, 0.95))",
+    boxShadow: "0 4px 20px rgba(161, 61, 35, 0.3)",
+    backdropFilter: "blur(12px)",
+    minHeight: 64,
   },
   headerContent: {
     width: "100%",
@@ -76,7 +77,11 @@ const useStyles = createUseStyles({
       marginRight: 9,
       height: 65,
       filter: "drop-shadow(0 2px 7px #ffba5950)",
+      transition: "transform 0.3s ease",
     },
+    "&:hover img": {
+      transform: "scale(1.05)",
+    }
   },
   nav: {
     display: "flex",
@@ -90,20 +95,36 @@ const useStyles = createUseStyles({
   },
   navLink: {
     color: "#fff",
-    fontWeight: 400,
-    fontSize: 17,
+    fontWeight: 500,
+    fontSize: 16,
     textDecoration: "none",
     borderRadius: 12,
-    padding: "5px 17px",
+    padding: "8px 20px",
     letterSpacing: 0.01,
     opacity: 0.93,
     background: "none",
-    transition: "background 0.14s, color 0.12s, box-shadow 0.14s",
+    transition: "all 0.2s ease",
+    position: "relative",
     "&:hover, &.active": {
       background: "rgba(167, 167, 167, 0.23)",
       color: "#fff",
       opacity: 1,
       boxShadow: "0 1px 7px 0 #9993",
+      transform: "translateY(-1px)",
+    },
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: 0,
+      height: 2,
+      background: "#fff",
+      transition: "width 0.2s ease",
+    },
+    "&:hover::after, &.active::after": {
+      width: "70%",
     }
   },
   rightIcons: {
@@ -122,46 +143,64 @@ const useStyles = createUseStyles({
     cursor: "pointer",
     opacity: 0.94,
     margin: "0 1px",
-    transition: "color 0.13s, opacity 0.12s",
+    transition: "all 0.2s ease",
     background: "none",
     borderRadius: 8,
+    "&:hover": {
+      opacity: 1,
+      transform: "scale(1.1)",
+      color: "#f4975a",
+    }
   },
   userAvatar: {
-    borderRadius: 8,
-    width: 34,
-    height: 34,
+    borderRadius: 12,
+    width: 38,
+    height: 38,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 6,
     cursor: "pointer",
-    boxShadow: "0 1px 5px #fff1",
-    transition: "border 0.16s, background 0.14s",
+    boxShadow: "0 2px 8px #fff1",
+    transition: "all 0.2s ease",
+    border: "2px solid rgba(255,255,255,0.1)",
+    "&:hover": {
+      transform: "scale(1.05)",
+      borderColor: "rgba(255,255,255,0.2)",
+      boxShadow: "0 4px 12px #fff2",
+    }
   },
   headerSearchBox: {
     display: "flex",
     alignItems: "center",
     background: "linear-gradient(90deg,#232526,#191b1f 90%)",
-    borderRadius: 10,
-    padding: "0.1rem 1rem 0.1rem 1.1rem",
+    borderRadius: 12,
+    padding: "0.2rem 1.2rem",
     minWidth: 320,
     maxWidth: 460,
     marginLeft: 18,
     boxShadow: "0 2px 10px #10101040",
     position: "relative",
     zIndex: 11,
+    border: "1px solid rgba(255,255,255,0.1)",
+    transition: "all 0.2s ease",
+    "&:focus-within": {
+      boxShadow: "0 4px 15px #10101060",
+      borderColor: "rgba(255,255,255,0.2)",
+      transform: "translateY(-1px)",
+    },
     "@media (max-width: 700px)": {
       minWidth: 150,
       maxWidth: 210,
       fontSize: 17,
-      padding: "0.1rem 0.6rem 0.1rem 0.8rem",
+      padding: "0.1rem 0.8rem",
     },
   },
   headerSearchInput: {
     border: "none",
     background: "transparent",
     color: "#fff",
-    fontSize: 14,
+    fontSize: 15,
     outline: "none",
     width: 220,
     fontFamily: "inherit",
@@ -183,27 +222,33 @@ const useStyles = createUseStyles({
     fontSize: 22,
     cursor: "pointer",
     opacity: 0.74,
-    "&:hover": { opacity: 1, color: "#e66" }
+    transition: "all 0.2s ease",
+    "&:hover": { 
+      opacity: 1, 
+      color: "#e66",
+      transform: "scale(1.1)",
+    }
   },
   userMenuPopper: {
     position: "absolute",
     top: 60,
     right: 5,
-    minWidth: 185,
+    minWidth: 200,
     background: "#23232a",
-    borderRadius: 11,
-    boxShadow: "0 6px 32px 0 #23232a31",
-    padding: "7px 0",
+    borderRadius: 16,
+    boxShadow: "0 8px 32px 0 #23232a31",
+    padding: "8px 0",
     zIndex: 1200,
     fontSize: 16,
     fontFamily: "inherit",
     color: "#fff",
-    transition: "opacity 0.18s, transform 0.18s",
+    transition: "all 0.2s ease",
     transform: "translateY(-5px)",
-    animation: "$fadeIn 0.13s",
+    animation: "$fadeIn 0.2s",
+    border: "1px solid rgba(255,255,255,0.1)",
     "&.show": {
-    opacity: 1,
-    transform: "translateY(0)",
+      opacity: 1,
+      transform: "translateY(0)",
     },
     "&::before": {
       content: '""',
@@ -216,10 +261,12 @@ const useStyles = createUseStyles({
       background: "#23232a",
       transform: "rotate(45deg)",
       zIndex: 0,
+      borderLeft: "1px solid rgba(255,255,255,0.1)",
+      borderTop: "1px solid rgba(255,255,255,0.1)",
     },
   },
   userMenuItem: {
-    padding: "9px 22px 9px 19px",
+    padding: "10px 24px 10px 20px",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
@@ -229,9 +276,11 @@ const useStyles = createUseStyles({
     width: "100%",
     fontSize: 15.5,
     color: "#fff",
+    transition: "all 0.2s ease",
     "&:hover": {
       background: "#2d2d37",
-      color: "#f4975a"
+      color: "#f4975a",
+      paddingLeft: "24px",
     }
   },
   userMenuDivider: {
@@ -584,16 +633,17 @@ const MainLayout = () => {
           </div>
         </div>
         <div className={classes.footerCenter}>
-          <a href="#">เกี่ยวกับเรา</a>
-          <a href="#">นโยบายความเป็นส่วนตัว</a>
-          <a href="#">เงื่อนไขการใช้งาน</a>
-          <a href="#">ติดต่อเรา</a>
+          <a href="/about">เกี่ยวกับเรา</a>
+          <a href="/privacy-policy">นโยบายความเป็นส่วนตัว</a>
+          <a href="/terms">เงื่อนไขการใช้งาน</a>
+          <a href="/contact">ติดต่อเรา</a>
         </div>
         <div className={classes.footerRight}>
           <div className={classes.footerSocial}>
-            <a href="#"><i className="pi pi-facebook" /></a>
-            <a href="#"><i className="pi pi-youtube" /></a>
-            <a href="#"><i className="pi pi-instagram" /></a>
+            <a href="https://www.facebook.com/LTICKKU" target="_blank" rel="noopener noreferrer"><i className="pi pi-facebook" /></a>
+            <a href="https://www.youtube.com/@kku_channel/videos" target="_blank" rel="noopener noreferrer"><i className="pi pi-youtube" /></a>
+            <a href="https://www.instagram.com/khonkaenuniversity/channel/" target="_blank" rel="noopener noreferrer"><i className="pi pi-instagram" /></a>
+
           </div>
           <div className={classes.footerCopyright}>
             © {new Date().getFullYear()} Khon Kaen University. All rights reserved.

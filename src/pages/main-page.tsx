@@ -642,7 +642,7 @@ const useStyles = createUseStyles({
     paddingTop: THEME.spacing.md
   },
 
-  tag: {
+  tagItem: {
     background: THEME.colors.background.light,
     color: THEME.colors.text.secondary,
     padding: "0.4rem 0.8rem",
@@ -700,6 +700,7 @@ interface PhotoGalleryProps {
     sectionHeader: string;
     sectionTitle: string;
     sectionLink: string;
+    tagItem: string;
   };
 }
 
@@ -844,14 +845,8 @@ const renderPhotoGallery = ({ photos, classes }: PhotoGalleryProps) => (
                     flexWrap: "wrap"
                   }}>
                     {photo.tags.slice(0, 3).map((tag, index) => (
-                      <span key={index} style={{
-                        background: "rgba(255,255,255,0.2)",
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "1rem",
-                        fontSize: "0.8rem",
-                        color: "#fff",
-                        backdropFilter: "blur(4px)"
-                      }}>
+                      <span key={index} className={classes.tagItem}>
+                        <i className="pi pi-tag" style={{ fontSize: "0.7rem" }} />
                         {tag}
                       </span>
                     ))}
@@ -1295,7 +1290,7 @@ console.log("กราฟฟิกใน mock", graphicItems);
                   {item.tags && item.tags.length > 0 && (
                     <div className={classes.tagList}>
                       {item.tags.slice(0, 4).map((tag, idx) => (
-                        <span key={idx} className={classes.tag}>
+                        <span key={idx} className={classes.tagItem}>
                           <i
                             className="pi pi-tag"
                             style={{

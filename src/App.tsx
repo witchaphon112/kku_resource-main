@@ -3,6 +3,10 @@ import MainPage from "./pages/main-page";
 import MainLayout from "./layout/main-layout";
 import SearchResult from "./layout/main-layout/SearchResult";
 import Login from "./pages/Login";
+import AboutPage from "./pages/about";
+import TermsPage from "./pages/terms";
+import ContactPage from "./pages/contact";
+import PrivacyPage from "./pages/privacy-policy";
 import Profile from "./pages/profile";
 import AdminPage from "./pages/Admin";
 import Images from "./pages/images";
@@ -30,6 +34,10 @@ function AppContent() {
         <Route path="images" element={<Images />} />
         <Route path="videos" element={<Videos />} />
         <Route path="graphics" element={<Graphics />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="terms" element={<TermsPage />} />
+        <Route path="contact" element={<ContactPage />} />
+        <Route path="privacy-policy" element={<PrivacyPage />} /> 
         <Route path="/downloads-history" element={<DownloadHistoryPage />} />
         <Route path="/resource/:id" element={<ResourceDetailPage />} />
         <Route
