@@ -5,10 +5,10 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0); // กลับไปบนสุดทุกครั้งเมื่อ pathname เปลี่ยน
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   return null;
 };
 
-export default ScrollToTop; // ❗ ต้องมี default export
+export default ScrollToTop;
