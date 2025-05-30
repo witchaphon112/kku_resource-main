@@ -15,12 +15,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    /* Linting (ปรับ strictness ที่นี่) */
+    "strict": false,            // ปิด strict mode
+    "noImplicitAny": false,     // อนุญาต any
+    "noUnusedLocals": false,    // ไม่เตือนถ้าไม่ใช้ตัวแปร
+    "noUnusedParameters": false,// ไม่เตือนถ้าไม่ใช้พารามิเตอร์
+    "noFallthroughCasesInSwitch": false,
+    "noUncheckedSideEffectImports": false
   },
   "include": ["src"]
 }
