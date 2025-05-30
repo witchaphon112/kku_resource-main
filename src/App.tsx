@@ -51,7 +51,7 @@ function AppContent() {
 
 function App() {
   return (
-  <BrowserRouter>    
+  <BrowserRouter basename="/kku_resource-main">    
     <AuthProvider>
       <DownloadHistoryProvider>
         <ScrollToTopButton />
