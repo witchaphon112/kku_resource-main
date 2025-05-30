@@ -949,7 +949,7 @@ const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'class
                   />
                   <PhotoView src={photo.src}>
                     <img
-                      src={`${import.meta.env.BASE_URL}${photo.thumbnailUrl.replace(/^\//, '')}`}
+                      src={photo.thumbnailUrl ? `${import.meta.env.BASE_URL}${photo.thumbnailUrl.replace(/^\//, '')}` : photo.src}
                       alt={photo.title}
                       style={{
                         width: "100%",
