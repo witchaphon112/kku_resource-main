@@ -45,6 +45,7 @@ function AppContent() {
           element={user?.role === "admin" ? <AdminPage /> : <Navigate to="/" />}
         />
       </Route>
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
