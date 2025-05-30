@@ -9,6 +9,7 @@ import "react-photo-view/dist/react-photo-view.css";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+import hero1 from '../assets/hero-1.jpg';
 
 const THEME = {
   colors: {
@@ -99,7 +100,7 @@ const HERO_DATA = [
     id: "h1",
     titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
     subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
-    imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
+    imageUrl: `${import.meta.env.BASE_URL}mock/resources/hero-1.jpg`,
   },
   {
     id: "h2",
