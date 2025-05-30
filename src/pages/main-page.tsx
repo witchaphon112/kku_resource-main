@@ -99,13 +99,13 @@ const HERO_DATA = [
     id: "h1",
     titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
     subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
-    imageUrl: "/mock/hero-1.jpg",
+    imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
   },
   {
     id: "h2",
     titlemain: "งานวิจัยเปลี่ยนโลก",
     subtitle: "สำรวจงานวิจัยสุดล้ำจากมหาวิทยาลัยขอนแก่น",
-    imageUrl: "/mock/hero-2.jpg",
+    imageUrl: `${import.meta.env.BASE_URL}mock/hero-2.jpg`,
   },
 ];
 
@@ -854,9 +854,7 @@ const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'class
             borderRadius: "2px"
           }} />
         </div>
-        {/* --- Horizontal Scrollable Card Row --- */}
         <div style={{ position: "relative", width: "100%", overflow: "hidden", margin: "0 auto 2rem auto" }}>
-          {/* Arrow Left */}
           <button
             onClick={() => {
               const el = document.getElementById("photo-scroll");
@@ -951,7 +949,7 @@ const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'class
                   />
                   <PhotoView src={photo.src}>
                     <img
-                      src={photo.src}
+                      src={`${import.meta.env.BASE_URL}${photo.thumbnailUrl.replace(/^\//, '')}`}
                       alt={photo.title}
                       style={{
                         width: "100%",
@@ -962,7 +960,6 @@ const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'class
                       }}
                     />
                   </PhotoView>
-                  {/* Overlay info */}
                   <div
                     style={{
                       position: "absolute",
@@ -1359,7 +1356,7 @@ const MainPage = () => {
                       overflow: "hidden"
                     }}>
                       <img
-                        src={item.thumbnailUrl}
+                        src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
                         alt={item.title}
                         style={{
                           position: "absolute",
@@ -1527,7 +1524,7 @@ const MainPage = () => {
                 title={item.title}
               >
                 <img
-                  src={item.thumbnailUrl}
+                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
                   alt={item.title}
                   className={classes.image}
                   loading="lazy"
@@ -1698,7 +1695,7 @@ const MainPage = () => {
                   >
                     <div style={{ position: "relative", width: "100%", height: "100%" }}>
                       <img
-                        src={item.thumbnailUrl}
+                        src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
                         alt={item.title}
                         style={{
                           width: "100%",
