@@ -1,8 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { Menubar } from "primereact/menubar";
 import { Avatar } from "primereact/avatar";
-import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Menu } from "primereact/menu";
 import { Sidebar } from "primereact/sidebar";
@@ -12,7 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import logo from "../../assets/logo.png";
 import ScrollToTopButton from "../../components/ScrollToTopButton";
 
-const isActive = (pathname, path) =>
+const isActive = (pathname: string, path: string) =>
   pathname === path || pathname.startsWith(path + "/");
 
 
@@ -89,9 +87,24 @@ const useStyles = createUseStyles({
     alignItems: "center",
     gap: 30,
     flex: 1,
-    "@media (max-width: 900px)": {
-      gap: 13,
-      fontSize: 17,
+    '@media (max-width: 900px)': {
+      display: 'none',
+    },
+  },
+  navMobile: {
+    display: 'none',
+    '@media (max-width: 900px)': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: 7,
+      width: '100%',
+      background: 'rgba(161,61,35,0.97)',
+      position: 'absolute',
+      top: 56,
+      left: 0,
+      zIndex: 1201,
+      padding: '10px 0',
     },
   },
   navLink: {
@@ -132,11 +145,29 @@ const useStyles = createUseStyles({
     display: "flex",
     alignItems: "center",
     gap: 13,
-    "@media (max-width: 900px)": {
+    '@media (max-width: 900px)': {
       marginTop: 5,
       gap: 8,
-      justifyContent: "center"
-    }
+      justifyContent: "center",
+    },
+  },
+  hamburger: {
+    display: 'none',
+    '@media (max-width: 900px)': {
+      display: 'inline-flex',
+    },
+  },
+  desktopOnly: {
+    display: 'flex',
+    '@media (max-width: 900px)': {
+      display: 'none',
+    },
+  },
+  mobileOnly: {
+    display: 'none',
+    '@media (max-width: 900px)': {
+      display: 'flex',
+    },
   },
   icon: {
     color: "#fff",
@@ -191,10 +222,10 @@ const useStyles = createUseStyles({
       transform: "translateY(-1px)",
     },
     "@media (max-width: 700px)": {
-      minWidth: 150,
-      maxWidth: 210,
-      fontSize: 17,
-      padding: "0.1rem 0.8rem",
+      minWidth: 120,
+      maxWidth: 180,
+      fontSize: 15,
+      padding: '0.1rem 0.5rem',
     },
   },
   headerSearchInput: {
@@ -209,6 +240,10 @@ const useStyles = createUseStyles({
     "&::placeholder": {
       color: "#bbb",
       opacity: 0.88,
+    },
+    "@media (max-width: 700px)": {
+      width: 90,
+      fontSize: 13,
     },
   },
   headerSearchIcon: {
@@ -314,11 +349,12 @@ const useStyles = createUseStyles({
     boxShadow: "0 4px 32px 0 #a13d2322",
     marginTop: 60,
     "@media (max-width: 900px)": {
-      flexDirection: "column",
-      alignItems: "center",
-      padding: "2.4rem 1vw 1.6rem 1vw",
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: '2.4rem 1vw 1.6rem 1vw',
       minHeight: 220,
-    }
+      gap: 18,
+    },
   },
   footerLeft: {
     display: "flex",
@@ -326,7 +362,11 @@ const useStyles = createUseStyles({
     alignItems: "flex-start",
     gap: 10,
     minWidth: 170,
-    "& img": { width: 60, borderRadius: 16, marginBottom: 5 }
+    "& img": { width: 60, borderRadius: 16, marginBottom: 5 },
+    "@media (max-width: 900px)": {
+      alignItems: 'center',
+      minWidth: 0,
+    },
   },
   footerTagline: {
     color: "#ffd9b3",
@@ -342,7 +382,12 @@ const useStyles = createUseStyles({
     gap: "2.5rem",
     fontSize: 20,
     fontWeight: 600,
-    "@media (max-width: 900px)": { margin: "18px 0", gap: "1.4rem" },
+    "@media (max-width: 900px)": {
+      margin: '18px 0',
+      gap: '1.4rem',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
     "& a": {
       color: "#fff",
       textDecoration: "none",
@@ -359,7 +404,10 @@ const useStyles = createUseStyles({
     alignItems: "flex-end",
     minWidth: 180,
     gap: 8,
-    "@media (max-width: 900px)": { alignItems: "center" }
+    "@media (max-width: 900px)": {
+      alignItems: 'center',
+      minWidth: 0,
+    },
   },
   footerSocial: {
     display: "flex",
@@ -401,11 +449,11 @@ const MainLayout = () => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const searchInputRef = useRef(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const avatarRef = useRef(null);
+  const avatarRef = useRef<HTMLSpanElement>(null);
 
   const isLoggedIn = !!user;
   const [scrolled, setScrolled] = useState(false);
@@ -424,7 +472,7 @@ const MainLayout = () => {
 
   useEffect(() => {
     if (!searchOpen && !userMenuOpen) return;
-    const handleKey = (e) => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSearchOpen(false);
         setUserMenuOpen(false);
@@ -436,8 +484,8 @@ const MainLayout = () => {
 
   useEffect(() => {
     if (!userMenuOpen) return;
-    function handleClick(e) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target)) {
+    function handleClick(e: MouseEvent) {
+      if (avatarRef.current && e.target instanceof Node && !avatarRef.current.contains(e.target)) {
         setUserMenuOpen(false);
       }
     }
@@ -485,7 +533,7 @@ const MainLayout = () => {
       label: "กราฟฟิก",
       icon: "pi pi-palette",
       url: "/graphics",
-      template: (item, options) => (
+      template: (item: any, options: any) => (
         <a className={options.className} href={item.url} onClick={options.onClick}>
           <span className={options.iconClassName}></span>
           <span className={options.labelClassName}>{item.label}</span>
@@ -498,11 +546,11 @@ const MainLayout = () => {
   return (
     <div className={classes.mainLayout}>
       <header className={`${classes.header} ${(!isMainPage || scrolled) ? classes.headerScrolled : ""}`}>
-      <div className={classes.headerContent}>
+        <div className={classes.headerContent}>
           <Link to="/" className={classes.logo}>
             <img src={logo} alt="KKU Logo" />
           </Link>
-          <nav className={classes.nav}>
+          <nav className={`${classes.nav} ${classes.desktopOnly}`}>
             <Link to="/" className={`${classes.navLink}${isActive(location.pathname, "/") ? " active" : ""}`}>หน้าหลัก</Link>
             <Link to="/images" className={`${classes.navLink}${isActive(location.pathname, "/images") ? " active" : ""}`}>รูปภาพ</Link>
             <Link to="/videos" className={`${classes.navLink}${isActive(location.pathname, "/videos") ? " active" : ""}`}>วิดีโอ</Link>
@@ -577,7 +625,7 @@ const MainLayout = () => {
               )}
             </span>
             <span
-              className={`${classes.icon} md:hidden`}
+              className={`${classes.icon} ${classes.hamburger}`}
               onClick={() => setSidebarVisible(true)}
               title="เมนู"
             >
@@ -592,6 +640,7 @@ const MainLayout = () => {
         onHide={() => setSidebarVisible(false)}
         blockScroll
         position="right"
+        style={{ width: '85vw', maxWidth: 340 }}
       >
         <div style={{ padding: 16, textAlign: "center" }}>
           <img alt="KKU Logo" src={logo} style={{ width: 55, borderRadius: 12, marginBottom: 8 }} />
@@ -601,10 +650,12 @@ const MainLayout = () => {
             <InputText
               placeholder="ค้นหา..."
               className="w-full"
+              style={{ fontSize: 16, padding: '7px 10px', borderRadius: 8 }}
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   setSidebarVisible(false);
-                  navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
+                  // @ts-ignore
+                  navigate(`/search?q=${encodeURIComponent(e.target.value?.trim?.() || '')}`);
                 }
               }}
             />
@@ -637,7 +688,6 @@ const MainLayout = () => {
             <a href="https://www.facebook.com/LTICKKU" target="_blank" rel="noopener noreferrer"><i className="pi pi-facebook" /></a>
             <a href="https://www.youtube.com/@kku_channel/videos" target="_blank" rel="noopener noreferrer"><i className="pi pi-youtube" /></a>
             <a href="https://www.instagram.com/khonkaenuniversity/channel/" target="_blank" rel="noopener noreferrer"><i className="pi pi-instagram" /></a>
-
           </div>
           <div className={classes.footerCopyright}>
             © {new Date().getFullYear()} Khon Kaen University. All rights reserved.

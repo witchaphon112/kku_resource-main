@@ -1,8 +1,7 @@
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 import { useAuth } from "../contexts/AuthContext";
-import { Divider } from "primereact/divider";
-import { FaFileImage, FaFileVideo, FaFileAlt, FaDownload, FaLink, FaSearch, FaFilter } from "react-icons/fa";
-import React, { useState, useMemo } from "react";
+import { FaFileImage, FaFileVideo, FaFileAlt, FaDownload, FaLink } from "react-icons/fa";
+import { useState, useMemo } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 
@@ -176,56 +175,6 @@ const useStyles = {
   },
 };
 
-const tableHeaderStyle = {
-  background: "#f6f7fb",
-  fontWeight: 700,
-  textAlign: "left" as const,
-  padding: "12px 10px",
-  borderBottom: "2.5px solid #e0e0e0",
-  fontSize: 16,
-  position: "sticky" as const,
-  top: 0,
-  zIndex: 2,
-};
-
-const cellStyle = {
-  padding: "10px",
-  borderBottom: "1px solid #f0f0f0",
-  fontSize: 15,
-  verticalAlign: "middle" as const,
-};
-
-const rowStyleEven = {
-  background: "#fff",
-  transition: "background 0.2s",
-};
-const rowStyleOdd = {
-  background: "#f9fafc",
-  transition: "background 0.2s",
-};
-
-const btnStyle = {
-  background: "#1976d2",
-  color: "#fff",
-  padding: "5px 18px",
-  borderRadius: 18,
-  textDecoration: "none",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "none",
-  boxShadow: "0 1px 4px rgba(60,60,60,0.07)",
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  cursor: "pointer",
-  transition: "background 0.15s, box-shadow 0.15s",
-};
-
-const btnHoverStyle = {
-  background: "#1452a3",
-  boxShadow: "0 2px 8px rgba(40,60,160,0.15)",
-};
-
 const typeIcon = (type: string) => {
   switch (type) {
     case "image":
@@ -308,7 +257,7 @@ const DownloadHistoryPage = () => {
         <span style={useStyles.searchBox}>
           <InputText
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             placeholder="ค้นหาไฟล์..."
             style={{ width: "100%", padding: "8px 12px" }}
           />
@@ -317,7 +266,7 @@ const DownloadHistoryPage = () => {
           <Dropdown
             value={filterType}
             options={typeOptions}
-            onChange={(e) => setFilterType(e.value)}
+            onChange={(e: any) => setFilterType(e.value)}
             placeholder="ประเภทไฟล์"
             style={{ width: "100%" }}
           />

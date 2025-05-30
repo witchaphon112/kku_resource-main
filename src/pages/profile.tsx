@@ -4,7 +4,6 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Divider } from "primereact/divider";
-import { User } from "../types/user";
 
 interface QuickAction {
   label: string;
@@ -14,7 +13,6 @@ interface QuickAction {
 }
 
 const KKU_RED = "#b71c1c";
-const KKU_RED_GRADIENT = "linear-gradient(135deg,rgba(161, 61, 35, 0.98)0%,rgba(150, 63, 41, 0.98) 100%)";
 
 const Profile = () => {
   const { user, logout } = useAuth();

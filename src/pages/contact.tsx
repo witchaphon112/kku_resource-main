@@ -118,9 +118,8 @@ const ContactPage = () => {
     message: ""
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement form submission
     console.log("Form submitted:", formData);
   };
 

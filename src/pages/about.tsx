@@ -1,8 +1,5 @@
 import { createUseStyles } from "react-jss";
 import { Card } from "primereact/card";
-import { Divider } from "primereact/divider";
-import { Button } from "primereact/button";
-import { useNavigate } from "react-router-dom";
 
 const useStyles = createUseStyles({
   aboutPage: {
@@ -98,7 +95,6 @@ const useStyles = createUseStyles({
 
 const AboutPage = () => {
   const classes = useStyles();
-  const navigate = useNavigate();
 
   return (
     <div className={classes.aboutPage}>

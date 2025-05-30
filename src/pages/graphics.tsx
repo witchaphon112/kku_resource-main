@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import { FaHeart, FaUniversity, FaBook, FaThLarge, FaTh, FaThList, FaList, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaHeart, FaUniversity, FaBook, FaThLarge, FaList, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import resourcesData from "../mock/resources.json";
 
 type ViewType = 'grid' | 'list';

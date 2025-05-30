@@ -1,10 +1,8 @@
-import { useRef, useEffect, useState, useMemo, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import PhotoAlbum from "react-photo-album";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import Modal from "react-modal";
-import { FaArrowUp, FaSearch } from "react-icons/fa";
 
 import resourcesData from "../mock/resources.json";
 import "react-photo-view/dist/react-photo-view.css";
@@ -720,9 +718,93 @@ const useStyles = createUseStyles({
     letterSpacing: 0.2,
     color: '#333',
   },
+  recommendedCard: {
+    background: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    cursor: "pointer",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+    transition: "all 0.3s ease",
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    minWidth: 340,
+    maxWidth: 360,
+    width: 340,
+    flex: "0 0 340px",
+    scrollSnapAlign: "center",
+    height: 460,
+    minHeight: 460,
+    maxHeight: 460,
+    '@media (max-width: 600px)': {
+      minWidth: 220,
+      maxWidth: '90vw',
+      width: '90vw',
+      height: 'auto',
+      minHeight: 180,
+      maxHeight: 'none',
+    }
+  },
+  recommendedScroll: {
+    display: "flex",
+    gap: 28,
+    overflowX: "auto",
+    scrollSnapType: "x mandatory",
+    scrollBehavior: "smooth",
+    padding: "0.5rem 2.5rem",
+    WebkitOverflowScrolling: "touch",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+    '@media (max-width: 600px)': {
+      gap: 12,
+      padding: '0.5rem 0.5rem',
+    }
+  },
+  searchInput: {
+    width: "100%",
+    maxWidth: 560,
+    minWidth: 140,
+    fontSize: 20,
+    padding: "0.9rem 1.2rem 0.9rem 1.2rem",
+    border: "none",
+    borderRadius: "1.7rem 0 0 1.7rem",
+    outline: "none",
+    background: "#fafbfc",
+    color: "#444",
+    fontFamily: "inherit",
+    boxShadow: "none",
+    transition: "box-shadow 0.18s, border 0.18s",
+    height: 52,
+    fontWeight: 500,
+    '@media (max-width: 600px)': {
+      fontSize: 15,
+      padding: '0.7rem 0.8rem 0.7rem 0.8rem',
+      height: 40,
+    }
+  },
+  searchButton: {
+    fontSize: 22,
+    padding: "0 2.1rem",
+    border: "none",
+    borderRadius: "0 1.7rem 1.7rem 0",
+    background: "#b71c1c",
+    color: "#fff",
+    fontWeight: 700,
+    cursor: "pointer",
+    height: 52,
+    transition: "background 0.2s, box-shadow 0.18s",
+    marginLeft: -2,
+    boxShadow: "0 2px 10px rgba(183,28,28,0.10)",
+    outline: "none",
+    '@media (max-width: 600px)': {
+      fontSize: 16,
+      padding: '0 1.1rem',
+      height: 40,
+    }
+  },
 });
 
-const embedYouTube = (url) => {
+const embedYouTube = (url: string): string => {
   if (!url) return "";
   const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
   return idMatch?.[1]
@@ -739,21 +821,17 @@ interface Photo {
   height: number;
   category?: string;
   tags?: string[];
+  videoUrl?: string;
+  fileUrl?: string;
+  thumbnailUrl?: string;
 }
 
 interface PhotoGalleryProps {
   photos: Photo[];
-  classes: {
-    photoGalleryContainer: string;
-    sectionHeader: string;
-    sectionTitle: string;
-    sectionLink: string;
-    tagItem: string;
-  };
   navigate: (path: string) => void;
 }
 
-const renderPhotoGallery = ({ photos, classes, navigate }: PhotoGalleryProps) => {
+const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'classes'>) => {
   const displayPhotos = photos.slice(0, 6);
   return (
     <section style={{ background: "#fff", padding: "4rem 0", borderTop: "1px solid #eee" }}>
@@ -823,7 +901,7 @@ const renderPhotoGallery = ({ photos, classes, navigate }: PhotoGalleryProps) =>
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
               }}
-              onWheel={e => {
+              onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
                 const el = e.currentTarget;
                 if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
                   el.scrollLeft += e.deltaY;
@@ -849,11 +927,11 @@ const renderPhotoGallery = ({ photos, classes, navigate }: PhotoGalleryProps) =>
                     background: "#f8f9fa",
                     transition: "transform 0.25s, box-shadow 0.25s"
                   }}
-                  onMouseEnter={e => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
                     e.currentTarget.style.transform = "translateY(-8px)";
                     e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.16)";
                   }}
-                  onMouseLeave={e => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.10)";
                   }}
@@ -972,8 +1050,6 @@ const MainPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
-  const scrollRefRecommended = useRef(null);
-
   const [heroIndex, setHeroIndex] = useState(0);
   const [imageResources, setImageResources] = useState<Photo[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -981,8 +1057,6 @@ const MainPage = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("image");
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
 
   const recommended = useMemo(
     () => [...resourcesData.resources]
@@ -997,7 +1071,7 @@ const MainPage = () => {
         resource && resource.type &&
         resource.type.toLowerCase() === selectedCategory.toLowerCase()
       )
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 6);
   }, [selectedCategory, resourcesData.resources]);
 
@@ -1016,14 +1090,7 @@ const MainPage = () => {
     );
   }, []);
 
-  const handleScrollHorizontally = useCallback((ref, direction) => {
-    if (ref.current) {
-      const scrollAmount = (ref.current.children[0]?.offsetWidth || 300) + 32;
-      ref.current.scrollLeft += direction * scrollAmount;
-    }
-  }, []);
-
-  const handleOpenModal = useCallback((item, index) => {
+  const handleOpenModal = useCallback((item: any, index: number) => {
     setModalOpen(true);
     setCurrentVideo(item);
     setCurrentVideoIndex(index);
@@ -1053,15 +1120,6 @@ const MainPage = () => {
       setCurrentVideoIndex(newIndex);
     }
   }, [currentVideoIndex, videoResources]);
-
-  const handleScrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const graphicItems = resourcesData.resources.filter(
-  r => r.type && r.type.toLowerCase() === "graphic"
-);
-console.log("กราฟฟิกใน mock", graphicItems);
 
   useEffect(() => {
     const images = resourcesData.resources
@@ -1105,7 +1163,7 @@ console.log("กราฟฟิกใน mock", graphicItems);
     loadImages();
   }, []);
 
-  const renderHeroTemplate = (item) => (
+  const renderHeroTemplate = (item: { imageUrl: string; titlemain: string; subtitle?: string }) => (
     <div style={{ position: "relative", minHeight: 420 }}>
       <img
         src={item.imageUrl}
@@ -1114,12 +1172,12 @@ console.log("กราฟฟิกใน mock", graphicItems);
       />
       <div className={classes.captionMain}>
         <div className={classes.heroTitle}>{item.titlemain}</div>
-        <div className={classes.subtitle}>{item.subtitle}</div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 400 }}>{item.subtitle}</div>
       </div>
     </div>
   );
 
-  const renderCategoryButton = (category) => (
+  const renderCategoryButton = (category: { label: string; value: string }) => (
     <button
       key={category.value}
       onClick={() => setSelectedCategory(category.value)}
@@ -1141,43 +1199,6 @@ console.log("กราฟฟิกใน mock", graphicItems);
       {category.label}
     </button>
   );
-
-  const fileTypeStats = [
-    { label: 'ภาพ', key: 'image', color: '#1976d2', icon: 'pi pi-image' },
-    { label: 'วิดีโอ', key: 'video', color: '#b71c1c', icon: 'pi pi-video' },
-    { label: 'กราฟิก', key: 'graphic', color: '#b85c38', icon: 'pi pi-palette' },
-  ].map(type => ({
-    ...type,
-    count: resourcesData.resources.filter(r => r.type === type.key).length
-  }));
-
-
-  const categoryCount: Record<string, number> = {};
-  resourcesData.resources.forEach(r => {
-    if (Array.isArray(r.category)) {
-      r.category.forEach(cat => {
-        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
-      });
-    } else if (r.category) {
-      categoryCount[r.category] = (categoryCount[r.category] || 0) + 1;
-    }
-  });
-  const topCategories = Object.entries(categoryCount)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([cat, count]) => ({ cat, count }));
-  const categoryLabelMap: Record<string, string> = {
-    medical: "การแพทย์",
-    education: "การศึกษา",
-    campus: "รอบรั้ว",
-    art: "ศิลปะ",
-    science: "วิทยาศาสตร์",
-    research: "งานวิจัย",
-    technology: "เทคโนโลยี",
-    kku: "KKU",
-  };
-
-  const formatNumber = (num: number) => num.toLocaleString('en-US');
 
   const handleSearch = useCallback(() => {
     const term = searchTerm.trim();
@@ -1218,47 +1239,17 @@ console.log("กราฟฟิกใน mock", graphicItems);
             <input
               type="text"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") handleSearch(); }}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") handleSearch(); }}
               placeholder="ค้นหารูปภาพ วิดีโอ กราฟฟิก..."
-              style={{
-                width: "100%",
-                maxWidth: 560,
-                minWidth: 140,
-                fontSize: 20,
-                padding: "0.9rem 1.2rem 0.9rem 1.2rem",
-                border: "none",
-                borderRadius: "1.7rem 0 0 1.7rem",
-                outline: "none",
-                background: "#fafbfc",
-                color: "#444",
-                fontFamily: "inherit",
-                boxShadow: "none",
-                transition: "box-shadow 0.18s, border 0.18s",
-                height: 52,
-                fontWeight: 500,
-              }}
+              className={classes.searchInput}
               aria-label="ค้นหา"
               onFocus={e => e.currentTarget.style.boxShadow = "0 0 0 2px #ffd6d6"}
               onBlur={e => e.currentTarget.style.boxShadow = "none"}
             />
             <button
               onClick={handleSearch}
-              style={{
-                fontSize: 22,
-                padding: "0 2.1rem",
-                border: "none",
-                borderRadius: "0 1.7rem 1.7rem 0",
-                background: "#b71c1c",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-                height: 52,
-                transition: "background 0.2s, box-shadow 0.18s",
-                marginLeft: -2,
-                boxShadow: "0 2px 10px rgba(183,28,28,0.10)",
-                outline: "none"
-              }}
+              className={classes.searchButton}
               aria-label="ค้นหา"
               onMouseOver={e => e.currentTarget.style.background = "#a31515"}
               onMouseOut={e => e.currentTarget.style.background = "#b71c1c"}
@@ -1354,61 +1345,13 @@ console.log("กราฟฟิกใน mock", graphicItems);
               </button>
               <div
                 id="recommended-scroll"
-                style={{
-                  display: "flex",
-                  gap: 28,
-                  overflowX: "auto",
-                  scrollSnapType: "x mandatory",
-                  scrollBehavior: "smooth",
-                  padding: "0.5rem 2.5rem",
-                  WebkitOverflowScrolling: "touch",
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                }}
-                onWheel={e => {
-                  const el = e.currentTarget;
-                  if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
-                    el.scrollLeft += e.deltaY;
-                    e.preventDefault();
-                  }
-                }}
+                className={classes.recommendedScroll}
               >
                 {recommended.slice(0, 10).map((item) => (
                   <article
                     key={item.id}
+                    className={classes.recommendedCard}
                     onClick={() => navigate(`/resource/${item.id}`)}
-                    style={{
-                      background: "#fff",
-                      borderRadius: "16px",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-                      transition: "all 0.3s ease",
-                      display: "flex",
-                      flexDirection: "column",
-                      position: "relative",
-                      minWidth: 340,
-                      maxWidth: 360,
-                      width: 340,
-                      flex: "0 0 340px",
-                      scrollSnapAlign: "center",
-                      height: 460,
-                      minHeight: 460,
-                      maxHeight: 460,
-                      '@media (max-width: 600px)': {
-                        height: 'auto',
-                        minHeight: 320,
-                        maxHeight: 'none',
-                      },
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-5px)";
-                      e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.12)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)";
-                    }}
                   >
                     <div style={{
                       position: "relative",
@@ -1644,7 +1587,7 @@ console.log("กราฟฟิกใน mock", graphicItems);
         </section>
       )}
 
-      {imageResources.length > 0 && renderPhotoGallery({ photos: imageResources.slice(0, 6), classes, navigate })}
+      {imageResources.length > 0 && renderPhotoGallery({ photos: imageResources.slice(0, 6), navigate })}
 
       {videoResources.length > 0 && (
         <section style={{
@@ -1716,7 +1659,7 @@ console.log("กราฟฟิกใน mock", graphicItems);
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
                 }}
-                onWheel={e => {
+                onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
                   const el = e.currentTarget;
                   if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
                     el.scrollLeft += e.deltaY;
@@ -1743,11 +1686,11 @@ console.log("กราฟฟิกใน mock", graphicItems);
                       transition: "transform 0.25s, box-shadow 0.25s"
                     }}
                     onClick={() => handleOpenModal(item, index)}
-                    onMouseEnter={e => {
+                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
                       e.currentTarget.style.transform = "translateY(-8px)";
                       e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.16)";
                     }}
-                    onMouseLeave={e => {
+                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
                       e.currentTarget.style.transform = "translateY(0)";
                       e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.10)";
                     }}

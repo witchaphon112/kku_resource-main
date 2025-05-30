@@ -379,15 +379,6 @@ const ResourceDetailPage = () => {
     document.body.style.overflow = "auto";
   }, []);
 
-  // หา related images by TAG (type เดียวกันเท่านั้น)
-  const relatedByTag = resourcesData.resources
-    .filter((item) =>
-      item.id !== resource.id &&
-      item.type === resource.type &&
-      item.tags?.some(tag => resource.tags?.includes(tag))
-    ).slice(0, 8);
-
-  // related by category (ทุกประเภทในหมวดเดียวกัน)
   const relatedByCategory = resourcesData.resources
     .filter((item) =>
       item.category === resource.category &&
@@ -625,9 +616,7 @@ const ResourceDetailPage = () => {
           {relatedByCategory.length > 0 && (
             <div className={classes.relatedWrap}>
               <div className={classes.sectionTitle}>รายการที่เกี่ยวข้อง</div>
-              {/* --- Horizontal Scrollable Card Row --- */}
               <div style={{ position: "relative", width: "100%", overflow: "hidden", margin: "0 auto 2rem auto" }}>
-                {/* Arrow Left */}
                 <button
                   onClick={() => {
                     const el = document.getElementById("related-scroll");
@@ -658,7 +647,6 @@ const ResourceDetailPage = () => {
                 >
                   <i className="pi pi-chevron-left" />
                 </button>
-                {/* Scrollable Row */}
                 <div
                   id="related-scroll"
                   style={{
@@ -673,7 +661,6 @@ const ResourceDetailPage = () => {
                     msOverflowStyle: "none",
                   }}
                   onWheel={e => {
-                    // horizontal scroll on wheel
                     const el = e.currentTarget;
                     if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
                       el.scrollLeft += e.deltaY;
@@ -697,7 +684,6 @@ const ResourceDetailPage = () => {
                       }}
                     >
                       <img src={item.thumbnailUrl} alt={item.title} className={classes.relatedImg} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
-                      {/* Overlay info */}
                       <div
                         style={{
                           position: "absolute",
@@ -746,7 +732,6 @@ const ResourceDetailPage = () => {
                     </div>
                   ))}
                 </div>
-                {/* Arrow Right */}
                 <button
                   onClick={() => {
                     const el = document.getElementById("related-scroll");
@@ -778,7 +763,6 @@ const ResourceDetailPage = () => {
                   <i className="pi pi-chevron-right" />
                 </button>
               </div>
-              {/* --- END Horizontal Scrollable Card Row --- */}
             </div>
           )}
         </div>

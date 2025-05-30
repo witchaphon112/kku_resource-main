@@ -7,11 +7,9 @@ import {
   FaFileAlt,
   FaUser,
   FaList,
-  FaFilter,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import dayjs from "dayjs";
 
 const useStyles = createUseStyles({
   container: {
@@ -340,15 +338,6 @@ const getUniqueYears = (resources: { createdAt: string }[]) => {
   return Array.from(new Set(years)).sort((a, b) => Number(b) - Number(a));
 };
 
-const getUniqueMonths = (resources: { createdAt: string }[]): number[] => {
-  const months = resources.map(item => new Date(item.createdAt).getMonth() + 1);
-  return Array.from(new Set(months));
-};
-const getUniqueDays = (resources: { createdAt: string }[]): number[] => {
-  const days = resources.map(item => new Date(item.createdAt).getDate());
-  return Array.from(new Set(days));
-};
-
 const SearchResult = () => {
   const classes = useStyles();
   const query = useQuery();
@@ -361,16 +350,12 @@ const SearchResult = () => {
   const [sort, setSort] = useState("newest");
   const [types, setTypes] = useState(resourceTypes);
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedDay, setSelectedDay] = useState<string>("");
 
-  // Pagination state
   const [page, setPage] = useState(1);
 
   const yearCounts = getYearCounts(resourcesData.resources);
   const uniqueYears = getUniqueYears(resourcesData.resources);
 
-  // Filter resource ตาม keyword เงื่อนไขประเภทและอื่นๆ
   const results = useMemo(() => {
     let filtered = resourcesData.resources || [];
     if (keyword.trim()) {
@@ -383,42 +368,28 @@ const SearchResult = () => {
           : target.toLowerCase().includes(keyword.toLowerCase());
       });
     }
-    // ประเภททรัพยากร (ถ้าไม่ได้ติ๊ก "ทั้งหมด" จะใช้ array filter)
     if (!types.includes("ทั้งหมด")) {
       filtered = filtered.filter(item => types.includes(item.type));
     }
-    // filter by year
     if (selectedYears.length > 0) {
       filtered = filtered.filter(item => selectedYears.includes((new Date(item.createdAt).getFullYear() + 543).toString()));
     }
-    // filter by month
-    if (selectedMonth) {
-      filtered = filtered.filter(item => (new Date(item.createdAt).getMonth() + 1).toString() === selectedMonth);
-    }
-    // filter by day
-    if (selectedDay) {
-      filtered = filtered.filter(item => new Date(item.createdAt).getDate().toString() === selectedDay);
-    }
-    // sort
     if (sort === "newest") {
       filtered = filtered.slice().sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
     } else if (sort === "oldest") {
       filtered = filtered.slice().sort((a, b) => new Date(a.createdAt).valueOf() - new Date(b.createdAt).valueOf());
     }
     return filtered;
-  }, [keyword, logic, searchBy, sort, types, selectedYears, selectedMonth, selectedDay]);
+  }, [keyword, logic, searchBy, sort, types, selectedYears]);
 
-  // Pagination logic
   const totalPages = Math.ceil(Number(results.length) / Number(ITEMS_PER_PAGE));
   const pagedResults = results.slice(
     (Number(page) - 1) * Number(ITEMS_PER_PAGE),
     Number(page) * Number(ITEMS_PER_PAGE)
   );
 
-  // Reset page on filter change
-  useEffect(() => { setPage(1); }, [keyword, logic, searchBy, sort, types, selectedYears, selectedMonth, selectedDay]);
+  useEffect(() => { setPage(1); }, [keyword, logic, searchBy, sort, types, selectedYears]);
 
-  // จัดการ checkbox ประเภททรัพยากร
   const handleTypeChange = (type: string) => {
     if (type === "ทั้งหมด") {
       setTypes(types.includes("ทั้งหมด") ? [] : [...resourceTypes]);
@@ -433,15 +404,12 @@ const SearchResult = () => {
     }
   };
 
-  // ฟอร์ม submit (กรณีอยากลิงก์กับ query string)
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // navigate(`?q=${encodeURIComponent(keyword)}`); // ตัวอย่างถ้าจะลิงก์
   };
 
   return (
     <div className={classes.container}>
-      {/* Sidebar */}
       <aside className={classes.sidebar}>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           <div className={classes.label}>คำสำคัญ</div>
@@ -556,7 +524,6 @@ const SearchResult = () => {
           </button>
         </form>
       </aside>
-      {/* Main Result */}
       <main className={classes.main}>
         <div className={classes.resultHeader}>
           <FaSearch style={{ color: "#1565c0" }} />
@@ -606,7 +573,6 @@ const SearchResult = () => {
   </li>
 ))}
         </ul>
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className={classes.pagination}>
             <button

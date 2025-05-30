@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import { FaHeart, FaUniversity, FaBook, FaThLarge, FaTh, FaThList, FaList, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaHeart, FaUniversity, FaBook, FaThLarge, FaList, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import resourcesData from "../mock/resources.json";
 
 type ViewType = 'grid' | 'list';
@@ -9,7 +9,10 @@ type SortEvent = React.ChangeEvent<HTMLSelectElement>;
 
 const useStyles = createUseStyles({
   container: {
-    padding: "2rem",
+    padding: 16,
+    '@media (max-width: 600px)': {
+      padding: 8,
+    },
     maxWidth: "1200px",
     margin: "0 auto",
   },
@@ -331,7 +334,6 @@ const ImagesPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const [viewType, setViewType] = useState<ViewType>('grid');
-  const [gridSize, setGridSize] = useState("medium");
 
   const itemsPerPage = 12;
   const [page, setPage] = useState(1);
@@ -512,6 +514,14 @@ const ImagesPage = () => {
       ))}
     </div>
   );
+
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('wheel', handler, { passive: false });
+    return () => window.removeEventListener('wheel', handler);
+  }, []);
 
   return (
     <div className={classes.container}>

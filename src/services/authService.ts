@@ -9,6 +9,6 @@ export const login = (username: string, password: string) => {
       } else {
         reject(new Error('Invalid username or password'));
       }
-    }, 800); // simulate delay
+    }, 800);
   });
 };

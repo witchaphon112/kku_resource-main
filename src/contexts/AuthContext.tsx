@@ -8,6 +8,10 @@ export interface User {
   department: string;
   profileImage?: string;
   createdAt: string;
+  stats?: {
+    uploadCount?: number;
+    downloadCount?: number;
+  };
 }
 
 interface AuthContextType {

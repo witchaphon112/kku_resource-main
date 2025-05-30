@@ -15,7 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -25,7 +25,11 @@ const Login = () => {
       alert("เข้าสู่ระบบสำเร็จ");
       navigate('/');
     } catch (err) {
-      setError(err.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      if (err instanceof Error) {
+        setError(err.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      } else {
+        setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      }
     } finally {
       setLoading(false);
     }

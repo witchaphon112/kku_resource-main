@@ -11,7 +11,6 @@ import { Column } from "primereact/column";
 import { Chart } from "primereact/chart";
 import { TabView, TabPanel } from "primereact/tabview";
 import { Tag } from "primereact/tag";
-import { Dialog } from "primereact/dialog";
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
@@ -169,7 +168,6 @@ const AdminUploadPage = () => {
   const toast = useRef<Toast>(null);
 
   useEffect(() => {
-    // จำลองการดึงข้อมูลจาก API
     fetch('/mock/resources.json')
       .then(response => response.json())
       .then(data => setResources(data))
@@ -263,7 +261,6 @@ const AdminUploadPage = () => {
     );
   };
 
-  // คำนวณสถิติจากข้อมูลจริง
   const calculateStats = () => {
     const typeStats = {
       image: 0,
