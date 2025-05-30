@@ -100,7 +100,7 @@ const HERO_DATA = [
     id: "h1",
     titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
     subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
-    imageUrl: `${import.meta.env.BASE_URL}mock/resources/hero-1.jpg`,
+    imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
   },
   {
     id: "h2",
