@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import './app.css'; 
+import './App.css'; 
 import App from './App.tsx'
 import Modal from 'react-modal';
 
