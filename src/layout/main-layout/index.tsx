@@ -678,10 +678,10 @@ const MainLayout = () => {
           </div>
         </div>
         <div className={classes.footerCenter}>
-          <a href="/about">เกี่ยวกับเรา</a>
-          <a href="/privacy-policy">นโยบายความเป็นส่วนตัว</a>
-          <a href="/terms">เงื่อนไขการใช้งาน</a>
-          <a href="/contact">ติดต่อเรา</a>
+          <Link to="/about">เกี่ยวกับเรา</Link>
+          <Link to="/privacy-policy">นโยบายความเป็นส่วนตัว</Link>
+          <Link to="/terms">เงื่อนไขการใช้งาน</Link>
+          <Link to="/contact">ติดต่อเรา</Link>
         </div>
         <div className={classes.footerRight}>
           <div className={classes.footerSocial}>
