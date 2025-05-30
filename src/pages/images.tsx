@@ -409,7 +409,7 @@ const ImagesPage = () => {
         >
           <div className={classes.imageContainer}>
             <img
-              src={item.thumbnailUrl}
+              src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
               alt={item.title}
               title={item.title}
               className={classes.image}
@@ -462,7 +462,7 @@ const ImagesPage = () => {
         >
           <div className={classes.listImageContainer}>
             <img
-              src={item.thumbnailUrl}
+              src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
               alt={item.title}
               title={item.title}
               className={classes.image}

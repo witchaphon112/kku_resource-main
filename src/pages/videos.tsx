@@ -420,7 +420,7 @@ const VideosPage = () => {
               />
             ) : (
               <img
-                src={item.thumbnailUrl}
+                src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
                 alt={item.title}
                 title={item.title}
                 className={classes.image}
@@ -483,7 +483,7 @@ const VideosPage = () => {
               />
             ) : (
               <img
-                src={item.thumbnailUrl}
+                src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
                 alt={item.title}
                 title={item.title}
                 className={classes.image}

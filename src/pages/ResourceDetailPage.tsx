@@ -413,7 +413,7 @@ const ResourceDetailPage = () => {
   return (
     <div className={classes.container}>
       <div className={classes.heroImageWrap}>
-        <img src={resource.thumbnailUrl} alt={resource.title} />
+        <img src={`${import.meta.env.BASE_URL}${resource.thumbnailUrl.replace(/^\//, '')}`} alt={resource.title} />
         {isVideo && (
           <div
             className={classes.heroImageOverlay}
@@ -683,7 +683,7 @@ const ResourceDetailPage = () => {
                         e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.10)";
                       }}
                     >
-                      <img src={item.thumbnailUrl} alt={item.title} className={classes.relatedImg} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
+                      <img src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`} alt={item.title} className={classes.relatedImg} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
                       <div
                         style={{
                           position: "absolute",
