@@ -7,7 +7,7 @@ import { Sidebar } from "primereact/sidebar";
 import { Badge } from "primereact/badge";
 import { createUseStyles } from "react-jss";
 import { useAuth } from "../../contexts/AuthContext";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/unnamed1.png";
 import ScrollToTopButton from "../../components/ScrollToTopButton";
 
 const isActive = (pathname: string, path: string) =>
@@ -19,7 +19,7 @@ const useStyles = createUseStyles({
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
-    background: "#f8f9fb",
+    background: "#F9F7F7",
     fontFamily: "var(--bs-font-primary, 'Sarabun', 'Prompt', Arial, sans-serif)",
     position: "relative",
     zIndex: 0,
@@ -28,22 +28,22 @@ const useStyles = createUseStyles({
     position: "fixed",
     top: 0,
     left: 0,
-    width: "100vw",
+    width: "100%",
     zIndex: 1000,
-    background: "linear-gradient(90deg, rgba(161, 60, 35, 0.72), rgba(161, 61, 35, 0.85))",
-    backdropFilter: "blur(10px)",
-    color: "#fff",
-    minHeight: 56,
+    background: "linear-gradient(to top,rgba(12, 28, 46, 0.35) 30%,rgba(249, 247, 247, 0.31) 80%)",
+    color: "#DBE2EF",
+    minHeight: 62,
     display: "flex",
     alignItems: "center",
-    boxShadow: "0 2px 15px rgba(161, 61, 35, 0.2)",
+    boxShadow: "0 8px 32px 0 rgba(17,45,78,0.10)",
+    borderBottom: "1.5px solid rgba(63,114,175,0.10)",
+    backdropFilter: "blur(8px)",
     transition: "all 0.35s cubic-bezier(.4,.8,.4,1)",
   },
   headerScrolled: {
-    background: "linear-gradient(90deg, rgba(161, 61, 35, 0.98), rgba(161, 61, 35, 0.95))",
-    boxShadow: "0 4px 20px rgba(161, 61, 35, 0.3)",
-    backdropFilter: "blur(12px)",
-    minHeight: 64,
+    background: "#112D4E",
+    boxShadow: "0 4px 16px 0 rgb(17, 45, 78)",
+    minHeight: 68,
   },
   headerContent: {
     width: "100%",
@@ -68,14 +68,15 @@ const useStyles = createUseStyles({
     display: "flex",
     alignItems: "center",
     textDecoration: "none",
-    color: "#fff",
+    color: "#DBE2EF",
     fontWeight: 700,
     fontSize: 21,
     letterSpacing: 1.05,
     "& img": {
       marginRight: 9,
-      height: 65,
-      filter: "drop-shadow(0 2px 7px #ffba5950)",
+      height: 45,
+      marginBottom: 10,
+      filter: "drop-shadow(0 2px 7px #3F72AF50)",
       transition: "transform 0.3s ease",
     },
     "&:hover img": {
@@ -99,7 +100,7 @@ const useStyles = createUseStyles({
       alignItems: 'stretch',
       gap: 7,
       width: '100%',
-      background: 'rgba(161,61,35,0.97)',
+      background: '#112D4E',
       position: 'absolute',
       top: 56,
       left: 0,
@@ -108,23 +109,22 @@ const useStyles = createUseStyles({
     },
   },
   navLink: {
-    color: "#fff",
-    fontWeight: 500,
-    fontSize: 16,
+    color: "#DBE2EF",
+    fontWeight: 600,
+    fontSize: 15,
     textDecoration: "none",
-    borderRadius: 12,
-    padding: "8px 20px",
-    letterSpacing: 0.01,
+    borderRadius: 14,
+    padding: "7px 14px",
+    letterSpacing: 0.04,
     opacity: 0.93,
     background: "none",
-    transition: "all 0.2s ease",
+    transition: "all 0.22s cubic-bezier(.4,2,.6,1)",
     position: "relative",
     "&:hover, &.active": {
-      background: "rgba(167, 167, 167, 0.23)",
-      color: "#fff",
+      background: "#3F72AF",
+      color: "#F9F7F7",
       opacity: 1,
-      boxShadow: "0 1px 7px 0 #9993",
-      transform: "translateY(-1px)",
+      boxShadow: "0 2px 8px 0 #3F72AF33",
     },
     "&::after": {
       content: '""',
@@ -134,8 +134,9 @@ const useStyles = createUseStyles({
       transform: "translateX(-50%)",
       width: 0,
       height: 2,
-      background: "#fff",
-      transition: "width 0.2s ease",
+      background: "#DBE2EF",
+      borderRadius: 2,
+      transition: "width 0.2s cubic-bezier(.4,2,.6,1)",
     },
     "&:hover::after, &.active::after": {
       width: "70%",
@@ -170,7 +171,7 @@ const useStyles = createUseStyles({
     },
   },
   icon: {
-    color: "#fff",
+    color: "#3F72AF",
     fontSize: 27,
     cursor: "pointer",
     opacity: 0.94,
@@ -181,7 +182,7 @@ const useStyles = createUseStyles({
     "&:hover": {
       opacity: 1,
       transform: "scale(1.1)",
-      color: "#f4975a",
+      color: "#DBE2EF",
     }
   },
   userAvatar: {
@@ -193,32 +194,32 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     marginLeft: 6,
     cursor: "pointer",
-    boxShadow: "0 2px 8px #fff1",
+    boxShadow: "0 2px 8px #3F72AF33",
     transition: "all 0.2s ease",
-    border: "2px solid rgba(255,255,255,0.1)",
+    border: "2px solid #3F72AF55",
     "&:hover": {
       transform: "scale(1.05)",
-      borderColor: "rgba(255,255,255,0.2)",
-      boxShadow: "0 4px 12px #fff2",
+      borderColor: "#DBE2EF",
+      boxShadow: "0 4px 12px #3F72AF55",
     }
   },
   headerSearchBox: {
     display: "flex",
     alignItems: "center",
-    background: "linear-gradient(90deg,#232526,#191b1f 90%)",
+    background: "#fff",
     borderRadius: 12,
     padding: "0.2rem 1.2rem",
     minWidth: 320,
     maxWidth: 460,
     marginLeft: 18,
-    boxShadow: "0 2px 10px #10101040",
+    boxShadow: "0 2px 10px #0001",
     position: "relative",
     zIndex: 11,
-    border: "1px solid rgba(255,255,255,0.1)",
+    border: "1px solid #eee",
     transition: "all 0.2s ease",
     "&:focus-within": {
-      boxShadow: "0 4px 15px #10101060",
-      borderColor: "rgba(255,255,255,0.2)",
+      boxShadow: "0 4px 15px #0002",
+      borderColor: "#222",
       transform: "translateY(-1px)",
     },
     "@media (max-width: 700px)": {
@@ -231,7 +232,7 @@ const useStyles = createUseStyles({
   headerSearchInput: {
     border: "none",
     background: "transparent",
-    color: "#fff",
+    color: "#222",
     fontSize: 15,
     outline: "none",
     width: 220,
@@ -239,7 +240,7 @@ const useStyles = createUseStyles({
     marginRight: 10,
     "&::placeholder": {
       color: "#bbb",
-      opacity: 0.88,
+      opacity: 1,
     },
     "@media (max-width: 700px)": {
       width: 90,
@@ -248,12 +249,12 @@ const useStyles = createUseStyles({
   },
   headerSearchIcon: {
     fontSize: 20,
-    color: "#fff",
+    color: "#222",
     marginRight: 8,
     opacity: 0.92,
   },
   closeSearch: {
-    color: "#fff",
+    color: "#bbb",
     marginLeft: 10,
     fontSize: 22,
     cursor: "pointer",
@@ -261,7 +262,7 @@ const useStyles = createUseStyles({
     transition: "all 0.2s ease",
     "&:hover": { 
       opacity: 1, 
-      color: "#e66",
+      color: "#222",
       transform: "scale(1.1)",
     }
   },
@@ -270,18 +271,18 @@ const useStyles = createUseStyles({
     top: 60,
     right: 5,
     minWidth: 200,
-    background: "#23232a",
+    background: "#fff",
     borderRadius: 16,
-    boxShadow: "0 8px 32px 0 #23232a31",
+    boxShadow: "0 8px 32px 0 #0001",
     padding: "8px 0",
     zIndex: 1200,
     fontSize: 16,
     fontFamily: "inherit",
-    color: "#fff",
+    color: "#222",
     transition: "all 0.2s ease",
     transform: "translateY(-5px)",
     animation: "$fadeIn 0.2s",
-    border: "1px solid rgba(255,255,255,0.1)",
+    border: "1px solid #eee",
     "&.show": {
       opacity: 1,
       transform: "translateY(0)",
@@ -294,11 +295,11 @@ const useStyles = createUseStyles({
       right: 22,
       width: 18,
       height: 18,
-      background: "#23232a",
+      background: "#fff",
       transform: "rotate(45deg)",
       zIndex: 0,
-      borderLeft: "1px solid rgba(255,255,255,0.1)",
-      borderTop: "1px solid rgba(255,255,255,0.1)",
+      borderLeft: "1px solid #eee",
+      borderTop: "1px solid #eee",
     },
   },
   userMenuItem: {
@@ -311,17 +312,24 @@ const useStyles = createUseStyles({
     background: "none",
     width: "100%",
     fontSize: 15.5,
-    color: "#fff",
+    color: "#222",
     transition: "all 0.2s ease",
-    "&:hover": {
-      background: "#2d2d37",
-      color: "#f4975a",
+    "& i": { color: "#222" },
+    "&:hover, &:focus": {
+      background: "#F5F5F5",
+      color: "#222",
+      "& i": { color: "#222" },
       paddingLeft: "24px",
+    },
+    "&[disabled], &[aria-disabled='true']": {
+      color: "#bbb !important",
+      cursor: "not-allowed",
+      "& i": { color: "#bbb !important" },
     }
   },
   userMenuDivider: {
     height: 1,
-    background: "#484850",
+    background: "#eee",
     margin: "5px 0"
   },
   "@keyframes fadeIn": {
@@ -338,7 +346,7 @@ const useStyles = createUseStyles({
   },
   footerRow: {
     width: "100%",
-    background: 'url("/mock/background1.jpg") center/cover no-repeat, #a13d23',
+    background: '#112D4E',
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -346,7 +354,7 @@ const useStyles = createUseStyles({
     minHeight: 200,
     position: "relative",
     fontFamily: "inherit",
-    boxShadow: "0 4px 32px 0 #a13d2322",
+    boxShadow: "0 4px 32px 0 rgba(17,45,78,0.13)",
     marginTop: 60,
     "@media (max-width: 900px)": {
       flexDirection: 'column',
@@ -362,14 +370,14 @@ const useStyles = createUseStyles({
     alignItems: "flex-start",
     gap: 10,
     minWidth: 170,
-    "& img": { width: 60, borderRadius: 16, marginBottom: 5 },
+    "& img": { width: 200, borderRadius: 16, marginBottom: 5 },
     "@media (max-width: 900px)": {
       alignItems: 'center',
       minWidth: 0,
     },
   },
   footerTagline: {
-    color: "#ffd9b3",
+    color: "#DBE2EF",
     fontSize: 16,
     fontWeight: 500,
     lineHeight: 1.4,
@@ -389,13 +397,17 @@ const useStyles = createUseStyles({
       alignItems: 'center',
     },
     "& a": {
-      color: "#fff",
+      color: "#DBE2EF",
       textDecoration: "none",
       transition: "color 0.17s, text-decoration 0.17s",
       padding: "4px 16px",
       borderRadius: 7,
       fontSize: 18,
       fontWeight: 500,
+      "&:hover": {
+        color: "#112D4E",
+        background: "#DBE2EF",
+      }
     }
   },
   footerRight: {
@@ -414,8 +426,8 @@ const useStyles = createUseStyles({
     gap: "1.2rem",
     marginBottom: 4,
     "& a": {
-      color: "#fff",
-      background: "#ffffff20",
+      color: "#112D4E",
+      background: "#DBE2EF",
       borderRadius: "50%",
       width: 44,
       height: 44,
@@ -424,15 +436,16 @@ const useStyles = createUseStyles({
       alignItems: "center",
       justifyContent: "center",
       transition: "all 0.18s",
-      boxShadow: "0 2px 8px #411a0340",
+      boxShadow: "0 2px 8px #3F72AF33",
       "&:hover": {
-        color: "#a13d23",
+        color: "#DBE2EF",
+        background: "#3F72AF",
         transform: "scale(1.12)"
       }
     }
   },
   footerCopyright: {
-    color: "#fff",
+    color: "#DBE2EF",
     fontSize: 14,
     opacity: 0.92,
     marginTop: 5,
@@ -616,7 +629,7 @@ const MainLayout = () => {
                         }}
                         type="button"
                       >
-                        <i className={`pi ${item.icon}`} style={{ marginRight: 10 }} />
+                        <i className={`pi ${item.icon}`} style={{ marginRight: 10, color: "#222" }} />
                         {item.label}
                       </button>
                     )

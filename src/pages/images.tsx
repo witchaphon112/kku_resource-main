@@ -1,613 +1,505 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import { FaHeart, FaUniversity, FaBook, FaThLarge, FaList, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter } from "react-icons/fa";
 import resourcesData from "../mock/resources.json";
 
-type ViewType = 'grid' | 'list';
-type SortEvent = React.ChangeEvent<HTMLSelectElement>;
-
 const useStyles = createUseStyles({
-  container: {
-    padding: 16,
-    '@media (max-width: 600px)': {
-      padding: 8,
-    },
-    maxWidth: "1200px",
+  pageWrap: {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#F9F7F7",
+    padding: "2.5rem 0",
+    maxWidth: 1600,
     margin: "0 auto",
+    gap: "2.5rem"
   },
-  header: {
+  sidebar: {
+    minWidth: 270,
+    maxWidth: 300,
+    background: "#fff",
+    borderRadius: 18,
+    boxShadow: "0 2px 16px 0 #0001",
+    height: "fit-content",
+    alignSelf: "flex-start",
+    position: "sticky",
+    top: 30,
+    padding: "2rem 1.5rem",
+    marginTop: 10,
+  },
+  sidebarTitle: {
+    fontWeight: 800,
+    fontSize: "1.1rem",
+    color: "#222",
+    marginBottom: 18,
+    letterSpacing: 0.05,
+  },
+  categoryItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    fontWeight: 500,
+    fontSize: "1rem",
+    color: "#222",
+    marginBottom: 10,
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+    borderRadius: 10,
+    padding: "0.5rem 0.7rem",
+    transition: "all .15s",
+    position: "relative",
+    "&::before": {
+      content: '""',
+      display: "inline-block",
+      width: 22,
+      height: 22,
+      border: "1.5px solid #bbb",
+      borderRadius: 6,
+      marginRight: 10,
+      background: "#fff",
+      verticalAlign: "middle",
+      transition: "all .15s",
+    },
+    "& svg": {
+      fontSize: "1.1rem",
+      marginRight: 7,
+      color: "#bbb",
+      transition: "color .15s",
+    },
+    "&.active": {
+      fontWeight: 700,
+      color: "#3F72AF",
+      "&::before": {
+        background: "#3F72AF",
+        borderColor: "#3F72AF",
+      },
+      "& svg": {
+        color: "#fff",
+      },
+    },
+    "&:hover:not(.active)": {
+      "&::before": {
+        borderColor: "#3F72AF",
+      },
+    },
+    "@media (max-width: 700px)": {
+      fontSize: "0.97rem",
+      padding: "0.4rem 0.5rem",
+      gap: 8,
+      marginBottom: 7,
+      "&::before": { width: 18, height: 18, marginRight: 7 },
+      "& svg": { fontSize: "1rem", marginRight: 5 },
+    },
+  },
+  sidebarDivider: {
+    background: "#eee",
+    height: 1,
+    border: "none",
+    margin: "18px 0",
+  },
+  main: { flex: 1, minWidth: 0 },
+  headerRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: "2.2rem",
     flexWrap: "wrap",
-    marginBottom: "2rem",
-    gap: "1rem",
+    gap: "1.2rem"
   },
-  title: {
-    textAlign: "center",
-    fontSize: "2rem",
-    fontWeight: 700,
-    color: "#b71c1c",
-    marginBottom: "2rem",
+  pageTitle: {
+    fontSize: "2.2rem",
+    fontWeight: 800,
+    color: "#112D4E",
+    fontFamily: "'Sarabun', 'Inter', sans-serif",
+    letterSpacing: 0.1,
+    margin: 0
   },
-  filterGroup: {
+  sortBox: {
     display: "flex",
-    gap: "0.5rem",
-    flexWrap: "wrap",
-    marginBottom: "1rem",
+    gap: "1.2rem",
+    alignItems: "center"
   },
-  iconButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.4rem",
-    background: "none",
-    border: "1px solid #ccc",
-    borderRadius: 6,
-    padding: "0.4rem 0.8rem",
-    cursor: "pointer",
-    fontSize: "0.85rem",
-    color: "#555",
-    transition: "all 0.2s",
-    "&:hover": {
-      background: "#f2f2f2",
-    },
-  },
-  activeIconButton: {
-    background: "#b71c1c",
-    color: "#fff",
-    borderColor: "#b71c1c",
-  },
-  dropdown: {
-    padding: "0.5rem 1rem",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-    fontSize: "0.9rem",
-    minWidth: "180px",
-    backgroundColor: "#fff",
-    "&:focus": {
-      outline: "none",
-      borderColor: "#b71c1c",
-    },
+  sortSelect: {
+    padding: "0.7rem 1.3rem",
+    borderRadius: "14px",
+    border: "1.5px solid #3F72AF",
+    fontSize: "1rem",
+    background: "#F9F7F7",
+    fontWeight: 600,
+    color: "#112D4E",
+    minWidth: 170,
+    outline: "none",
+    transition: "all .16s",
+    "&:focus": { borderColor: "#3F72AF" }
   },
   grid: {
     display: "grid",
-    gap: "1.5rem",
-    marginBottom: "2rem",
-  },
-  gridLarge: {
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-  },
-  gridMedium: {
     gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-  },
-  gridSmall: {
-    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-  },
-  viewControls: {
-    display: "flex",
-    gap: "0.5rem",
-    alignItems: "center",
+    gap: "1.3rem",
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: "8px",
+    background: "#fff",
+    borderRadius: 22,
+    boxShadow: "0 4px 32px 0 #3F72AF22",
     overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    transition: "all 0.3s ease",
+    display: "flex",
+    flexDirection: "column",
+    transition: "all .23s cubic-bezier(.4,2,.6,1)",
     cursor: "pointer",
     position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
     "&:hover": {
-      transform: "translateY(-5px)",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
-    },
+      transform: "translateY(-7px) scale(1.035)",
+      boxShadow: "0 16px 40px 0 #3F72AF33",
+    }
   },
-  imageContainer: {
-    height: "160px",
+  cardImageBox: {
+    width: "100%",
+    aspectRatio: "4/3",
     overflow: "hidden",
     position: "relative",
-    "&:hover": {
-      "& $imageOverlay": {
-        opacity: 1,
-      },
-      "& $image": {
-        transform: "scale(1.1)",
-      },
+    "& img": {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transition: "transform .48s cubic-bezier(.4,2,.6,1), filter .3s"
     },
+    "&:hover img": {
+      transform: "scale(1.065)",
+      filter: "brightness(0.92)"
+    }
   },
-  image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    transition: "transform 0.5s ease",
-  },
-  imageOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: "linear-gradient(to top, rgba(183, 28, 28, 0.8), rgba(183, 28, 28, 0))",
-    opacity: 0,
-    transition: "opacity 0.3s ease",
+  cardActionBar: {
     display: "flex",
-    alignItems: "flex-end",
-    padding: "1rem",
+    gap: 18,
+    position: "absolute",
+    top: 18,
+    right: 18,
+    zIndex: 3,
+    background: "rgba(63, 113, 175, 0.38)",
+    borderRadius: 14,
+    boxShadow: "0 2px 8px #3F72AF33",
+    padding: "0.3rem 0.7rem",
   },
-  overlayText: {
-    color: "white",
-    fontSize: "0.8rem",
-    fontWeight: "bold",
-    textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+  cardActionBtn: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#fff",
+    fontSize: 18,
+    display: "flex",
+    alignItems: "center",
+    opacity: 0.85,
+    transition: "color .15s",
+    "&:hover": { color: "#F9F7F7" }
   },
   cardBody: {
-    padding: "1rem",
+    padding: "0.8rem 0.8rem 0.7rem 0.8rem",
     display: "flex",
     flexDirection: "column",
+    gap: ".7rem",
     flex: 1,
   },
   cardTitle: {
-    fontSize: "1rem",
-    fontWeight: 600,
-    marginBottom: "0.8rem",
-    color: "#333",
-    display: "-webkit-box",
-    "-webkit-line-clamp": 2,
-    "-webkit-box-orient": "vertical",
-    overflow: "hidden",
-    lineHeight: 1.4,
+    fontSize: "1.18rem",
+    fontWeight: 800,
+    color: "#112D4E",
+    marginBottom: 3,
+    lineHeight: 1.33,
+    fontFamily: "'Sarabun', 'Inter', sans-serif",
+    minHeight: 38
   },
   cardMeta: {
-    fontSize: "0.8rem",
-    color: "#666",
+    fontSize: ".95rem",
+    color: "#3F72AF",
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: "0.8rem",
+    alignItems: "center",
+    gap: 12,
+    margin: "5px 0 0 0"
   },
-  tagSection: {
-    borderTop: "1px solid #f0f0f0",
-    marginTop: "auto",
-    padding: "0.8rem 1rem 0",
-  },
-  tagContainer: {
+  tagBar: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "0.4rem",
-    marginBottom: "0.8rem",
+    gap: ".4rem",
+    marginTop: ".6rem"
   },
   tag: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "0.25rem 0.6rem",
-    borderRadius: "4px",
-    fontSize: "0.75rem",
-    backgroundColor: "#f5f5f5",
-    color: "#666",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: "#e8e8e8",
-    },
+    background: "#3F72AF",
+    color: "#fff",
+    borderRadius: 14,
+    padding: "0.23rem 0.93rem",
+    fontSize: ".9rem",
+    fontWeight: 500,
+    letterSpacing: 0.1
   },
   categoryTag: {
-    backgroundColor: "#f8f8f8",
-    border: "1px solid #eee",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "0.3rem",
-    padding: "0.25rem 0.6rem",
-    borderRadius: "4px",
-    fontSize: "0.75rem",
-    color: "#555",
-    fontWeight: 500,
+    background: "#DBE2EF",
+    color: "#112D4E",
+    borderRadius: 14,
+    padding: "0.22rem 0.83rem",
+    fontSize: ".9rem",
+    fontWeight: 700,
+    marginRight: 7
   },
-  tagIcon: {
-    fontSize: "0.85rem",
-    marginRight: "0.3rem",
+  emptyState: {
+    textAlign: "center",
+    padding: "2.5rem",
+    color: "#3F72AF",
+    fontSize: "1.18rem",
+    fontWeight: 500,
+    gridColumn: "1 / -1"
   },
   pagination: {
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    gap: "0.5rem",
-    marginTop: "2rem",
+    gap: "0.9rem",
+    margin: "3rem 0 0 0"
   },
-  pageButton: {
-    minWidth: "36px",
-    height: "36px",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-    backgroundColor: "#fff",
+  pageBtn: {
+    minWidth: 38,
+    height: 38,
+    borderRadius: 11,
+    border: "1.5px solid #3F72AF",
+    background: "#F9F7F7",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: "#f5f5f5",
-    },
-    "&.active": {
-      backgroundColor: "#b71c1c",
-      color: "#fff",
-      borderColor: "#b71c1c",
-    },
+    fontWeight: 700,
+    fontSize: "1.05rem",
+    color: "#3F72AF",
+    transition: "all .16s",
+    "&:hover": { background: "#3F72AF", color: "#fff" },
+    "&.active": { background: "#3F72AF", color: "#fff", borderColor: "#3F72AF" }
   },
-  emptyState: {
-    textAlign: "center",
-    padding: "2rem",
-    color: "#666",
-    gridColumn: "1 / -1",
-  },
-  gridView: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: "1.5rem",
-    marginBottom: "2rem",
-  },
-  listView: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    marginBottom: "2rem",
-  },
-  listCard: {
-    display: "flex",
-    backgroundColor: "#fff",
-    borderRadius: "8px",
-    overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-    "&:hover": {
-      transform: "translateX(5px)",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
-    },
-  },
-  listImageContainer: {
-    width: "240px",
-    height: "180px",
-    flexShrink: 0,
-    position: "relative",
-    overflow: "hidden",
-    borderRadius: "8px",
-    "&:hover": {
-      "& $imageOverlay": {
-        opacity: 1,
-      },
-      "& $image": {
-        transform: "scale(1.1)",
-      },
-    },
-  },
-  listContent: {
-    padding: "1rem",
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-  },
-  listTitle: {
-    fontSize: "1.2rem",
-    fontWeight: 600,
-    marginBottom: "0.5rem",
-    color: "#333",
-  },
-  listDescription: {
-    fontSize: "0.9rem",
-    color: "#666",
-    marginBottom: "0.5rem",
-    overflow: "hidden",
-    display: "-webkit-box",
-    "-webkit-line-clamp": 2,
-    "-webkit-box-orient": "vertical",
-    transition: "all 0.3s ease",
-  },
-  listDescriptionExpanded: {
-    "-webkit-line-clamp": "unset",
-  },
-  listMeta: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "0.8rem",
-    color: "#666",
-  },
-  learnMore: {
+  subCategoryItem: {
     display: "flex",
     alignItems: "center",
-    gap: "0.3rem",
-    color: "#b71c1c",
-    fontSize: "0.8rem",
+    gap: 10,
+    fontWeight: 400,
+    fontSize: "0.97rem",
+    color: "#666",
+    marginBottom: 7,
+    marginLeft: 32,
     cursor: "pointer",
-    border: "none",
     background: "none",
-    padding: 0,
+    border: "none",
+    borderRadius: 8,
+    padding: "0.35rem 0.7rem",
+    transition: "all .15s",
+    position: "relative",
+    "&.active": {
+      color: "#3F72AF",
+      fontWeight: 600,
+      background: "#F3F7FB",
+    },
     "&:hover": {
-      textDecoration: "underline",
+      color: "#3F72AF",
+      background: "#F3F7FB",
+    },
+    "@media (max-width: 700px)": {
+      fontSize: "0.93rem",
+      marginLeft: 18,
+      padding: "0.28rem 0.5rem",
     },
   },
 });
 
+const categories = [
+  { label: "ทั้งหมด", value: "all", icon: <FaThLarge /> },
+  { label: "การแพทย์", value: "medical", icon: <FaHeart />, children: [
+    { label: "โรงพยาบาล", value: "hospital" },
+    { label: "คลินิก", value: "clinic" },
+  ] },
+  { label: "การศึกษา", value: "education", icon: <FaBook />, children: [
+    { label: "คณะวิทยาศาสตร์", value: "science" },
+    { label: "คณะวิศวกรรมศาสตร์", value: "engineering" },
+  ] },
+  { label: "รอบรั้ว", value: "campus", icon: <FaUniversity /> }
+];
+
 const ImagesPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
-  const [viewType, setViewType] = useState<ViewType>('grid');
+
+  const [category, setCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("popular");
+  const [page, setPage] = useState(1);
+  const [openCats, setOpenCats] = useState<string[]>([]);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const itemsPerPage = 12;
-  const [page, setPage] = useState(1);
-  const [category, setCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("latest");
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const images = resourcesData.resources.filter((item) => item.type === "image");
-
-  const filteredItems = useMemo(() => {
-    return category === "all"
-      ? images
-      : images.filter((item) => item.category === category);
-  }, [category, images]);
-
+  const filteredItems = useMemo(() => (
+    category === "all" ? images : images.filter(item => item.category === category)
+  ), [category, images]);
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       switch (sortBy) {
-        case "latest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case "oldest":
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case "popular":
-          return (b.downloadCount || 0) - (a.downloadCount || 0);
-        case "az":
-          return a.title.localeCompare(b.title, "th");
-        case "za":
-          return b.title.localeCompare(a.title, "th");
-        default:
-          return 0;
+        case "latest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "popular": return (b.downloadCount || 0) - (a.downloadCount || 0);
+        case "az": return a.title.localeCompare(b.title, "th");
+        case "za": return b.title.localeCompare(a.title, "th");
+        default: return 0;
       }
     });
   }, [filteredItems, sortBy]);
-
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
-  const paginatedItems = sortedItems.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  const paginatedItems = sortedItems.slice((page-1)*itemsPerPage, page*itemsPerPage);
 
-  const handleSortChange = (e: SortEvent) => {
-    setSortBy(e.target.value);
-    setPage(1);
+  const toggleCat = (val: string) => {
+    setOpenCats(open => open.includes(val) ? open.filter(v => v !== val) : [...open, val]);
   };
 
-  const categories = [
-    { label: "ทั้งหมด", value: "all", icon: <FaThLarge /> },
-    { label: "การแพทย์", value: "medical", icon: <FaHeart /> },
-    { label: "การศึกษา", value: "education", icon: <FaBook /> },
-    { label: "รอบรั้ว", value: "campus", icon: <FaUniversity /> },
-  ];
-
-  const toggleExpand = (id: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent navigation when clicking learn more
-    setExpandedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
-  const renderGridView = () => (
-    <div className={classes.gridView}>
-      {paginatedItems.map((item) => (
-        <div
-          key={item.id}
-          className={classes.card}
-          onClick={() => navigate(`/resource/${item.id}`)}
-        >
-          <div className={classes.imageContainer}>
-            <img
-              src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-              alt={item.title}
-              title={item.title}
-              className={classes.image}
-            />
-            <div className={classes.imageOverlay}>
-              <span className={classes.overlayText}>คลิกเพื่อดูรายละเอียด</span>
-            </div>
-          </div>
-          <div className={classes.cardBody}>
-            <h3 className={classes.cardTitle}>{item.title}</h3>
-            <div className={classes.cardMeta}>
-              <span>ดาวน์โหลด: {item.downloadCount ?? 0} ครั้ง</span>
-              <span>{new Date(item.createdAt).toLocaleDateString('th-TH')}</span>
-            </div>
-          </div>
-          <div className={classes.tagSection}>
-            <div className={classes.tagContainer}>
-              <span className={classes.categoryTag}>
-                {item.category === "medical" && <FaHeart className={classes.tagIcon} />}
-                {item.category === "education" && <FaBook className={classes.tagIcon} />}
-                {item.category === "campus" && <FaUniversity className={classes.tagIcon} />}
-                {item.category === "medical"
-                  ? "การแพทย์"
-                  : item.category === "education"
-                  ? "การศึกษา"
-                  : "รอบรั้วมหาวิทยาลัย"}
-              </span>
-              {item.tags?.slice(0, 3).map((tag: string) => (
-                <span key={tag} className={classes.tag}>
-                  {tag}
-                </span>
-              ))}
-              {item.tags?.length > 3 && (
-                <span className={classes.tag}>+{item.tags.length - 3}</span>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderListView = () => (
-    <div className={classes.listView}>
-      {paginatedItems.map((item) => (
-        <div
-          key={item.id}
-          className={classes.listCard}
-          onClick={() => navigate(`/resource/${item.id}`)}
-        >
-          <div className={classes.listImageContainer}>
-            <img
-              src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-              alt={item.title}
-              title={item.title}
-              className={classes.image}
-            />
-            <div className={classes.imageOverlay}>
-              <span className={classes.overlayText}>คลิกเพื่อดูรายละเอียด</span>
-            </div>
-          </div>
-          <div className={classes.listContent}>
-            <div>
-              <h3 className={classes.listTitle}>{item.title}</h3>
-              <p className={`${classes.listDescription} ${
-                expandedItems.has(item.id) ? classes.listDescriptionExpanded : ""
-              }`}>
-                {item.description || "ไม่มีคำอธิบายเพิ่มเติม"}
-              </p>
-              {item.description && item.description.length > 100 && (
-                <button 
-                  className={classes.learnMore}
-                  onClick={(e) => toggleExpand(item.id, e)}
-                >
-                  {expandedItems.has(item.id) ? (
-                    <>
-                      <span>ย่อเนื้อหา</span>
-                      <FaChevronUp size={12} />
-                    </>
-                  ) : (
-                    <>
-                      <span>อ่านเพิ่มเติม</span>
-                      <FaChevronDown size={12} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-            <div className={classes.listMeta}>
-              <span>
-                {item.category === "medical"
-                  ? "การแพทย์"
-                  : item.category === "education"
-                  ? "การศึกษา"
-                  : "รอบรั้วมหาวิทยาลัย"}
-              </span>
-              <span>อัพโหลดเมื่อ: {new Date(item.createdAt).toLocaleDateString('th-TH')}</span>
-              <span>ดาวน์โหลด: {item.downloadCount ?? 0}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
+  const mainCategories = ["all", "medical", "education", "campus"];
   useEffect(() => {
-    const handler = (e: WheelEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener('wheel', handler, { passive: false });
-    return () => window.removeEventListener('wheel', handler);
-  }, []);
+    if (!mainCategories.includes(category)) setSidebarVisible(false);
+  }, [category]);
 
   return (
-    <div className={classes.container}>
-      <h1 className={classes.title}>คลังภาพทรัพยากร</h1>
-
-      <div className={classes.header}>
-        <div className={classes.filterGroup}>
-          {categories.map((item) => (
-            <button
-              key={item.value}
-              onClick={() => {
-                setCategory(item.value);
-                setPage(1);
-              }}
-              className={`${classes.iconButton} ${
-                category === item.value ? classes.activeIconButton : ""
-              }`}
+    <div className={classes.pageWrap}>
+      {/* Sidebar */}
+      {sidebarVisible && (
+        <aside className={classes.sidebar}>
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: 8, marginBottom: 18, background: "#fff", border: "1.5px solid #eee", borderRadius: 10, padding: "7px 16px", fontWeight: 600, fontSize: 15, color: "#3F72AF", boxShadow: "0 2px 8px #0001", cursor: "pointer" 
+            }}
+            onClick={() => setSidebarVisible(false)}
+          >
+            <FaFilter style={{ color: "#3F72AF", fontSize: 16 }} /> ซ่อนหมวดหมู่
+          </button>
+          <div className={classes.sidebarTitle}>Categories</div>
+          <hr className={classes.sidebarDivider} />
+          {categories.map(c => (
+            <div key={c.value}>
+              <button
+                className={`${classes.categoryItem} ${category === c.value ? "active" : ""}`}
+                onClick={() => {
+                  if (c.children) toggleCat(c.value);
+                  setCategory(c.value); setPage(1);
+                }}
+                aria-expanded={!!c.children && openCats.includes(c.value)}
+                aria-controls={c.children ? `subcat-${c.value}` : undefined}
+              >
+                {c.icon}
+                <span>{c.label}</span>
+                {c.children && (
+                  <span style={{ marginLeft: "auto", fontSize: 16, color: "#bbb", transform: openCats.includes(c.value) ? "rotate(90deg)" : "none", transition: "transform .18s" }}>&#9654;</span>
+                )}
+              </button>
+              {c.children && openCats.includes(c.value) && (
+                <div id={`subcat-${c.value}`}>
+                  {c.children.map(sub => (
+                    <button
+                      key={sub.value}
+                      className={`${classes.subCategoryItem} ${category === sub.value ? "active" : ""}`}
+                      onClick={() => { setCategory(sub.value); setPage(1); }}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </aside>
+      )}
+      {/* Main */}
+      <div className={classes.main} style={!sidebarVisible ? { maxWidth: "100%", width: "100%" } : {}}>
+        {/* Show Filters Button */}
+        {!sidebarVisible && (
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: 8, marginBottom: 24, background: "#fff", border: "1.5px solid #eee", borderRadius: 10, padding: "8px 18px", fontWeight: 600, fontSize: 16, color: "#3F72AF", boxShadow: "0 2px 8px #0001", cursor: "pointer" 
+            }}
+            onClick={() => setSidebarVisible(true)}
+          >
+            <FaFilter style={{ color: "#3F72AF", fontSize: 18 }} /> แสดงหมวดหมู่
+          </button>
+        )}
+        {/* Header */}
+        <div className={classes.headerRow}>
+          <h2 className={classes.pageTitle}>คลังภาพทรัพยากร</h2>
+          <div className={classes.sortBox}>
+            <span>Sort by</span>
+            <select
+              className={classes.sortSelect}
+              onChange={e => { setSortBy(e.target.value); setPage(1); }}
+              value={sortBy}
             >
-              {item.icon}
-              <span>{item.label}</span>
-            </button>
+              <option value="popular">ยอดนิยม</option>
+              <option value="latest">วันที่ใหม่สุด</option>
+              <option value="oldest">วันที่เก่าสุด</option>
+              <option value="az">ชื่อ A-Z</option>
+              <option value="za">ชื่อ Z-A</option>
+            </select>
+          </div>
+        </div>
+        {/* Grid */}
+        <div className={classes.grid}>
+          {paginatedItems.length === 0 ? (
+            <div className={classes.emptyState}>ไม่พบข้อมูลที่ตรงกับเงื่อนไข</div>
+          ) : paginatedItems.map(item => (
+            <div
+              key={item.id}
+              className={classes.card}
+              onClick={() => navigate(`/resource/${item.id}`)}
+            >
+              <div className={classes.cardImageBox}>
+                <img
+                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, "")}`}
+                  alt={item.title}
+                />
+                <div className={classes.cardActionBar} onClick={e => e.stopPropagation()}>
+                  <button className={classes.cardActionBtn} title="ดูตัวอย่าง"><FaEye /></button>
+                  <button className={classes.cardActionBtn} title="บุ๊คมาร์ค"><FaRegBookmark /></button>
+                  <button className={classes.cardActionBtn} title="ดาวน์โหลด"><FaDownload /></button>
+                </div>
+              </div>
+              <div className={classes.cardBody}>
+                <div className={classes.cardTitle}>{item.title}</div>
+                <div className={classes.cardMeta}>
+                  <span>{item.category === "medical"
+                    ? <> <FaHeart /> การแพทย์ </>
+                    : item.category === "education"
+                    ? <> <FaBook /> การศึกษา </>
+                    : <> <FaUniversity /> รอบรั้วมหาวิทยาลัย </>}
+                  </span>
+                  <span>{new Date(item.createdAt).toLocaleDateString("th-TH")}</span>
+                  <span>ดาวน์โหลด: {item.downloadCount ?? 0}</span>
+                </div>
+                <div className={classes.tagBar}>
+                  {item.tags?.slice(0,3).map(tag => (
+                    <span className={classes.tag} key={tag}>{tag}</span>
+                  ))}
+                  {item.tags?.length > 3 && (
+                    <span className={classes.tag}>+{item.tags.length - 3}</span>
+                  )}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-
-        <div className={classes.viewControls}>
-          <button
-            className={`${classes.iconButton} ${
-              viewType === "grid" ? classes.activeIconButton : ""
-            }`}
-            onClick={() => setViewType("grid")}
-            title="มุมมองกริด"
-          >
-            <FaThLarge />
-          </button>
-          <button
-            className={`${classes.iconButton} ${
-              viewType === "list" ? classes.activeIconButton : ""
-            }`}
-            onClick={() => setViewType("list")}
-            title="มุมมองรายการ"
-          >
-            <FaList />
-          </button>
-
-          <select
-            className={classes.dropdown}
-            onChange={handleSortChange}
-            value={sortBy}
-          >
-            <option value="latest">วันที่ใหม่สุด</option>
-            <option value="oldest">วันที่เก่าสุด</option>
-            <option value="popular">ยอดนิยม</option>
-            <option value="az">ชื่อ A - Z</option>
-            <option value="za">ชื่อ Z - A</option>
-          </select>
-        </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className={classes.pagination}>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                className={`${classes.pageBtn} ${page === i + 1 ? "active" : ""}`}
+                onClick={() => { setPage(i+1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                aria-current={page === i + 1 ? "page" : undefined}
+              >
+                {i+1}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-
-      {paginatedItems.length === 0 ? (
-        <div className={classes.emptyState}>
-          ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา
-        </div>
-      ) : (
-        <>
-          {viewType === 'grid' ? renderGridView() : renderListView()}
-          {totalPages > 1 && (
-            <div className={classes.pagination}>
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index}
-                  className={`${classes.pageButton} ${
-                    page === index + 1 ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setPage(index + 1);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  aria-current={page === index + 1 ? "page" : undefined}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 };
