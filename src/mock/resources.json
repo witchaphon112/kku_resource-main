@@ -9,6 +9,14 @@
       "tags": ["แพทย์หัวใจ", "การแพทย์","แพทย์"],
       "fileUrl": "/mock/resources/poster-2024.png",
       "thumbnailUrl": "/mock/resources/hero-1.jpg",
+      "gallery": [
+        "/mock/resources/hero-1.jpg",
+        "/mock/resources/hero-2.jpg",
+        "/mock/resources/hero-3.jpg",
+        "/mock/resources/hero-4.jpg",
+        "/mock/resources/hero-5.jpg",
+        "/mock/resources/hero-6.jpg"
+      ],
       "uploadedBy": "admin",
       "downloadCount":10,
       "viewCount":212,

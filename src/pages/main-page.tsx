@@ -13,21 +13,23 @@ import hero1 from '../assets/hero-1.jpg';
 
 const THEME = {
   colors: {
-    primary: "#b71c1c",
-    primaryLight: "rgba(183,28,28,0.9)",
-    primaryDark: "#8f1616",
-    secondary: "#1a237e",
+    primary: "#112D4E",
+    primaryLight: "rgba(17,45,78,0.9)",
+    primaryDark: "#0c1c2e",
+    secondary: "#3F72AF",
+    secondaryLight: "rgba(63,114,175,0.9)",
+    secondaryDark: "#2c5a8f",
     text: {
-      primary: "#212121",
+      primary: "#112D4E",
       secondary: "#666666",
-      light: "#ffffff"
+      light: "#DBE2EF"
     },
     background: {
       main: "#ffffff",
-      light: "#f8f9fa",
-      gradient: "linear-gradient(120deg,#f6fafd 70%,#fbeee6 100%)"
+      light: "#F9F7F7",
+      gradient: "linear-gradient(120deg, #F9F7F7 70%, #DBE2EF 100%)"
     },
-    border: "#eeeeee"
+    border: "#DBE2EF"
   },
   spacing: {
     xs: "0.5rem",
@@ -43,9 +45,9 @@ const THEME = {
     xl: "32px"
   },
   shadows: {
-    card: "0 4px 20px rgba(0,0,0,0.08)",
-    cardHover: "0 8px 30px rgba(0,0,0,0.12)",
-    button: "0 2px 8px rgba(0,0,0,0.15)"
+    card: "0 4px 20px rgba(17,45,78,0.08)",
+    cardHover: "0 8px 30px rgba(17,45,78,0.12)",
+    button: "0 2px 8px rgba(17,45,78,0.15)"
   },
   typography: {
     fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
@@ -134,7 +136,7 @@ const useStyles = createUseStyles({
       display: "block",
       width: "55px",
       height: "6px",
-      backgroundColor: THEME.colors.primary,
+      backgroundColor: THEME.colors.secondary,
       margin: "0.5rem auto 0",
       borderRadius: "4px",
     },
@@ -386,10 +388,10 @@ const useStyles = createUseStyles({
   categoryText: {
     fontSize: "0.7rem",
     fontWeight: 600,
-    color: "#b71c1c",
+    color: THEME.colors.secondary,
     marginBottom: "0.3rem",
     textTransform: "uppercase",
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    fontFamily: THEME.typography.fontFamily,
     letterSpacing: "0.5px",
   },
   
@@ -397,8 +399,8 @@ const useStyles = createUseStyles({
     fontSize: "1.1rem",
     fontWeight: 700,
     marginBottom: "0.5rem",
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
-    color: "#333",
+    fontFamily: THEME.typography.fontFamily,
+    color: THEME.colors.text.primary,
     lineHeight: 1.3,
   },
 
@@ -414,19 +416,19 @@ const useStyles = createUseStyles({
   
   featuredCard: {
     position: "relative",
-    borderRadius: 24,
+    borderRadius: THEME.borderRadius.lg,
     overflow: "hidden",
     minWidth: 290,
     width: 340,
     maxWidth: "90vw",
     aspectRatio: "1 / 1.1",
-    boxShadow: "0 8px 36px rgba(137,45,5,0.10), 0 2px 8px rgba(34,34,34,0.1)",
+    boxShadow: THEME.shadows.card,
     cursor: "pointer",
-    background: "#fff",
+    background: THEME.colors.background.main,
     transition: `transform ${ANIMATION_DURATION.NORMAL}ms ease, box-shadow ${ANIMATION_DURATION.NORMAL}ms ease`,
     "&:hover": {
       transform: "translateY(-6px) scale(1.04)",
-      boxShadow: "0 16px 42px rgba(183,28,28,0.13), 0 4px 12px rgba(51,51,51,0.2)"
+      boxShadow: THEME.shadows.cardHover
     }
   },
 
@@ -446,7 +448,7 @@ const useStyles = createUseStyles({
   videoModalOverlay: {
     position: "fixed",
     inset: 0,
-    backgroundColor: "rgba(0,0,0,0.9)",
+    backgroundColor: "rgba(17,45,78,0.9)",
     zIndex: 10000,
     display: "flex",
     alignItems: "center",
@@ -462,18 +464,18 @@ const useStyles = createUseStyles({
     background: 'rgba(255,255,255,0.92)',
     border: 'none',
     borderRadius: 30,
-    boxShadow: '0 3px 18px rgba(51,51,51,0.2)',
+    boxShadow: '0 3px 18px rgba(17,45,78,0.2)',
     width: 50,
     height: 50,
     fontSize: 26,
-    color: '#b71c1c',
+    color: THEME.colors.secondary,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
     transition: `all ${ANIMATION_DURATION.NORMAL}ms ease`,
     '&:hover': {
-      background: '#b71c1c',
+      background: THEME.colors.secondary,
       color: '#fff',
       transform: 'translateY(-50%) scale(1.12)',
     }
@@ -507,19 +509,19 @@ const useStyles = createUseStyles({
   },
   
   carouselDotActive: {
-    background: '#4057ef',
+    background: THEME.colors.secondary,
   },
 
   photoGalleryContainer: {
     maxWidth: 1100,
     margin: "0 auto 60px auto",
-    background: "#fff",
-    borderRadius: 18,
-    boxShadow: "0 8px 30px rgba(137, 45, 5, 0.08)",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    boxShadow: THEME.shadows.card,
     padding: "24px",
     "@media (max-width: 768px)": {
       padding: "16px",
-      borderRadius: 12,
+      borderRadius: THEME.borderRadius.md,
     }
   },
 
@@ -530,10 +532,10 @@ const useStyles = createUseStyles({
     width: 56,
     height: 56,
     borderRadius: "50%",
-    background: "#6e7682",
-    color: "#fff",
+    background: THEME.colors.secondary,
+    color: THEME.colors.text.light,
     border: "none",
-    boxShadow: "0 4px 16px rgba(51,51,51,0.2)",
+    boxShadow: THEME.shadows.button,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -542,8 +544,9 @@ const useStyles = createUseStyles({
     cursor: "pointer",
     transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
     "&:hover": {
-      background: "#b71c1c",
+      background: THEME.colors.secondaryDark,
       transform: "scale(1.1)",
+      boxShadow: THEME.shadows.cardHover,
     }
   },
 
@@ -644,7 +647,7 @@ const useStyles = createUseStyles({
     transition: THEME.transitions.fast,
     fontWeight: 500,
     "&:hover": {
-      background: THEME.colors.primaryLight,
+      background: THEME.colors.secondaryLight,
       color: THEME.colors.text.light,
       transform: "translateY(-2px)"
     }
@@ -666,65 +669,98 @@ const useStyles = createUseStyles({
   statsSection: {
     width: '100%',
     background: 'transparent',
-    padding: '2.5rem 0 2rem 0',
-    marginTop: '2.5rem',
+    padding: '3rem 0',
+    marginTop: '2rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   statsTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.75rem',
     fontWeight: 700,
-    color: '#1a237e',
-    marginBottom: '1.2rem',
+    color: THEME.colors.primary,
+    marginBottom: '2.5rem',
     letterSpacing: 0.5,
-    fontFamily: 'Sarabun, sans-serif',
+    fontFamily: THEME.typography.fontFamily,
+    textAlign: 'center',
+    position: 'relative',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      bottom: '-10px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '50px',
+      height: '3px',
+      background: THEME.colors.secondary,
+      borderRadius: '2px',
+    }
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-    gap: '1.2rem',
+    gridTemplateColumns: 'repeat(6, 1fr)',
+    gap: '1.5rem',
     width: '100%',
-    maxWidth: 540,
+    maxWidth: 1200,
+    margin: '0 auto',
+    padding: '0 1.5rem',
+    '@media (max-width: 1200px)': {
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      maxWidth: 900,
+    },
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: '1rem',
+      padding: '0 1rem',
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: '1fr',
+      maxWidth: 280,
+    }
   },
   statsCard: {
-    borderRadius: 20,
-    minWidth: 0,
-    padding: '1.2rem 0.5rem 1.1rem 0.5rem',
+    borderRadius: '12px',
+    padding: '1.5rem 1rem',
     textAlign: 'center',
-    fontFamily: 'Sarabun, sans-serif',
+    fontFamily: THEME.typography.fontFamily,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 10px rgba(51,51,51,0.07)',
-    transition: 'box-shadow 0.18s cubic-bezier(.4,2,.6,1), transform 0.18s cubic-bezier(.4,2,.6,1)',
+    boxShadow: THEME.shadows.card,
+    transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
     cursor: 'default',
-    border: '1px solid #f0f0f0',
+    border: `1px solid ${THEME.colors.border}`,
+    background: THEME.colors.background.main,
+    minHeight: '160px',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      boxShadow: THEME.shadows.cardHover,
+    }
   },
   statsIcon: {
     fontSize: '1.5rem',
-    marginBottom: '0.5rem',
+    marginBottom: '1rem',
     opacity: 0.85,
   },
   statsNumber: {
-    fontSize: '1.7rem',
-    fontWeight: 800,
-    marginBottom: '0.2rem',
+    fontSize: '2rem',
+    fontWeight: 700,
+    marginBottom: '0.5rem',
     letterSpacing: 1,
   },
   statsLabel: {
-    fontSize: '1.05rem',
+    fontSize: '0.95rem',
     fontWeight: 600,
     letterSpacing: 0.2,
     color: '#333',
   },
   recommendedCard: {
     background: "#fff",
-    borderRadius: 16,
+    borderRadius: THEME.borderRadius.lg,
     overflow: "hidden",
     cursor: "pointer",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+    boxShadow: THEME.shadows.card,
     transition: "all 0.3s ease",
     display: "flex",
     flexDirection: "column",
@@ -735,15 +771,16 @@ const useStyles = createUseStyles({
     flex: "0 0 340px",
     scrollSnapAlign: "center",
     height: 460,
-    minHeight: 460,
-    maxHeight: 460,
+    '&:hover': {
+      transform: "translateY(-8px)",
+      boxShadow: THEME.shadows.cardHover,
+    },
     '@media (max-width: 600px)': {
       minWidth: 220,
       maxWidth: '90vw',
       width: '90vw',
       height: 'auto',
       minHeight: 180,
-      maxHeight: 'none',
     }
   },
   recommendedScroll: {
@@ -766,20 +803,23 @@ const useStyles = createUseStyles({
     maxWidth: 560,
     minWidth: 140,
     fontSize: 20,
-    padding: "0.9rem 1.2rem 0.9rem 1.2rem",
+    padding: "0.9rem 1.2rem",
     border: "none",
     borderRadius: "1.7rem 0 0 1.7rem",
     outline: "none",
     background: "#fafbfc",
-    color: "#444",
+    color: THEME.colors.text.primary,
     fontFamily: "inherit",
     boxShadow: "none",
     transition: "box-shadow 0.18s, border 0.18s",
     height: 52,
     fontWeight: 500,
+    '&:focus': {
+      boxShadow: `0 0 0 2px ${THEME.colors.secondary}33`,
+    },
     '@media (max-width: 600px)': {
       fontSize: 15,
-      padding: '0.7rem 0.8rem 0.7rem 0.8rem',
+      padding: '0.7rem 0.8rem',
       height: 40,
     }
   },
@@ -788,15 +828,19 @@ const useStyles = createUseStyles({
     padding: "0 2.1rem",
     border: "none",
     borderRadius: "0 1.7rem 1.7rem 0",
-    background: "#b71c1c",
+    background: THEME.colors.secondary,
     color: "#fff",
     fontWeight: 700,
     cursor: "pointer",
     height: 52,
     transition: "background 0.2s, box-shadow 0.18s",
     marginLeft: -2,
-    boxShadow: "0 2px 10px rgba(183,28,28,0.10)",
+    boxShadow: `0 2px 10px ${THEME.colors.secondary}33`,
     outline: "none",
+    '&:hover': {
+      background: THEME.colors.secondaryDark,
+      boxShadow: `0 4px 15px ${THEME.colors.secondary}40`,
+    },
     '@media (max-width: 600px)': {
       fontSize: 16,
       padding: '0 1.1rem',
@@ -836,7 +880,7 @@ const renderPhotoGallery = ({ photos, navigate }: Omit<PhotoGalleryProps, 'class
   const displayPhotos = photos.slice(0, 6);
   return (
     <section style={{ background: "#fff", padding: "4rem 0", borderTop: "1px solid #eee" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}>
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 1.5rem" }}>
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <h2 style={{
             fontSize: "2.5rem",
@@ -1170,7 +1214,14 @@ const MainPage = () => {
       />
       <div className={classes.captionMain}>
         <div className={classes.heroTitle}>{item.titlemain}</div>
-        <div style={{ fontSize: '1.1rem', fontWeight: 400 }}>{item.subtitle}</div>
+        <div style={{ 
+          fontSize: '1.1rem', 
+          fontWeight: 400,
+          color: THEME.colors.text.light,
+          textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        }}>
+          {item.subtitle}
+        </div>
       </div>
     </div>
   );
@@ -1182,13 +1233,13 @@ const MainPage = () => {
       style={{
         padding: "0.6rem 1.75rem",
         borderRadius: 24,
-        border: selectedCategory === category.value ? "2px solid #b71c1c" : "2px solid #ddd",
-        background: selectedCategory === category.value ? "#b71c1c" : "#fff",
-        color: selectedCategory === category.value ? "#fff" : "#333",
+        border: selectedCategory === category.value ? `2px solid ${THEME.colors.secondary}` : `2px solid ${THEME.colors.border}`,
+        background: selectedCategory === category.value ? THEME.colors.secondary : THEME.colors.background.main,
+        color: selectedCategory === category.value ? THEME.colors.text.light : THEME.colors.text.primary,
         fontWeight: 600,
         fontSize: "1rem",
         boxShadow: selectedCategory === category.value 
-          ? "0 3px 10px rgba(183,28,28,0.25)" 
+          ? `0 3px 10px ${THEME.colors.secondary}33` 
           : "0 2px 5px rgba(0,0,0,0.05)",
         cursor: "pointer",
         transition: `all ${ANIMATION_DURATION.NORMAL}ms ease`,
@@ -1229,9 +1280,9 @@ const MainPage = () => {
             alignItems: "center",
             width: "100%",
             maxWidth: 560,
-            boxShadow: "0 4px 18px rgba(44,62,80,0.09)",
+            boxShadow: `0 4px 18px ${THEME.colors.secondary}15`,
             borderRadius: 28,
-            background: "#fafbfc",
+            background: THEME.colors.background.light,
             position: "relative"
           }}>
             <input
@@ -1242,15 +1293,11 @@ const MainPage = () => {
               placeholder="ค้นหารูปภาพ วิดีโอ กราฟฟิก..."
               className={classes.searchInput}
               aria-label="ค้นหา"
-              onFocus={e => e.currentTarget.style.boxShadow = "0 0 0 2px #ffd6d6"}
-              onBlur={e => e.currentTarget.style.boxShadow = "none"}
             />
             <button
               onClick={handleSearch}
               className={classes.searchButton}
               aria-label="ค้นหา"
-              onMouseOver={e => e.currentTarget.style.background = "#a31515"}
-              onMouseOut={e => e.currentTarget.style.background = "#b71c1c"}
             >
               Search
             </button>
@@ -1288,15 +1335,15 @@ const MainPage = () => {
       {recommended.length > 0 && (
         <section style={{ 
           padding: "4rem 0", 
-          background: "linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)",
-          borderBottom: "1px solid #eee" 
+          background: THEME.colors.background.gradient,
+          borderBottom: `1px solid ${THEME.colors.border}` 
         }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}>
+          <div style={{maxWidth: 1400, margin: "0 auto", padding: "0 1.5rem" }}>
             <div style={{ textAlign: "center", marginBottom: "3rem" }}>
               <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
               <p style={{
                 fontSize: "1.1rem",
-                color: "#666",
+                color: THEME.colors.text.secondary,
                 maxWidth: "600px",
                 margin: "1rem auto",
                 lineHeight: 1.6
@@ -1491,7 +1538,7 @@ const MainPage = () => {
 
       {filteredNewItems.length > 0 && (
         <section style={{ 
-          background: "linear-gradient(135deg, #ffffff 0%, #f6f8fa 100%)", 
+          background: THEME.colors.background.gradient,
           padding: "2rem 1rem 3rem 1rem", 
           marginBottom: "2rem" 
         }}>
@@ -1532,13 +1579,12 @@ const MainPage = () => {
                 />
                 <div className={classes.content}>
                   <div className={classes.categoryText}>
-  {Array.isArray(item.category)
-    ? item.category.join(", ")
-    : (item.category?.toUpperCase?.() || "ทั่วไป")
-  }
-  {" • "}
-  {CATEGORY_OPTIONS.find((c) => c.value === item.type)?.label || item.type?.toUpperCase()}
-</div>
+                    {Array.isArray(item.category)
+                      ? item.category.join(", ")
+                      : (item.category?.toUpperCase?.() || "ทั่วไป")}
+                    {" • "}
+                    {CATEGORY_OPTIONS.find((c) => c.value === item.type)?.label || item.type?.toUpperCase()}
+                  </div>
                   <h3 className={classes.title}>{item.title}</h3>
                   
                   <div style={{ 
@@ -1547,16 +1593,33 @@ const MainPage = () => {
                     justifyContent: "space-between", 
                     marginBottom: "0.75rem" 
                   }}>
-                    <div style={{ color: "#777", fontSize: "0.8rem", fontWeight: 500 }}>
-                      <i className="pi pi-calendar" style={{ marginRight: "0.4rem", fontSize: "0.9em", color: "#888" }} />
+                    <div style={{ 
+                      color: THEME.colors.text.secondary, 
+                      fontSize: "0.8rem", 
+                      fontWeight: 500 
+                    }}>
+                      <i className="pi pi-calendar" style={{ 
+                        marginRight: "0.4rem", 
+                        fontSize: "0.9em", 
+                        color: THEME.colors.secondary 
+                      }} />
                       {new Date(item.createdAt).toLocaleDateString("th-TH", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
                       })}
                     </div>
-                    <div style={{ color: "#777", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <i className="pi pi-eye" style={{ fontSize: "0.9em", color: "#888" }} />
+                    <div style={{ 
+                      color: THEME.colors.text.secondary, 
+                      fontSize: "0.8rem", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "0.3rem" 
+                    }}>
+                      <i className="pi pi-eye" style={{ 
+                        fontSize: "0.9em", 
+                        color: THEME.colors.secondary 
+                      }} />
                       {item.viewCount || 0} ครั้ง
                     </div>
                   </div>
@@ -1571,6 +1634,7 @@ const MainPage = () => {
                               marginRight: 4,
                               fontSize: "0.8em",
                               verticalAlign: "middle",
+                              color: THEME.colors.secondary
                             }}
                           />
                           {tag}
@@ -1589,26 +1653,26 @@ const MainPage = () => {
 
       {videoResources.length > 0 && (
         <section style={{
-          background: "#fff",
+          background: THEME.colors.background.main,
           padding: "4rem 0",
-          borderTop: "1px solid #eee",
-          borderBottom: "1px solid #eee",
+          borderTop: `1px solid ${THEME.colors.border}`,
+          borderBottom: `1px solid ${THEME.colors.border}`,
         }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}>
+          <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 1.5rem" }}>
             <div style={{ textAlign: "center", marginBottom: "3rem" }}>
               <h2 style={{
                 fontSize: "2.5rem",
                 fontWeight: 700,
-                color: "#111",
+                color: THEME.colors.text.primary,
                 margin: "0 0 0.5rem 0",
-                fontFamily: "'Sarabun', sans-serif"
+                fontFamily: THEME.typography.fontFamily
               }}>
                 วิดีโอแนะนำ
               </h2>
               <div style={{
                 width: "40px",
                 height: "4px",
-                background: "#b71c1c",
+                background: THEME.colors.secondary,
                 margin: "0 auto 1rem auto",
                 borderRadius: "2px"
               }} />
@@ -1804,6 +1868,117 @@ const MainPage = () => {
         </section>
       )}
 
+      <section className={classes.statsSection}>
+        <h3 className={classes.statsTitle}>
+          สถิติแยกตามหมวดหมู่
+        </h3>
+        <div className={classes.statsGrid}>
+          {[
+            {
+              key: 'image',
+              label: 'รูปภาพ',
+              icon: 'pi pi-image',
+              bg: '#F8FAFC',
+              color: '#475569',
+            },
+            {
+              key: 'video',
+              label: 'วิดีโอ',
+              icon: 'pi pi-video',
+              bg: '#F9FAFB',
+              color: '#4B5563',
+            },
+            {
+              key: 'graphic',
+              label: 'กราฟฟิก',
+              icon: 'pi pi-images',
+              bg: '#F8FAFC',
+              color: '#475569',
+            },
+            {
+              key: 'medical',
+              label: 'การแพทย์',
+              icon: 'pi pi-heart',
+              bg: '#F9FAFB',
+              color: '#4B5563',
+            },
+            {
+              key: 'education',
+              label: 'การศึกษา',
+              icon: 'pi pi-book',
+              bg: '#F8FAFC',
+              color: '#475569',
+            },
+            {
+              key: 'campus',
+              label: 'รอบรั้ว',
+              icon: 'pi pi-building',
+              bg: '#F9FAFB',
+              color: '#4B5563',
+            },
+          ].map(cat => {
+            const count = resourcesData.resources.filter(r => {
+              if (cat.key === 'image' || cat.key === 'video' || cat.key === 'graphic') {
+                return r.type === cat.key;
+              }
+              if (Array.isArray(r.category)) {
+                return r.category.includes(cat.key);
+              }
+              return r.category === cat.key;
+            }).length;
+            return (
+              <div
+                key={cat.key}
+                className={classes.statsCard}
+                style={{ 
+                  background: cat.bg, 
+                  borderColor: '#E2E8F0',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                }}
+              >
+                <i 
+                  className={`${cat.icon} ${classes.statsIcon}`} 
+                  style={{ 
+                    color: cat.color,
+                    background: '#F1F5F9',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1rem',
+                    fontSize: '1.5rem'
+                  }} 
+                />
+                <div 
+                  className={classes.statsNumber} 
+                  style={{ 
+                    color: cat.color,
+                    fontSize: '2rem',
+                    fontWeight: 700,
+                    lineHeight: 1.2
+                  }}
+                >
+                  {count}
+                </div>
+                <div 
+                  className={classes.statsLabel}
+                  style={{
+                    color: '#64748B',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    marginTop: '0.4rem'
+                  }}
+                >
+                  {cat.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <Modal
         isOpen={isModalOpen}
         onRequestClose={handleCloseModal}
@@ -1829,12 +2004,12 @@ const MainPage = () => {
                 justifyContent: "center",
                 border: "none",
                 borderRadius: "50%",
-                background: "rgba(20,20,20,0.8)",
-                color: "#fff",
+                background: `${THEME.colors.primary}cc`,
+                color: THEME.colors.text.light,
                 fontSize: 24,
                 lineHeight: '36px',
                 cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                boxShadow: THEME.shadows.button,
                 transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
               }}
               aria-label="ปิด"
@@ -1945,55 +2120,6 @@ const MainPage = () => {
           </>
         )}
       </Modal>
-
-      <section className={classes.statsSection}>
-        <h3 className={classes.statsTitle}>
-          สถิติแยกตามหมวดหมู่
-        </h3>
-        <div className={classes.statsGrid}>
-          {[
-            {
-              key: 'medical',
-              label: 'การแพทย์',
-              icon: 'pi pi-heart',
-              bg: 'rgba(25, 118, 210, 0.08)',
-              color: '#1976d2',
-            },
-            {
-              key: 'education',
-              label: 'การศึกษา',
-              icon: 'pi pi-book',
-              bg: 'rgba(255, 193, 7, 0.10)',
-              color: '#b85c38',
-            },
-            {
-              key: 'campus',
-              label: 'รอบรั้ว',
-              icon: 'pi pi-building',
-              bg: 'rgba(156, 39, 176, 0.08)',
-              color: '#7c4dff',
-            },
-          ].map(cat => {
-            const count = resourcesData.resources.filter(r => {
-              if (Array.isArray(r.category)) {
-                return r.category.includes(cat.key);
-              }
-              return r.category === cat.key;
-            }).length;
-            return (
-              <div
-                key={cat.key}
-                className={classes.statsCard}
-                style={{ background: cat.bg, borderColor: cat.bg }}
-              >
-                <i className={`${cat.icon} ${classes.statsIcon}`} style={{ color: cat.color }} />
-                <div className={classes.statsNumber} style={{ color: cat.color }}>{count}</div>
-                <div className={classes.statsLabel}>{cat.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
     </>
   );
 };

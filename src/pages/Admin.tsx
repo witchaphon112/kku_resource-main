@@ -12,140 +12,278 @@ import { Chart } from "primereact/chart";
 import { TabView, TabPanel } from "primereact/tabview";
 import { Tag } from "primereact/tag";
 import { createUseStyles } from "react-jss";
+import { useResources } from "../contexts/ResourceContext";
+
+const COLORS = {
+  primary: "#2d3436",
+  secondary: "#4a90e2",
+  accent: "#4a90e2",
+  danger: "#ff6b6b",
+  success: "#51cf66",
+  warning: "#ffd43b",
+  gray: "#b2bec3",
+  darkGray: "#636e72",
+  lightGray: "#f1f2f6",
+  white: "#ffffff",
+};
+
+const GRADIENTS = {
+  primary: "linear-gradient(135deg, #2d3436 0%, #434343 100%)",
+  accent: "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)",
+  card: "linear-gradient(135deg, #fff 0%, #f8f9fa 100%)",
+};
 
 const useStyles = createUseStyles({
   container: {
-    padding: "2rem",
+    padding: "4rem 2rem",
     maxWidth: 1400,
     margin: "0 auto",
   },
   header: {
-    marginBottom: "2rem",
+    marginBottom: "3rem",
+    textAlign: "center",
     "& h1": {
-      color: "#b71c1c",
-      fontSize: "2rem",
+      color: COLORS.primary,
+      fontSize: "2.5rem",
       fontWeight: 800,
-      marginBottom: "0.5rem",
+      marginBottom: "1rem",
+      position: "relative",
+      display: "inline-block",
+      "&::after": {
+        content: '""',
+        position: "absolute",
+        bottom: -10,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: 100,
+        height: 4,
+        background: COLORS.accent,
+        borderRadius: 2,
+      },
     },
     "& p": {
-      color: "#666",
-      fontSize: "1.1rem",
+      color: COLORS.darkGray,
+      fontSize: "1.2rem",
+      maxWidth: 600,
+      margin: "0 auto",
+      lineHeight: 1.6,
     },
   },
   card: {
-    background: "#fff",
-    borderRadius: "16px",
-    boxShadow: "0 2px 14px #b71c1c11",
-    border: "1px solid #f5c6a5",
+    background: GRADIENTS.card,
+    borderRadius: "20px",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+    border: `2px solid ${COLORS.lightGray}`,
+    transition: "all 0.3s ease",
+    overflow: "hidden",
+    "&:hover": {
+      boxShadow: "0 6px 30px rgba(0,0,0,0.12)",
+      transform: "translateY(-5px)",
+    },
     "& .p-card-title": {
-      color: "#b71c1c",
-      fontSize: "1.5rem",
+      color: COLORS.primary,
+      fontSize: "1.75rem",
       fontWeight: 700,
+      marginBottom: "1.5rem",
     },
     "& .p-card-content": {
-      padding: "1.5rem",
+      padding: "2rem",
     },
   },
   formLabel: {
-    color: "#b85c38",
+    color: COLORS.primary,
     fontWeight: 600,
-    marginBottom: "0.5rem",
+    marginBottom: "0.75rem",
     display: "block",
+    fontSize: "1.1rem",
   },
   input: {
     "& .p-inputtext": {
-      border: "1.7px solid #e0cfc0",
+      border: `2px solid ${COLORS.lightGray}`,
       borderRadius: "12px",
-      padding: "0.8rem 1rem",
+      padding: "1rem 1.25rem",
+      fontSize: "1rem",
+      transition: "all 0.3s ease",
       "&:focus": {
-        borderColor: "#b71c1c",
-        boxShadow: "0 2px 12px #b71c1c22",
+        borderColor: COLORS.accent,
+        boxShadow: "0 0 0 3px rgba(74,144,226,0.1)",
+      },
+      "&:hover": {
+        borderColor: COLORS.accent,
       },
     },
   },
   dropdown: {
     "& .p-dropdown": {
-      border: "1.7px solid #e0cfc0",
+      border: `2px solid ${COLORS.lightGray}`,
       borderRadius: "12px",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        borderColor: COLORS.accent,
+      },
       "&:focus": {
-        borderColor: "#b71c1c",
-        boxShadow: "0 2px 12px #b71c1c22",
+        borderColor: COLORS.accent,
+        boxShadow: "0 0 0 3px rgba(74,144,226,0.1)",
+      },
+      "& .p-dropdown-label": {
+        padding: "1rem 1.25rem",
+        fontSize: "1rem",
       },
     },
   },
   fileUpload: {
     "& .p-button": {
-      background: "#b71c1c",
+      background: GRADIENTS.primary,
       border: "none",
       borderRadius: "12px",
-      padding: "0.8rem 1.5rem",
+      padding: "1rem 1.5rem",
+      fontSize: "1rem",
+      fontWeight: 600,
+      transition: "all 0.3s ease",
       "&:hover": {
-        background: "#892d05",
+        background: COLORS.primary,
+        transform: "translateY(-2px)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       },
     },
   },
   submitButton: {
-    background: "linear-gradient(90deg, #b71c1c 60%, #b85c38 100%)",
+    background: GRADIENTS.accent,
     border: "none",
     borderRadius: "12px",
-    padding: "0.8rem 2rem",
+    padding: "1rem 2rem",
     fontSize: "1.1rem",
     fontWeight: 700,
+    transition: "all 0.3s ease",
     "&:hover": {
-      background: "#892d05",
+      background: COLORS.accent,
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(74,144,226,0.25)",
     },
   },
   table: {
     "& .p-datatable": {
-      borderRadius: "12px",
+      borderRadius: "16px",
       overflow: "hidden",
-      border: "1px solid #f5c6a5",
-    },
-    "& .p-datatable-header": {
-      background: "#fff7f0",
-      border: "none",
-    },
-    "& .p-datatable-thead > tr > th": {
-      background: "#fff7f0",
-      color: "#b71c1c",
-      fontWeight: 700,
-    },
-    "& .p-datatable-tbody > tr": {
-      transition: "background 0.2s",
-      "&:hover": {
-        background: "#fbeee6",
+      border: `2px solid ${COLORS.lightGray}`,
+      "& .p-datatable-header": {
+        background: COLORS.white,
+        padding: "1.5rem",
+        border: "none",
+      },
+      "& .p-datatable-thead > tr > th": {
+        background: GRADIENTS.primary,
+        color: COLORS.white,
+        padding: "1.25rem 1.5rem",
+        fontWeight: 600,
+        fontSize: "1rem",
+        border: "none",
+      },
+      "& .p-datatable-tbody > tr": {
+        transition: "all 0.3s ease",
+        "& > td": {
+          padding: "1rem 1.5rem",
+          fontSize: "1rem",
+        },
+        "&:hover": {
+          background: COLORS.lightGray,
+          "& > td": {
+            color: COLORS.primary,
+          },
+        },
+      },
+      "& .p-paginator": {
+        padding: "1rem",
+        background: COLORS.white,
+        "& .p-paginator-element": {
+          borderRadius: "8px",
+          "&:focus": {
+            boxShadow: "0 0 0 3px rgba(74,144,226,0.1)",
+          },
+        },
       },
     },
   },
   chart: {
-    background: "#fff",
-    borderRadius: "12px",
-    padding: "1.5rem",
-    boxShadow: "0 2px 14px #b71c1c11",
-    border: "1px solid #f5c6a5",
+    background: COLORS.white,
+    borderRadius: "20px",
+    padding: "2rem",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+    border: `2px solid ${COLORS.lightGray}`,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 6px 30px rgba(0,0,0,0.12)",
+    },
+    "& h3": {
+      color: COLORS.primary,
+      fontSize: "1.5rem",
+      fontWeight: 700,
+      marginBottom: "1.5rem",
+      textAlign: "center",
+    },
   },
   tabView: {
     "& .p-tabview-nav": {
       border: "none",
-      "& li .p-tabview-nav-link": {
-        color: "#b85c38",
-        "&:hover": {
-          background: "#fbeee6",
+      marginBottom: "2rem",
+      "& li": {
+        margin: "0 0.5rem",
+        "&:first-child": {
+          marginLeft: 0,
         },
-      },
-      "& li.p-highlight .p-tabview-nav-link": {
-        color: "#b71c1c",
-        borderColor: "#b71c1c",
+        "&:last-child": {
+          marginRight: 0,
+        },
+        "& .p-tabview-nav-link": {
+          background: COLORS.white,
+          border: `2px solid ${COLORS.lightGray}`,
+          borderRadius: "12px",
+          padding: "1rem 1.5rem",
+          color: COLORS.darkGray,
+          fontWeight: 600,
+          transition: "all 0.3s ease",
+          "&:hover": {
+            background: COLORS.lightGray,
+            borderColor: COLORS.accent,
+            color: COLORS.accent,
+          },
+        },
+        "&.p-highlight .p-tabview-nav-link": {
+          background: COLORS.accent,
+          borderColor: COLORS.accent,
+          color: COLORS.white,
+        },
       },
     },
   },
+  tag: {
+    borderRadius: "8px",
+    padding: "0.5rem 1rem",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+    "&.image": {
+      background: `${COLORS.accent}22`,
+      color: COLORS.accent,
+    },
+    "&.video": {
+      background: `${COLORS.success}22`,
+      color: COLORS.success,
+    },
+    "&.graphic": {
+      background: `${COLORS.warning}22`,
+      color: COLORS.warning,
+    },
+  },
 });
+
+type ResourceType = 'image' | 'video' | 'graphic';
 
 interface Resource {
   id: string;
   title: string;
   description: string;
-  type: 'image' | 'video' | 'graphic';
+  type: ResourceType;
   category: string | string[];
   tags: string[];
   fileUrl: string;
@@ -157,29 +295,44 @@ interface Resource {
   updatedAt: string;
 }
 
+interface StatsObject {
+  image: number;
+  video: number;
+  graphic: number;
+}
+
+const calculateStats = (resources: Resource[]) => {
+  const typeStats: StatsObject = {
+    image: 0,
+    video: 0,
+    graphic: 0
+  };
+  
+  const viewStats: StatsObject = {
+    image: 0,
+    video: 0,
+    graphic: 0
+  };
+
+  resources.forEach(resource => {
+    if (resource.type === 'image' || resource.type === 'video' || resource.type === 'graphic') {
+      typeStats[resource.type]++;
+      viewStats[resource.type] += resource.viewCount;
+    }
+  });
+
+  return { typeStats, viewStats };
+};
+
 const AdminUploadPage = () => {
   const classes = useStyles();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<'image' | 'video' | 'graphic' | null>(null);
+  const [type, setType] = useState<ResourceType | null>(null);
   const [category, setCategory] = useState<'medical' | 'education' | 'campus' | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [resources, setResources] = useState<Resource[]>([]);
   const toast = useRef<Toast>(null);
-
-  useEffect(() => {
-    fetch('/mock/resources.json')
-      .then(response => response.json())
-      .then(data => setResources(data))
-      .catch(error => {
-        console.error('Error fetching resources:', error);
-        toast.current?.show({
-          severity: "error",
-          summary: "เกิดข้อผิดพลาด",
-          detail: "ไม่สามารถโหลดข้อมูลได้",
-        });
-      });
-  }, []);
+  const { resources, addResource } = useResources();
 
   const typeOptions = [
     { label: "รูปภาพ", value: "image" },
@@ -203,7 +356,7 @@ const AdminUploadPage = () => {
       return;
     }
 
-    const newResource: Resource = {
+    const newResource = {
       id: `r${String(resources.length + 1).padStart(4, '0')}`,
       title,
       description,
@@ -212,14 +365,14 @@ const AdminUploadPage = () => {
       tags: [],
       fileUrl: URL.createObjectURL(file),
       thumbnailUrl: URL.createObjectURL(file),
-      uploadedBy: "admin",
+      uploadedBy: "admin", // Use actual user ID here
       downloadCount: 0,
       viewCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    setResources([...resources, newResource]);
+    addResource(newResource);
 
     toast.current?.show({
       severity: "success",
@@ -235,53 +388,33 @@ const AdminUploadPage = () => {
   };
 
   const typeTemplate = (rowData: Resource) => {
-    const typeMap = {
-      image: { label: "รูปภาพ", color: "#b71c1c" },
-      video: { label: "วิดีโอ", color: "#1976d2" },
-      graphic: { label: "กราฟฟิก", color: "#b85c38" },
+    const typeMap: Record<ResourceType, { label: string; className: string }> = {
+      image: { label: "รูปภาพ", className: "image" },
+      video: { label: "วิดีโอ", className: "video" },
+      graphic: { label: "กราฟฟิก", className: "graphic" },
     };
     const type = typeMap[rowData.type];
-    return <Tag value={type.label} style={{ background: type.color }} />;
+    return <Tag value={type.label} className={`${classes.tag} ${type.className}`} />;
   };
 
   const categoryTemplate = (rowData: Resource) => {
     const categories = Array.isArray(rowData.category) ? rowData.category : [rowData.category];
     return (
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-        {categories.map((cat, index) => {
-          const categoryMap = {
-            medical: { label: "การแพทย์", color: "#b71c1c" },
-            education: { label: "การเรียนการสอน", color: "#1976d2" },
-            campus: { label: "รอบรั้วมหาวิทยาลัย", color: "#b85c38" },
+        {categories.map((cat: string, index: number) => {
+          const categoryMap: Record<string, { label: string; className: string }> = {
+            medical: { label: "การแพทย์", className: "image" },
+            education: { label: "การเรียนการสอน", className: "video" },
+            campus: { label: "รอบรั้วมหาวิทยาลัย", className: "graphic" },
           };
-          const category = categoryMap[cat as keyof typeof categoryMap];
-          return <Tag key={index} value={category.label} style={{ background: category.color }} />;
+          const category = categoryMap[cat] || { label: cat, className: "image" };
+          return <Tag key={index} value={category.label} className={`${classes.tag} ${category.className}`} />;
         })}
       </div>
     );
   };
 
-  const calculateStats = () => {
-    const typeStats = {
-      image: 0,
-      video: 0,
-      graphic: 0
-    };
-    const viewStats = {
-      image: 0,
-      video: 0,
-      graphic: 0
-    };
-
-    resources.forEach(resource => {
-      typeStats[resource.type]++;
-      viewStats[resource.type] += resource.viewCount;
-    });
-
-    return { typeStats, viewStats };
-  };
-
-  const { typeStats, viewStats } = calculateStats();
+  const { typeStats, viewStats } = calculateStats(resources as Resource[]);
 
   const chartData = {
     labels: ['รูปภาพ', 'วิดีโอ', 'กราฟฟิก'],
@@ -346,7 +479,7 @@ const AdminUploadPage = () => {
                   id="type"
                   value={type}
                   options={typeOptions}
-                  onChange={(e) => setType(e.value as 'image' | 'video' | 'graphic' | null)}
+                  onChange={(e) => setType(e.value as ResourceType | null)}
                   placeholder="เลือกประเภทไฟล์"
                   className={classes.dropdown}
                 />

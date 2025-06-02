@@ -3,7 +3,7 @@ import { Card } from "primereact/card";
 
 const useStyles = createUseStyles({
   aboutPage: {
-    padding: "2rem 0",
+    padding: "7rem 0",
     maxWidth: 1200,
     margin: "0 auto",
   },
@@ -12,7 +12,7 @@ const useStyles = createUseStyles({
     marginBottom: "3rem",
     "& h1": {
       fontSize: "2.5rem",
-      color: "#a13d23",
+      color: "#3F72AF",
       marginBottom: "1rem",
       fontWeight: 600,
     },
@@ -33,11 +33,11 @@ const useStyles = createUseStyles({
   card: {
     background: "#fff",
     borderRadius: 16,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    boxShadow: "0 4px 20px rgba(63,114,175,0.08)",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
     "&:hover": {
       transform: "translateY(-5px)",
-      boxShadow: "0 8px 25px rgba(0,0,0,0.12)",
+      boxShadow: "0 8px 25px rgba(63,114,175,0.12)",
     }
   },
   cardContent: {
@@ -45,7 +45,7 @@ const useStyles = createUseStyles({
   },
   cardTitle: {
     fontSize: "1.5rem",
-    color: "#a13d23",
+    color: "#3F72AF",
     marginBottom: "1rem",
     fontWeight: 600,
   },
@@ -56,19 +56,20 @@ const useStyles = createUseStyles({
   },
   icon: {
     fontSize: "2rem",
-    color: "#a13d23",
+    color: "#3F72AF",
     marginBottom: "1rem",
   },
   contactSection: {
-    background: "#f8f9fb",
+    background: "#f8faff",
     padding: "3rem",
     borderRadius: 16,
     textAlign: "center",
     marginTop: "3rem",
+    boxShadow: "0 4px 20px rgba(63,114,175,0.08)",
   },
   contactTitle: {
     fontSize: "1.8rem",
-    color: "#a13d23",
+    color: "#3F72AF",
     marginBottom: "1.5rem",
     fontWeight: 600,
   },
@@ -83,7 +84,7 @@ const useStyles = createUseStyles({
     gap: "1.5rem",
     marginTop: "2rem",
     "& a": {
-      color: "#a13d23",
+      color: "#3F72AF",
       fontSize: "1.5rem",
       transition: "transform 0.2s ease",
       "&:hover": {

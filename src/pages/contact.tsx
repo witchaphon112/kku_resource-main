@@ -195,7 +195,7 @@ const ContactPage = () => {
             <i className="pi pi-map-marker" />
             <div className={classes.infoContent}>
               <h3>ที่อยู่</h3>
-              <p>สำนักวิทยบริการ มหาวิทยาลัยขอนแก่น</p>
+              <p>มหาวิทยาลัยขอนแก่น</p>
               <p>123 ถนนมิตรภาพ ตำบลในเมือง อำเภอเมือง จังหวัดขอนแก่น 40002</p>
             </div>
           </div>

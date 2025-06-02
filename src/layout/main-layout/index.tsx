@@ -13,13 +13,47 @@ import ScrollToTopButton from "../../components/ScrollToTopButton";
 const isActive = (pathname: string, path: string) =>
   pathname === path || pathname.startsWith(path + "/");
 
+const THEME = {
+  colors: {
+    primary: "#112D4E",
+    primaryLight: "rgba(17,45,78,0.9)",
+    primaryDark: "#0c1c2e",
+    secondary: "#3F72AF",
+    secondaryLight: "rgba(63,114,175,0.9)",
+    secondaryDark: "#2c5a8f",
+    text: {
+      primary: "#112D4E",
+      secondary: "#666666",
+      light: "#DBE2EF"
+    },
+    background: {
+      main: "#ffffff",
+      light: "#F9F7F7",
+      gradient: "linear-gradient(120deg, #F9F7F7 70%, #DBE2EF 100%)"
+    },
+    border: "#DBE2EF"
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "12px",
+    lg: "16px"
+  },
+  shadows: {
+    card: "0 4px 20px rgba(17,45,78,0.08)",
+    cardHover: "0 8px 30px rgba(17,45,78,0.12)",
+  }
+};
 
 const useStyles = createUseStyles({
+  "@keyframes fadeIn": {
+    from: { opacity: 0, transform: "translateY(-15px)" },
+    to: { opacity: 1, transform: "none" }
+  },
   mainLayout: {
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
-    background: "#F9F7F7",
+    background: THEME.colors.background.light,
     fontFamily: "var(--bs-font-primary, 'Sarabun', 'Prompt', Arial, sans-serif)",
     position: "relative",
     zIndex: 0,
@@ -28,10 +62,11 @@ const useStyles = createUseStyles({
     position: "fixed",
     top: 0,
     left: 0,
+    right: 0,
     width: "100%",
     zIndex: 1000,
-    background: "linear-gradient(to top,rgba(12, 28, 46, 0.35) 30%,rgba(249, 247, 247, 0.31) 80%)",
-    color: "#DBE2EF",
+    background: "linear-gradient(to top, rgba(17,45,78,0.35) 30%, rgba(249,247,247,0.31) 80%)",
+    color: THEME.colors.text.light,
     minHeight: 62,
     display: "flex",
     alignItems: "center",
@@ -39,28 +74,30 @@ const useStyles = createUseStyles({
     borderBottom: "1.5px solid rgba(63,114,175,0.10)",
     backdropFilter: "blur(8px)",
     transition: "all 0.35s cubic-bezier(.4,.8,.4,1)",
+    padding: 0,
+    margin: 0,
   },
   headerScrolled: {
-    background: "#112D4E",
-    boxShadow: "0 4px 16px 0 rgb(17, 45, 78)",
+    background: THEME.colors.primary,
+    boxShadow: "0 4px 16px 0 rgba(17,45,78,0.2)",
     minHeight: 68,
   },
   headerContent: {
     width: "100%",
     position: "relative",
-    maxWidth: 1300,
-    margin: "0 auto",
+    maxWidth: "100%",
+    margin: 0,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 20,
-    padding: "0 1vw",
+    padding: "0 2rem",
     minHeight: 52,
     "@media (max-width: 900px)": {
       flexDirection: "column",
       alignItems: "stretch",
       gap: 7,
-      padding: "6px 2vw",
+      padding: "6px 1rem",
       minHeight: "auto",
     },
   },
@@ -68,7 +105,7 @@ const useStyles = createUseStyles({
     display: "flex",
     alignItems: "center",
     textDecoration: "none",
-    color: "#DBE2EF",
+    color: THEME.colors.text.light,
     fontWeight: 700,
     fontSize: 21,
     letterSpacing: 1.05,
@@ -76,7 +113,7 @@ const useStyles = createUseStyles({
       marginRight: 9,
       height: 45,
       marginBottom: 10,
-      filter: "drop-shadow(0 2px 7px #3F72AF50)",
+      filter: "drop-shadow(0 2px 7px rgba(63,114,175,0.3))",
       transition: "transform 0.3s ease",
     },
     "&:hover img": {
@@ -92,28 +129,12 @@ const useStyles = createUseStyles({
       display: 'none',
     },
   },
-  navMobile: {
-    display: 'none',
-    '@media (max-width: 900px)': {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'stretch',
-      gap: 7,
-      width: '100%',
-      background: '#112D4E',
-      position: 'absolute',
-      top: 56,
-      left: 0,
-      zIndex: 1201,
-      padding: '10px 0',
-    },
-  },
   navLink: {
-    color: "#DBE2EF",
+    color: THEME.colors.text.light,
     fontWeight: 600,
     fontSize: 15,
     textDecoration: "none",
-    borderRadius: 14,
+    borderRadius: THEME.borderRadius.md,
     padding: "7px 14px",
     letterSpacing: 0.04,
     opacity: 0.93,
@@ -121,10 +142,10 @@ const useStyles = createUseStyles({
     transition: "all 0.22s cubic-bezier(.4,2,.6,1)",
     position: "relative",
     "&:hover, &.active": {
-      background: "#3F72AF",
-      color: "#F9F7F7",
+      background: THEME.colors.secondary,
+      color: THEME.colors.text.light,
       opacity: 1,
-      boxShadow: "0 2px 8px 0 #3F72AF33",
+      boxShadow: "0 2px 8px rgba(63,114,175,0.2)",
     },
     "&::after": {
       content: '""',
@@ -134,8 +155,8 @@ const useStyles = createUseStyles({
       transform: "translateX(-50%)",
       width: 0,
       height: 2,
-      background: "#DBE2EF",
-      borderRadius: 2,
+      background: THEME.colors.text.light,
+      borderRadius: THEME.borderRadius.sm,
       transition: "width 0.2s cubic-bezier(.4,2,.6,1)",
     },
     "&:hover::after, &.active::after": {
@@ -152,41 +173,23 @@ const useStyles = createUseStyles({
       justifyContent: "center",
     },
   },
-  hamburger: {
-    display: 'none',
-    '@media (max-width: 900px)': {
-      display: 'inline-flex',
-    },
-  },
-  desktopOnly: {
-    display: 'flex',
-    '@media (max-width: 900px)': {
-      display: 'none',
-    },
-  },
-  mobileOnly: {
-    display: 'none',
-    '@media (max-width: 900px)': {
-      display: 'flex',
-    },
-  },
   icon: {
-    color: "#3F72AF",
+    color: THEME.colors.secondary,
     fontSize: 27,
     cursor: "pointer",
     opacity: 0.94,
     margin: "0 1px",
     transition: "all 0.2s ease",
     background: "none",
-    borderRadius: 8,
+    borderRadius: THEME.borderRadius.sm,
     "&:hover": {
       opacity: 1,
       transform: "scale(1.1)",
-      color: "#DBE2EF",
+      color: THEME.colors.text.light,
     }
   },
   userAvatar: {
-    borderRadius: 12,
+    borderRadius: THEME.borderRadius.md,
     width: 38,
     height: 38,
     display: "flex",
@@ -194,32 +197,32 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     marginLeft: 6,
     cursor: "pointer",
-    boxShadow: "0 2px 8px #3F72AF33",
+    boxShadow: "0 2px 8px rgba(63,114,175,0.2)",
     transition: "all 0.2s ease",
-    border: "2px solid #3F72AF55",
+    border: "2px solid rgba(63,114,175,0.3)",
     "&:hover": {
       transform: "scale(1.05)",
-      borderColor: "#DBE2EF",
-      boxShadow: "0 4px 12px #3F72AF55",
+      borderColor: THEME.colors.text.light,
+      boxShadow: "0 4px 12px rgba(63,114,175,0.3)",
     }
   },
   headerSearchBox: {
     display: "flex",
     alignItems: "center",
-    background: "#fff",
-    borderRadius: 12,
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.md,
     padding: "0.2rem 1.2rem",
     minWidth: 320,
     maxWidth: 460,
     marginLeft: 18,
-    boxShadow: "0 2px 10px #0001",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
     position: "relative",
     zIndex: 11,
-    border: "1px solid #eee",
+    border: "1px solid rgba(63,114,175,0.1)",
     transition: "all 0.2s ease",
     "&:focus-within": {
-      boxShadow: "0 4px 15px #0002",
-      borderColor: "#222",
+      boxShadow: "0 4px 15px rgba(63,114,175,0.15)",
+      borderColor: THEME.colors.secondary,
       transform: "translateY(-1px)",
     },
     "@media (max-width: 700px)": {
@@ -232,7 +235,7 @@ const useStyles = createUseStyles({
   headerSearchInput: {
     border: "none",
     background: "transparent",
-    color: "#222",
+    color: THEME.colors.text.primary,
     fontSize: 15,
     outline: "none",
     width: 220,
@@ -249,7 +252,7 @@ const useStyles = createUseStyles({
   },
   headerSearchIcon: {
     fontSize: 20,
-    color: "#222",
+    color: THEME.colors.text.primary,
     marginRight: 8,
     opacity: 0.92,
   },
@@ -262,7 +265,7 @@ const useStyles = createUseStyles({
     transition: "all 0.2s ease",
     "&:hover": { 
       opacity: 1, 
-      color: "#222",
+      color: THEME.colors.text.primary,
       transform: "scale(1.1)",
     }
   },
@@ -271,18 +274,18 @@ const useStyles = createUseStyles({
     top: 60,
     right: 5,
     minWidth: 200,
-    background: "#fff",
-    borderRadius: 16,
-    boxShadow: "0 8px 32px 0 #0001",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    boxShadow: THEME.shadows.card,
     padding: "8px 0",
     zIndex: 1200,
     fontSize: 16,
     fontFamily: "inherit",
-    color: "#222",
+    color: THEME.colors.text.primary,
     transition: "all 0.2s ease",
     transform: "translateY(-5px)",
     animation: "$fadeIn 0.2s",
-    border: "1px solid #eee",
+    border: "1px solid rgba(63,114,175,0.1)",
     "&.show": {
       opacity: 1,
       transform: "translateY(0)",
@@ -295,11 +298,11 @@ const useStyles = createUseStyles({
       right: 22,
       width: 18,
       height: 18,
-      background: "#fff",
+      background: THEME.colors.background.main,
       transform: "rotate(45deg)",
       zIndex: 0,
-      borderLeft: "1px solid #eee",
-      borderTop: "1px solid #eee",
+      borderLeft: "1px solid rgba(63,114,175,0.1)",
+      borderTop: "1px solid rgba(63,114,175,0.1)",
     },
   },
   userMenuItem: {
@@ -312,13 +315,13 @@ const useStyles = createUseStyles({
     background: "none",
     width: "100%",
     fontSize: 15.5,
-    color: "#222",
+    color: THEME.colors.text.primary,
     transition: "all 0.2s ease",
-    "& i": { color: "#222" },
+    "& i": { color: THEME.colors.text.primary },
     "&:hover, &:focus": {
-      background: "#F5F5F5",
-      color: "#222",
-      "& i": { color: "#222" },
+      background: THEME.colors.background.light,
+      color: THEME.colors.secondary,
+      "& i": { color: THEME.colors.secondary },
       paddingLeft: "24px",
     },
     "&[disabled], &[aria-disabled='true']": {
@@ -329,24 +332,19 @@ const useStyles = createUseStyles({
   },
   userMenuDivider: {
     height: 1,
-    background: "#eee",
+    background: "rgba(63,114,175,0.1)",
     margin: "5px 0"
-  },
-  "@keyframes fadeIn": {
-    from: { opacity: 0, transform: "translateY(-15px)" },
-    to: { opacity: 1, transform: "none" },
   },
   mainContent: {
     flex: 1,
-    maxWidth: 1300,
-    margin: "0 auto",
     width: "100%",
-    padding: "90px 0 0 0",
-    "@media (max-width: 900px)": { padding: "105px 0 0 0" }
+    "@media (max-width: 900px)": { 
+      padding: "105px 0 0 0" 
+    }
   },
   footerRow: {
     width: "100%",
-    background: '#112D4E',
+    background: THEME.colors.primary,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -354,8 +352,7 @@ const useStyles = createUseStyles({
     minHeight: 200,
     position: "relative",
     fontFamily: "inherit",
-    boxShadow: "0 4px 32px 0 rgba(17,45,78,0.13)",
-    marginTop: 60,
+    boxShadow: "0 4px 32px rgba(17,45,78,0.13)",
     "@media (max-width: 900px)": {
       flexDirection: 'column',
       alignItems: 'center',
@@ -370,14 +367,19 @@ const useStyles = createUseStyles({
     alignItems: "flex-start",
     gap: 10,
     minWidth: 170,
-    "& img": { width: 200, borderRadius: 16, marginBottom: 5 },
+    "& img": { 
+      width: 200, 
+      borderRadius: THEME.borderRadius.lg, 
+      marginBottom: 5,
+      filter: "drop-shadow(0 2px 8px rgba(63,114,175,0.2))",
+    },
     "@media (max-width: 900px)": {
       alignItems: 'center',
       minWidth: 0,
     },
   },
   footerTagline: {
-    color: "#DBE2EF",
+    color: THEME.colors.text.light,
     fontSize: 16,
     fontWeight: 500,
     lineHeight: 1.4,
@@ -397,16 +399,17 @@ const useStyles = createUseStyles({
       alignItems: 'center',
     },
     "& a": {
-      color: "#DBE2EF",
+      color: THEME.colors.text.light,
       textDecoration: "none",
-      transition: "color 0.17s, text-decoration 0.17s",
+      transition: "all 0.2s ease",
       padding: "4px 16px",
-      borderRadius: 7,
+      borderRadius: THEME.borderRadius.sm,
       fontSize: 18,
       fontWeight: 500,
       "&:hover": {
-        color: "#112D4E",
-        background: "#DBE2EF",
+        color: THEME.colors.primary,
+        background: THEME.colors.text.light,
+        transform: "translateY(-2px)",
       }
     }
   },
@@ -426,8 +429,8 @@ const useStyles = createUseStyles({
     gap: "1.2rem",
     marginBottom: 4,
     "& a": {
-      color: "#112D4E",
-      background: "#DBE2EF",
+      color: THEME.colors.primary,
+      background: THEME.colors.text.light,
       borderRadius: "50%",
       width: 44,
       height: 44,
@@ -435,22 +438,41 @@ const useStyles = createUseStyles({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      transition: "all 0.18s",
-      boxShadow: "0 2px 8px #3F72AF33",
+      transition: "all 0.2s ease",
+      boxShadow: "0 2px 8px rgba(63,114,175,0.2)",
       "&:hover": {
-        color: "#DBE2EF",
-        background: "#3F72AF",
-        transform: "scale(1.12)"
+        color: THEME.colors.text.light,
+        background: THEME.colors.secondary,
+        transform: "scale(1.12) rotate(5deg)",
+        boxShadow: "0 4px 12px rgba(63,114,175,0.3)",
       }
     }
   },
   footerCopyright: {
-    color: "#DBE2EF",
+    color: THEME.colors.text.light,
     fontSize: 14,
     opacity: 0.92,
     marginTop: 5,
     textAlign: "right",
     "@media (max-width: 900px)": { textAlign: "center" }
+  },
+  hamburger: {
+    display: 'none',
+    '@media (max-width: 900px)': {
+      display: 'inline-flex',
+    },
+  },
+  desktopOnly: {
+    display: 'flex',
+    '@media (max-width: 900px)': {
+      display: 'none',
+    },
+  },
+  mobileOnly: {
+    display: 'none',
+    '@media (max-width: 900px)': {
+      display: 'flex',
+    },
   },
 });
 

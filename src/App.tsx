@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { Component, ReactNode } from "react";
 import MainPage from "./pages/main-page";
 import MainLayout from "./layout/main-layout";
 import SearchResult from "./layout/main-layout/SearchResult";
@@ -13,12 +14,57 @@ import Images from "./pages/images";
 import Videos from "./pages/videos"
 import Graphics from "./pages/graphics"; 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { BookmarkProvider } from "./contexts/BookmarkContext";
 import ResourceDetailPage from "./pages/ResourceDetailPage";
 import DownloadHistoryPage from "./pages/download-history";
 import { DownloadHistoryProvider } from "./contexts/DownloadHistoryContext";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import { ResourceProvider } from './contexts/ResourceContext';
 
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('Error caught by boundary:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ 
+          padding: '2rem', 
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          <h2>Something went wrong.</h2>
+          <button 
+            onClick={() => this.setState({ hasError: false })}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#3F72AF',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function AppContent() {
   const { user } = useAuth();
@@ -52,15 +98,21 @@ function AppContent() {
 
 function App() {
   return (
-  <BrowserRouter basename="/kku_resource-main">    
-    <AuthProvider>
-      <DownloadHistoryProvider>
-        <ScrollToTopButton />
-        <ScrollToTop />
-        <AppContent />
-      </DownloadHistoryProvider>
-    </AuthProvider>
-  </BrowserRouter>
+    <BrowserRouter basename="/kku_resource-main">    
+      <ErrorBoundary>
+        <AuthProvider>
+          <ResourceProvider>
+            <BookmarkProvider>
+              <DownloadHistoryProvider>
+                <ScrollToTopButton />
+                <ScrollToTop />
+                <AppContent />
+              </DownloadHistoryProvider>
+            </BookmarkProvider>
+          </ResourceProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </BrowserRouter>
   );
 }
 

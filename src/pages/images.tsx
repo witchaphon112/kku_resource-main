@@ -1,237 +1,292 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
-import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter } from "react-icons/fa";
+import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter, FaSpinner, FaTimes, FaUser, FaFileAlt } from "react-icons/fa";
 import resourcesData from "../mock/resources.json";
+import { useBookmarks } from "../contexts/BookmarkContext";
+import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const useStyles = createUseStyles({
+  "@keyframes fadeIn": {
+    from: { opacity: 0, transform: "translateY(10px)" },
+    to: { opacity: 1, transform: "translateY(0)" }
+  },
   pageWrap: {
     display: "flex",
+    flexDirection: "column",
     minHeight: "100vh",
-    background: "#F9F7F7",
-    padding: "2.5rem 0",
-    maxWidth: 1600,
-    margin: "0 auto",
-    gap: "2.5rem"
-  },
-  sidebar: {
-    minWidth: 270,
-    maxWidth: 300,
     background: "#fff",
-    borderRadius: 18,
-    boxShadow: "0 2px 16px 0 #0001",
-    height: "fit-content",
-    alignSelf: "flex-start",
-    position: "sticky",
-    top: 30,
-    padding: "2rem 1.5rem",
-    marginTop: 10,
+    maxWidth: "100%",
+    margin: "0 auto",
+    padding: "2rem",
+    gap: "2rem",
   },
-  sidebarTitle: {
-    fontWeight: 800,
-    fontSize: "1.1rem",
-    color: "#222",
-    marginBottom: 18,
-    letterSpacing: 0.05,
-  },
-  categoryItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    fontWeight: 500,
-    fontSize: "1rem",
-    color: "#222",
-    marginBottom: 10,
-    cursor: "pointer",
-    background: "none",
-    border: "none",
-    borderRadius: 10,
-    padding: "0.5rem 0.7rem",
-    transition: "all .15s",
-    position: "relative",
-    "&::before": {
-      content: '""',
-      display: "inline-block",
-      width: 22,
-      height: 22,
-      border: "1.5px solid #bbb",
-      borderRadius: 6,
-      marginRight: 10,
-      background: "#fff",
-      verticalAlign: "middle",
-      transition: "all .15s",
-    },
-    "& svg": {
-      fontSize: "1.1rem",
-      marginRight: 7,
-      color: "#bbb",
-      transition: "color .15s",
-    },
-    "&.active": {
-      fontWeight: 700,
-      color: "#3F72AF",
-      "&::before": {
-        background: "#3F72AF",
-        borderColor: "#3F72AF",
-      },
-      "& svg": {
-        color: "#fff",
-      },
-    },
-    "&:hover:not(.active)": {
-      "&::before": {
-        borderColor: "#3F72AF",
-      },
-    },
-    "@media (max-width: 700px)": {
-      fontSize: "0.97rem",
-      padding: "0.4rem 0.5rem",
-      gap: 8,
-      marginBottom: 7,
-      "&::before": { width: 18, height: 18, marginRight: 7 },
-      "& svg": { fontSize: "1rem", marginRight: 5 },
-    },
-  },
-  sidebarDivider: {
-    background: "#eee",
-    height: 1,
-    border: "none",
-    margin: "18px 0",
-  },
-  main: { flex: 1, minWidth: 0 },
-  headerRow: {
+  topBar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "2.2rem",
-    flexWrap: "wrap",
-    gap: "1.2rem"
+    padding: "0 0.5rem",
   },
-  pageTitle: {
-    fontSize: "2.2rem",
-    fontWeight: 800,
-    color: "#112D4E",
-    fontFamily: "'Sarabun', 'Inter', sans-serif",
-    letterSpacing: 0.1,
-    margin: 0
-  },
-  sortBox: {
+  toggleFiltersBtn: {
     display: "flex",
-    gap: "1.2rem",
-    alignItems: "center"
+    alignItems: "center",
+    gap: "0.7rem",
+    padding: "0.7rem 1.2rem",
+    background: "#fff",
+    border: "1px solid #e0e0e0",
+    borderRadius: "12px",
+    fontSize: "0.95rem",
+    color: "#333",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+    "&:hover": {
+      borderColor: "#3F72AF",
+      color: "#3F72AF",
+      background: "#f8faff",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 8px rgba(63,114,175,0.12)",
+    },
+    "& i": {
+      fontSize: "1rem",
+      color: "inherit",
+    }
   },
-  sortSelect: {
-    padding: "0.7rem 1.3rem",
-    borderRadius: "14px",
-    border: "1.5px solid #3F72AF",
+  contentWrap: {
+    display: "flex",
+    gap: "2rem",
+    position: "relative",
+  },
+  sidebar: {
+    width: 300,
+    minWidth: 300,
+    height: "fit-content",
+    alignSelf: "flex-start",
+    position: "sticky",
+    top: 90,
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    background: "#fff",
+    padding: "1.8rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "16px",
+    opacity: 1,
+    visibility: "visible",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+    "&.collapsed": {
+      width: 0,
+      minWidth: 0,
+      padding: 0,
+      margin: 0,
+      opacity: 0,
+      visibility: "hidden",
+      border: "none",
+    }
+  },
+  filterHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "2rem",
+    "& h3": {
+      fontSize: "1.2rem",
+      fontWeight: 600,
+      color: "#1a1a1a",
+    }
+  },
+  clearAll: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    background: "none",
+    border: "none",
+    color: "#666",
+    fontSize: "0.9rem",
+    cursor: "pointer",
+    borderRadius: "8px",
+    transition: "all 0.2s",
+    "&:hover": {
+      background: "#f5f5f5",
+      color: "#333",
+    },
+    "& i": {
+      fontSize: "0.9rem",
+    }
+  },
+  filterSection: {
+    marginBottom: "2rem",
+    "&:last-child": {
+      marginBottom: 0,
+    }
+  },
+  filterTitle: {
     fontSize: "1rem",
-    background: "#F9F7F7",
     fontWeight: 600,
-    color: "#112D4E",
-    minWidth: 170,
-    outline: "none",
-    transition: "all .16s",
-    "&:focus": { borderColor: "#3F72AF" }
+    color: "#333",
+    marginBottom: "1rem",
+  },
+  filterOption: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0.7rem 1rem",
+    cursor: "pointer",
+    color: "#666",
+    borderRadius: "10px",
+    transition: "all 0.2s",
+    "&:hover": {
+      background: "#f8faff",
+      color: "#3F72AF",
+    },
+    "& span": {
+      fontSize: "0.95rem",
+    },
+    "& input[type='checkbox']": {
+      width: 20,
+      height: 20,
+      borderRadius: "6px",
+      border: "2px solid #ddd",
+      transition: "all 0.2s",
+      cursor: "pointer",
+      "&:checked": {
+        borderColor: "#3F72AF",
+        backgroundColor: "#3F72AF",
+      }
+    }
+  },
+  main: {
+    flex: 1,
+    minWidth: 0,
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: "1.3rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gap: "1.8rem",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&.expanded": {
+      gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+    }
   },
   card: {
     background: "#fff",
-    borderRadius: 22,
-    boxShadow: "0 4px 32px 0 #3F72AF22",
+    borderRadius: "16px",
     overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    transition: "all .23s cubic-bezier(.4,2,.6,1)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
-    position: "relative",
+    border: "1px solid rgba(0,0,0,0.05)",
     "&:hover": {
-      transform: "translateY(-7px) scale(1.035)",
-      boxShadow: "0 16px 40px 0 #3F72AF33",
+      transform: "translateY(-6px)",
+      boxShadow: "0 12px 24px rgba(0,0,0,0.12)",
+      "& $cardImageBox img": {
+        transform: "scale(1.05)",
+      },
+      "& $cardActionBar": {
+        opacity: 1,
+        transform: "translateY(0)",
+      }
     }
   },
   cardImageBox: {
     width: "100%",
-    aspectRatio: "4/3",
+    aspectRatio: "16/9",
     overflow: "hidden",
     position: "relative",
+    background: "#f5f5f5",
     "& img": {
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      transition: "transform .48s cubic-bezier(.4,2,.6,1), filter .3s"
-    },
-    "&:hover img": {
-      transform: "scale(1.065)",
-      filter: "brightness(0.92)"
+      transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
     }
   },
   cardActionBar: {
     display: "flex",
-    gap: 18,
+    gap: "1rem",
     position: "absolute",
-    top: 18,
-    right: 18,
+    top: "1.2rem",
+    right: "1.2rem",
     zIndex: 3,
-    background: "rgba(63, 113, 175, 0.38)",
-    borderRadius: 14,
-    boxShadow: "0 2px 8px #3F72AF33",
-    padding: "0.3rem 0.7rem",
+    background: "rgba(255,255,255,0.95)",
+    backdropFilter: "blur(8px)",
+    borderRadius: "12px",
+    padding: "0.6rem",
+    opacity: 0,
+    transform: "translateY(-10px)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
   },
   cardActionBtn: {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: "#fff",
-    fontSize: 18,
+    color: "#666",
+    fontSize: "1.2rem",
     display: "flex",
     alignItems: "center",
-    opacity: 0.85,
-    transition: "color .15s",
-    "&:hover": { color: "#F9F7F7" }
+    padding: "0.5rem",
+    borderRadius: "8px",
+    transition: "all 0.2s",
+    "&:hover": {
+      color: "#3F72AF",
+      background: "#f0f5ff",
+      transform: "scale(1.1)",
+    }
   },
   cardBody: {
-    padding: "0.8rem 0.8rem 0.7rem 0.8rem",
+    padding: "1.5rem",
     display: "flex",
     flexDirection: "column",
-    gap: ".7rem",
-    flex: 1,
+    gap: "1rem",
   },
   cardTitle: {
-    fontSize: "1.18rem",
-    fontWeight: 800,
-    color: "#112D4E",
-    marginBottom: 3,
-    lineHeight: 1.33,
+    fontSize: "1.2rem",
+    fontWeight: 700,
+    color: "#1a1a1a",
+    lineHeight: 1.4,
     fontFamily: "'Sarabun', 'Inter', sans-serif",
-    minHeight: 38
+    display: "-webkit-box",
+    "-webkit-line-clamp": 2,
+    "-webkit-box-orient": "vertical",
+    overflow: "hidden",
   },
   cardMeta: {
-    fontSize: ".95rem",
-    color: "#3F72AF",
+    fontSize: "0.95rem",
+    color: "#666",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 12,
-    margin: "5px 0 0 0"
+    gap: "1rem",
+    "& span": {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+    },
+    "& i, & svg": {
+      fontSize: "1.1rem",
+      color: "#3F72AF",
+    }
   },
   tagBar: {
     display: "flex",
     flexWrap: "wrap",
-    gap: ".4rem",
-    marginTop: ".6rem"
+    gap: "0.5rem",
+    marginTop: "0.5rem",
   },
   tag: {
-    background: "#3F72AF",
-    color: "#fff",
-    borderRadius: 14,
-    padding: "0.23rem 0.93rem",
-    fontSize: ".9rem",
+    background: "rgba(63,114,175,0.08)",
+    color: "#3F72AF",
+    borderRadius: "8px",
+    padding: "0.4rem 0.8rem",
+    fontSize: "0.9rem",
     fontWeight: 500,
-    letterSpacing: 0.1
+    transition: "all 0.2s",
+    "&:hover": {
+      background: "rgba(63,114,175,0.12)",
+      transform: "translateY(-1px)",
+    }
   },
   categoryTag: {
     background: "#DBE2EF",
@@ -253,25 +308,62 @@ const useStyles = createUseStyles({
   pagination: {
     display: "flex",
     justifyContent: "center",
-    gap: "0.9rem",
-    margin: "3rem 0 0 0"
+    alignItems: "center",
+    gap: "0.5rem",
+    marginTop: "4rem",
+    padding: "1rem 0",
   },
   pageBtn: {
-    minWidth: 38,
-    height: 38,
-    borderRadius: 11,
-    border: "1.5px solid #3F72AF",
-    background: "#F9F7F7",
-    cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: 700,
-    fontSize: "1.05rem",
-    color: "#3F72AF",
-    transition: "all .16s",
-    "&:hover": { background: "#3F72AF", color: "#fff" },
-    "&.active": { background: "#3F72AF", color: "#fff", borderColor: "#3F72AF" }
+    width: 42,
+    height: 42,
+    padding: "0.5rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "12px",
+    background: "#fff",
+    color: "#666",
+    fontSize: "0.95rem",
+    cursor: "pointer",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+    "&:hover": {
+      borderColor: "#3F72AF",
+      color: "#3F72AF",
+      background: "#f8faff",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 8px rgba(63,114,175,0.12)",
+    },
+    "&.active": {
+      background: "#3F72AF",
+      borderColor: "#3F72AF",
+      color: "#fff",
+      boxShadow: "0 4px 12px rgba(63,114,175,0.2)",
+    },
+    "&.disabled": {
+      opacity: 0.5,
+      cursor: "not-allowed",
+      transform: "none",
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#e0e0e0",
+        color: "#666",
+        background: "#fff",
+        transform: "none",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+      }
+    }
+  },
+  pageEllipsis: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 42,
+    height: 42,
+    color: "#666",
+    fontSize: "1.2rem",
+    fontWeight: 600,
   },
   subCategoryItem: {
     display: "flex",
@@ -304,6 +396,193 @@ const useStyles = createUseStyles({
       padding: "0.28rem 0.5rem",
     },
   },
+  "@keyframes spin": {
+    from: { transform: "rotate(0deg)" },
+    to: { transform: "rotate(360deg)" }
+  },
+  loadingSpinner: {
+    animation: "$spin 1s linear infinite",
+    color: "#3F72AF",
+    fontSize: "2rem",
+    display: "block",
+    margin: "2rem auto",
+  },
+  imageLoader: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    color: "#3F72AF",
+    animation: "$spin 1s linear infinite",
+  },
+  shimmer: {
+    position: "relative",
+    overflow: "hidden",
+    background: "#f6f7f8",
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      transform: "translateX(-100%)",
+      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+      animation: "$shimmer 1.5s infinite",
+      content: '""',
+    }
+  },
+  "@keyframes shimmer": {
+    "100%": {
+      transform: "translateX(100%)",
+    }
+  },
+  sortSelect: {
+    padding: "0.7rem 1.2rem",
+    borderRadius: "12px",
+    border: "1px solid #e0e0e0",
+    fontSize: "0.95rem",
+    minWidth: 200,
+    cursor: "pointer",
+    background: "#fff",
+    color: "#333",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+    transition: "all 0.2s",
+    "&:focus": {
+      outline: "none",
+      borderColor: "#3F72AF",
+      boxShadow: "0 4px 8px rgba(63,114,175,0.12)",
+    },
+    "&:hover": {
+      borderColor: "#3F72AF",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 8px rgba(63,114,175,0.12)",
+    }
+  },
+  previewModal: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    padding: '20px',
+    backdropFilter: 'blur(8px)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: '16px',
+    width: '100%',
+    maxWidth: '900px',
+    maxHeight: '90vh',
+    overflow: 'hidden',
+    position: 'relative',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    animation: '$fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  modalHeader: {
+    padding: '20px 24px',
+    borderBottom: '1px solid #DBE2EF',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    background: '#fff',
+  },
+  modalTitle: {
+    fontSize: '1.25rem',
+    fontWeight: 700,
+    color: '#112D4E',
+    fontFamily: "'Sarabun', 'Inter', sans-serif",
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: '#666',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    '&:hover': {
+      backgroundColor: '#f0f0f0',
+      color: '#112D4E',
+      transform: 'scale(1.1)',
+    },
+  },
+  modalBody: {
+    padding: '24px',
+    overflowY: 'auto',
+    maxHeight: 'calc(90vh - 140px)',
+  },
+  previewImage: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '70vh',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    backgroundColor: '#f5f5f5',
+  },
+  previewInfo: {
+    marginTop: '20px',
+    '& h3': {
+      fontSize: '1.2rem',
+      fontWeight: 700,
+      color: '#112D4E',
+      marginBottom: '12px',
+      fontFamily: "'Sarabun', 'Inter', sans-serif",
+    },
+  },
+  previewMeta: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '16px',
+    marginBottom: '16px',
+    '& span': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      color: '#666',
+      fontSize: '0.95rem',
+      '& svg': {
+        color: '#3F72AF',
+        fontSize: '1.1rem',
+      },
+    },
+  },
+  previewActions: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '20px',
+    justifyContent: 'flex-end',
+  },
+  previewActionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 20px',
+    borderRadius: '12px',
+    border: 'none',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    background: '#3F72AF',
+    color: '#fff',
+    '&:hover': {
+      background: '#112D4E',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(63,114,175,0.2)',
+    },
+    '& svg': {
+      fontSize: '1.1rem',
+    },
+  },
 });
 
 const categories = [
@@ -322,12 +601,18 @@ const categories = [
 const ImagesPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
+  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const { addDownload } = useDownloadHistory();
+  const { user } = useAuth();
 
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
   const [openCats, setOpenCats] = useState<string[]>([]);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [previewItem, setPreviewItem] = useState<any>(null);
 
   const itemsPerPage = 12;
 
@@ -356,150 +641,350 @@ const ImagesPage = () => {
 
   const mainCategories = ["all", "medical", "education", "campus"];
   useEffect(() => {
-    if (!mainCategories.includes(category)) setSidebarVisible(false);
+    if (!mainCategories.includes(category)) setSidebarCollapsed(true);
   }, [category]);
+
+  useEffect(() => {
+    // Simulate loading data
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [category, sortBy]);
+
+  const handleImageLoad = useCallback((imageId: string) => {
+    setLoadedImages(prev => new Set(prev).add(imageId));
+  }, []);
+
+  const handlePreview = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setPreviewItem(item);
+  };
+
+  const closePreview = () => {
+    setPreviewItem(null);
+  };
+
+  const handleDownload = async (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    if (!user) return;
+    
+    try {
+      const response = await fetch(item.fileUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.title;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Add to download history
+      addDownload(user.id, {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        type: item.type,
+        fileUrl: item.fileUrl,
+        downloadedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
+
+  const handleBookmark = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    if (bookmarks.some(bookmark => bookmark.id === item.id)) {
+      removeBookmark(item.id);
+    } else {
+      addBookmark({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        imageUrl: `${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, "")}`,
+        fileUrl: item.fileUrl,
+        type: item.type,
+        category: item.category,
+        createdAt: item.createdAt,
+        tags: item.tags
+      });
+    }
+  };
 
   return (
     <div className={classes.pageWrap}>
-      {/* Sidebar */}
-      {sidebarVisible && (
-        <aside className={classes.sidebar}>
-          <button
-            style={{
-              display: "flex", alignItems: "center", gap: 8, marginBottom: 18, background: "#fff", border: "1.5px solid #eee", borderRadius: 10, padding: "7px 16px", fontWeight: 600, fontSize: 15, color: "#3F72AF", boxShadow: "0 2px 8px #0001", cursor: "pointer" 
-            }}
-            onClick={() => setSidebarVisible(false)}
-          >
-            <FaFilter style={{ color: "#3F72AF", fontSize: 16 }} /> ซ่อนหมวดหมู่
-          </button>
-          <div className={classes.sidebarTitle}>Categories</div>
-          <hr className={classes.sidebarDivider} />
-          {categories.map(c => (
-            <div key={c.value}>
-              <button
-                className={`${classes.categoryItem} ${category === c.value ? "active" : ""}`}
-                onClick={() => {
-                  if (c.children) toggleCat(c.value);
-                  setCategory(c.value); setPage(1);
-                }}
-                aria-expanded={!!c.children && openCats.includes(c.value)}
-                aria-controls={c.children ? `subcat-${c.value}` : undefined}
-              >
-                {c.icon}
-                <span>{c.label}</span>
-                {c.children && (
-                  <span style={{ marginLeft: "auto", fontSize: 16, color: "#bbb", transform: openCats.includes(c.value) ? "rotate(90deg)" : "none", transition: "transform .18s" }}>&#9654;</span>
-                )}
-              </button>
-              {c.children && openCats.includes(c.value) && (
-                <div id={`subcat-${c.value}`}>
-                  {c.children.map(sub => (
-                    <button
-                      key={sub.value}
-                      className={`${classes.subCategoryItem} ${category === sub.value ? "active" : ""}`}
-                      onClick={() => { setCategory(sub.value); setPage(1); }}
-                    >
-                      {sub.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </aside>
-      )}
-      {/* Main */}
-      <div className={classes.main} style={!sidebarVisible ? { maxWidth: "100%", width: "100%" } : {}}>
-        {/* Show Filters Button */}
-        {!sidebarVisible && (
-          <button
-            style={{
-              display: "flex", alignItems: "center", gap: 8, marginBottom: 24, background: "#fff", border: "1.5px solid #eee", borderRadius: 10, padding: "8px 18px", fontWeight: 600, fontSize: 16, color: "#3F72AF", boxShadow: "0 2px 8px #0001", cursor: "pointer" 
-            }}
-            onClick={() => setSidebarVisible(true)}
-          >
-            <FaFilter style={{ color: "#3F72AF", fontSize: 18 }} /> แสดงหมวดหมู่
-          </button>
-        )}
-        {/* Header */}
-        <div className={classes.headerRow}>
-          <h2 className={classes.pageTitle}>คลังภาพทรัพยากร</h2>
-          <div className={classes.sortBox}>
-            <span>Sort by</span>
-            <select
-              className={classes.sortSelect}
-              onChange={e => { setSortBy(e.target.value); setPage(1); }}
-              value={sortBy}
-            >
-              <option value="popular">ยอดนิยม</option>
-              <option value="latest">วันที่ใหม่สุด</option>
-              <option value="oldest">วันที่เก่าสุด</option>
-              <option value="az">ชื่อ A-Z</option>
-              <option value="za">ชื่อ Z-A</option>
-            </select>
+      <div className={classes.topBar}>
+        <button 
+          className={classes.toggleFiltersBtn}
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        >
+          <i className="pi pi-filter" />
+          {sidebarCollapsed ? 'Show Filters' : 'ซ่อนตัวกรอง'}
+        </button>
+
+        <select 
+          className={classes.sortSelect}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+        >
+          <option value="popular">เรียงตาม: ยอดนิยม</option>
+          <option value="latest">เรียงตาม: ล่าสุด</option>
+          <option value="oldest">เรียงตาม: เก่าสุด</option>
+          <option value="az">เรียงตาม: ก-ฮ</option>
+          <option value="za">เรียงตาม: ฮ-ก</option>
+        </select>
+      </div>
+
+      <div className={classes.contentWrap}>
+        <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          <div className={classes.filterHeader}>
+            <h3>ตัวกรอง</h3>
           </div>
-        </div>
-        {/* Grid */}
-        <div className={classes.grid}>
-          {paginatedItems.length === 0 ? (
-            <div className={classes.emptyState}>ไม่พบข้อมูลที่ตรงกับเงื่อนไข</div>
-          ) : paginatedItems.map(item => (
-            <div
-              key={item.id}
-              className={classes.card}
-              onClick={() => navigate(`/resource/${item.id}`)}
-            >
-              <div className={classes.cardImageBox}>
-                <img
-                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, "")}`}
-                  alt={item.title}
+          
+          <div className={classes.filterSection}>
+            <h4 className={classes.filterTitle}>หมวดหมู่</h4>
+            {categories.map(cat => (
+              <label key={cat.value} className={classes.filterOption}>
+                <span>{cat.label}</span>
+                <input
+                  type="checkbox"
+                  checked={category === cat.value}
+                  onChange={() => setCategory(cat.value)}
                 />
-                <div className={classes.cardActionBar} onClick={e => e.stopPropagation()}>
-                  <button className={classes.cardActionBtn} title="ดูตัวอย่าง"><FaEye /></button>
-                  <button className={classes.cardActionBtn} title="บุ๊คมาร์ค"><FaRegBookmark /></button>
-                  <button className={classes.cardActionBtn} title="ดาวน์โหลด"><FaDownload /></button>
-                </div>
-              </div>
-              <div className={classes.cardBody}>
-                <div className={classes.cardTitle}>{item.title}</div>
-                <div className={classes.cardMeta}>
-                  <span>{item.category === "medical"
-                    ? <> <FaHeart /> การแพทย์ </>
-                    : item.category === "education"
-                    ? <> <FaBook /> การศึกษา </>
-                    : <> <FaUniversity /> รอบรั้วมหาวิทยาลัย </>}
-                  </span>
-                  <span>{new Date(item.createdAt).toLocaleDateString("th-TH")}</span>
-                  <span>ดาวน์โหลด: {item.downloadCount ?? 0}</span>
-                </div>
-                <div className={classes.tagBar}>
-                  {item.tags?.slice(0,3).map(tag => (
-                    <span className={classes.tag} key={tag}>{tag}</span>
-                  ))}
-                  {item.tags?.length > 3 && (
-                    <span className={classes.tag}>+{item.tags.length - 3}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className={classes.pagination}>
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                className={`${classes.pageBtn} ${page === i + 1 ? "active" : ""}`}
-                onClick={() => { setPage(i+1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                aria-current={page === i + 1 ? "page" : undefined}
-              >
-                {i+1}
-              </button>
+              </label>
             ))}
           </div>
-        )}
+
+          <div className={classes.filterSection}>
+            <h4 className={classes.filterTitle}>Date Added</h4>
+            {/* Add date filter options here */}
+          </div>
+        </aside>
+
+        <main className={`${classes.main}`}>
+          <div className={`${classes.grid} ${sidebarCollapsed ? 'expanded' : ''}`}>
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: itemsPerPage }).map((_, index) => (
+                <div key={`skeleton-${index}`} className={`${classes.card} ${classes.shimmer}`} style={{ height: "300px" }} />
+              ))
+            ) : paginatedItems.length === 0 ? (
+              <div className={classes.emptyState}>ไม่พบข้อมูลที่ตรงกับเงื่อนไข</div>
+            ) : (
+              paginatedItems.map(item => (
+                <div
+                  key={item.id}
+                  className={classes.card}
+                  onClick={() => navigate(`/resource/${item.id}`)}
+                >
+                  <div className={classes.cardImageBox}>
+                    {!loadedImages.has(item.id) && (
+                      <FaSpinner className={classes.imageLoader} />
+                    )}
+                    <img
+                      src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, "")}`}
+                      alt={item.title}
+                      loading="lazy"
+                      onLoad={() => handleImageLoad(item.id)}
+                      style={{ opacity: loadedImages.has(item.id) ? 1 : 0 }}
+                    />
+                    <div className={classes.cardActionBar} onClick={e => e.stopPropagation()}>
+                      <button 
+                        className={classes.cardActionBtn} 
+                        title="ดูตัวอย่าง"
+                        aria-label="ดูตัวอย่าง"
+                        onClick={(e) => handlePreview(e, item)}
+                      >
+                        <FaEye />
+                      </button>
+                      <button 
+                        className={`${classes.cardActionBtn} ${bookmarks.some(b => b.id === item.id) ? 'active' : ''}`}
+                        title={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
+                        aria-label={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
+                        onClick={(e) => handleBookmark(e, item)}
+                        style={{ 
+                          color: bookmarks.some(b => b.id === item.id) ? '#3F72AF' : '#666',
+                          background: bookmarks.some(b => b.id === item.id) ? '#f0f5ff' : 'none'
+                        }}
+                      >
+                        <FaRegBookmark />
+                      </button>
+                      <button 
+                        className={classes.cardActionBtn} 
+                        title="ดาวน์โหลด"
+                        aria-label="ดาวน์โหลด"
+                        onClick={(e) => handleDownload(e, item)}
+                      >
+                        <FaDownload />
+                      </button>
+                    </div>
+                  </div>
+                  <div className={classes.cardBody}>
+                    <div className={classes.cardTitle}>{item.title}</div>
+                    <div className={classes.cardMeta}>
+                      <span>{item.category === "medical"
+                        ? <> <FaHeart /> การแพทย์ </>
+                        : item.category === "education"
+                        ? <> <FaBook /> การศึกษา </>
+                        : <> <FaUniversity /> รอบรั้วมหาวิทยาลัย </>}
+                      </span>
+                      <span>{new Date(item.createdAt).toLocaleDateString("th-TH")}</span>
+                      <span>ดาวน์โหลด: {item.downloadCount ?? 0}</span>
+                    </div>
+                    <div className={classes.tagBar}>
+                      {item.tags?.slice(0,3).map(tag => (
+                        <span className={classes.tag} key={tag}>{tag}</span>
+                      ))}
+                      {item.tags?.length > 3 && (
+                        <span className={classes.tag}>+{item.tags.length - 3}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {!loading && paginatedItems.length > 0 && (
+            <div className={classes.pagination}>
+              <button
+                className={`${classes.pageBtn} ${page === 1 ? 'disabled' : ''}`}
+                onClick={() => page > 1 && setPage(page - 1)}
+                disabled={page === 1}
+              >
+                <i className="pi pi-chevron-left" />
+              </button>
+              
+              {totalPages <= 7 ? (
+                // Show all pages if total pages are 7 or less
+                Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                  <button
+                    key={num}
+                    className={`${classes.pageBtn} ${page === num ? 'active' : ''}`}
+                    onClick={() => setPage(num)}
+                  >
+                    {num}
+                  </button>
+                ))
+              ) : (
+                // Show pagination with ellipsis
+                <>
+                  <button
+                    className={`${classes.pageBtn} ${page === 1 ? 'active' : ''}`}
+                    onClick={() => setPage(1)}
+                  >
+                    1
+                  </button>
+                  
+                  {page > 3 && <span className={classes.pageEllipsis}>...</span>}
+                  
+                  {page > 2 && (
+                    <button
+                      className={classes.pageBtn}
+                      onClick={() => setPage(page - 1)}
+                    >
+                      {page - 1}
+                    </button>
+                  )}
+                  
+                  {page !== 1 && page !== totalPages && (
+                    <button className={`${classes.pageBtn} active`}>
+                      {page}
+                    </button>
+                  )}
+                  
+                  {page < totalPages - 1 && (
+                    <button
+                      className={classes.pageBtn}
+                      onClick={() => setPage(page + 1)}
+                    >
+                      {page + 1}
+                    </button>
+                  )}
+                  
+                  {page < totalPages - 2 && <span className={classes.pageEllipsis}>...</span>}
+                  
+                  <button
+                    className={`${classes.pageBtn} ${page === totalPages ? 'active' : ''}`}
+                    onClick={() => setPage(totalPages)}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+              
+              <button
+                className={`${classes.pageBtn} ${page === totalPages ? 'disabled' : ''}`}
+                onClick={() => page < totalPages && setPage(page + 1)}
+                disabled={page === totalPages}
+              >
+                <i className="pi pi-chevron-right" />
+              </button>
+            </div>
+          )}
+        </main>
       </div>
+
+      {previewItem && (
+        <div className={classes.previewModal} onClick={closePreview}>
+          <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={classes.modalHeader}>
+              <h2 className={classes.modalTitle}>{previewItem.title}</h2>
+              <button className={classes.closeButton} onClick={closePreview}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className={classes.modalBody}>
+              <img 
+                src={`${import.meta.env.BASE_URL}${previewItem.thumbnailUrl.replace(/^\//, "")}`}
+                alt={previewItem.title}
+                className={classes.previewImage}
+              />
+              <div className={classes.previewInfo}>
+                <h3>รายละเอียด</h3>
+                <div className={classes.previewMeta}>
+                  <span>
+                    <FaFileAlt />
+                    หมวดหมู่: {
+                      previewItem.category === "medical" ? "การแพทย์" :
+                      previewItem.category === "education" ? "การศึกษา" :
+                      previewItem.category === "clinic" ? "คลินิก" :
+                      previewItem.category === "campus" ? "รอบรั้วมหาวิทยาลัย" :
+                      previewItem.category
+                    }
+                  </span>
+                  <span>
+                    <FaUser />
+                    ผู้อัพโหลด: {previewItem.uploader || "ไม่ระบุ"}
+                  </span>
+                  <span>
+                    <FaDownload />
+                    ดาวน์โหลด: {previewItem.downloadCount || 0} ครั้ง
+                  </span>
+                </div>
+                {previewItem.tags && previewItem.tags.length > 0 && (
+                  <div className={classes.tagBar}>
+                    {previewItem.tags.map((tag: string) => (
+                      <span key={tag} className={classes.tag}>{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <div className={classes.previewActions}>
+                  <button 
+                    className={classes.previewActionBtn}
+                    onClick={(e) => handleDownload(e, previewItem)}
+                  >
+                    <FaDownload /> ดาวน์โหลด
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

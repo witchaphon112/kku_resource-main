@@ -3,14 +3,16 @@ import React, { createContext, useContext, useState } from "react";
 export interface DownloadItem {
   id: string;
   title: string;
+  description?: string;
   type: string;
-  date: string;
-  url: string;
+  fileUrl: string;
+  downloadedAt: string;
 }
 
 interface DownloadHistoryContextType {
-  getDownloads: (userId: string) => DownloadItem[];
+  downloads: DownloadItem[];
   addDownload: (userId: string, item: DownloadItem) => void;
+  removeDownload: (itemId: string) => void;
 }
 
 const DownloadHistoryContext = createContext<DownloadHistoryContextType | undefined>(undefined);
@@ -22,19 +24,18 @@ export const useDownloadHistory = () => {
 };
 
 export const DownloadHistoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [downloadsByUser, setDownloadsByUser] = useState<Record<string, DownloadItem[]>>({});
+  const [downloads, setDownloads] = useState<DownloadItem[]>([]);
 
   const addDownload = (userId: string, item: DownloadItem) => {
-    setDownloadsByUser((prev) => ({
-      ...prev,
-      [userId]: [item, ...(prev[userId] || [])],
-    }));
+    setDownloads(prev => [item, ...prev]);
   };
 
-  const getDownloads = (userId: string) => downloadsByUser[userId] || [];
+  const removeDownload = (itemId: string) => {
+    setDownloads(prev => prev.filter(item => item.id !== itemId));
+  };
 
   return (
-    <DownloadHistoryContext.Provider value={{ getDownloads, addDownload }}>
+    <DownloadHistoryContext.Provider value={{ downloads, addDownload, removeDownload }}>
       {children}
     </DownloadHistoryContext.Provider>
   );

@@ -5,311 +5,112 @@ import { useAuth } from "../contexts/AuthContext";
 import resourcesData from "../mock/resources.json";
 import { useState, useCallback, useRef, useEffect } from "react";
 import Modal from "react-modal";
+import { FaDownload, FaEye, FaHeart, FaBookmark, FaShare, FaPlay, FaTimes, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useBookmarks } from "../contexts/BookmarkContext";
+
+const THEME = {
+  colors: {
+    primary: "#112D4E",
+    primaryLight: "rgba(17,45,78,0.9)",
+    primaryDark: "#0c1c2e",
+    secondary: "#3F72AF",
+    secondaryLight: "rgba(63,114,175,0.9)",
+    secondaryDark: "#2c5a8f",
+    text: {
+      primary: "#112D4E",
+      secondary: "#666666",
+      light: "#DBE2EF"
+    },
+    background: {
+      main: "#ffffff",
+      light: "#F9F7F7",
+      gradient: "linear-gradient(120deg, #F9F7F7 70%, #DBE2EF 100%)"
+    },
+    border: "#DBE2EF"
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "12px",
+    lg: "16px"
+  },
+  shadows: {
+    card: "0 4px 20px rgba(17,45,78,0.08)",
+    cardHover: "0 8px 30px rgba(17,45,78,0.12)",
+  }
+};
 
 const useStyles = createUseStyles({
+  "@keyframes fadeIn": {
+    from: { opacity: 0, transform: "translateY(20px)" },
+    to: { opacity: 1, transform: "translateY(0)" }
+  },
   container: {
     minHeight: "100vh",
-    width: "100vw",
-    background: `
-      linear-gradient(0deg, rgba(255,255,255,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px),
-      #2196f3
-    `,
-    backgroundSize: "40px 40px",
+    width: "100%",
+    background: "linear-gradient(180deg, #f8faff 0%, #ffffff 100%)",
     position: "relative",
-    padding: 0,
-    margin: 0,
+    overflow: "hidden",
+  },
+  heroSection: {
+    position: "relative",
+    width: "100%",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    padding: "2rem",
+    background: "linear-gradient(180deg, rgba(63,114,175,0.05) 0%, rgba(255,255,255,0) 100%)",
+    '@media (max-width: 768px)': {
+      padding: "1.5rem",
+    },
+  },
+  heroContent: {
+    maxWidth: 1400,
+    width: "100%",
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: "24px",
+    padding: "2rem",
+    '@media (max-width: 1024px)': {
+      gap: "2rem",
+      padding: "1.5rem",
+    },
+  },
+  heroMain: {
+    display: "flex",
+    gap: "3rem",
+    padding: "3rem",
+    alignItems: "flex-start",
+    '@media (max-width: 1024px)': {
+      flexDirection: "column",
+      gap: "2rem",
+    },
   },
   heroImageWrap: {
-    width: "100%",
-    height: "60vh",
-    background: "none",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    flex: "1 1 55%",
+    position: "relative",
+    borderRadius: "16px",
     overflow: "hidden",
-    position: "relative",
-    marginBottom: 0,
-    "& img": {
-      width: "auto",
-      maxWidth: "80vw",
-      height: "100%",
-      objectFit: "contain",
-      objectPosition: "center",
-      transition: "transform 0.5s ease",
-      boxShadow: "0 8px 40px rgba(30,144,255,0.13)",
-      borderRadius: 24,
-      background: "#e3f2fd",
-    },
-  },
-  mainInfo: {
-    padding: "2.5rem 0.5rem 0 0.5rem",
-    background: "none",
-    color: "#fff",
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 2,
-    textShadow: "0 2px 8px rgba(0,0,0,0.18)",
-    display: "flex",
-    justifyContent: "center",
-    '@media (max-width: 900px)': {
-      padding: "1rem 0.2rem 0 0.2rem",
-    },
-  },
-  infoBlock: {
-    maxWidth: 900,
-    margin: "0 auto",
-    background: "rgba(255,255,255,0.92)",
-    borderRadius: 22,
-    boxShadow: "0 8px 32px rgba(30,144,255,0.13)",
-    padding: "2.2rem 2.5rem 2rem 2.5rem",
-    color: "#23408e",
-    position: "relative",
-    '@media (max-width: 600px)': {
-      padding: "1.2rem 0.7rem 1rem 0.7rem",
-    },
-  },
-  title: {
-    fontSize: "2.7rem",
-    fontWeight: 900,
-    color: "#23408e",
-    marginBottom: "1.2rem",
-    textShadow: "0 2px 8px rgba(30,144,255,0.10)",
-    lineHeight: 1.15,
-    fontFamily: "'Sarabun', 'Inter', 'Nunito', sans-serif",
-    '@media (max-width: 900px)': {
-      fontSize: "2rem",
-    },
-  },
-  tagRow: {
-    display: "flex",
-    gap: "0.7rem",
-    marginBottom: "1.2rem",
-    flexWrap: "wrap",
-  },
-  tag: {
+    boxShadow: "0 12px 24px rgba(63,114,175,0.12)",
     background: "#fff",
-    color: "#2196f3",
-    fontSize: "1rem",
-    borderRadius: "999px",
-    padding: "0.35em 1.2em",
-    fontWeight: 600,
-    border: "none",
-    boxShadow: "0 1px 4px rgba(30,144,255,0.07)",
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-    transition: "all 0.2s",
-    outline: "none",
+    aspectRatio: "16/9",
+    '@media (max-width: 1024px)': {
+      width: "100%",
+    },
     '&:hover': {
-      background: "#e3f2fd",
-      color: "#1565c0",
-    },
-  },
-  meta: {
-    fontSize: "1.05rem",
-    color: "#23408e",
-    marginBottom: "1.2rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "2.2rem",
-    flexWrap: "wrap",
-    fontWeight: 500,
-  },
-  viewBox: {
-    fontSize: "1.05rem",
-    color: "#2196f3",
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    transition: "all 0.3s ease",
-    fontWeight: 600,
-    "&:hover": {
-      color: "#1565c0",
-      transform: "translateY(-2px)",
-    },
-  },
-  button: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    marginTop: "0.7rem",
-    fontSize: "1.15rem",
-    fontWeight: 700,
-    borderRadius: "2rem",
-    padding: "0.8em 2.2em",
-    background: "#2196f3",
-    color: "#fff",
-    border: "none",
-    boxShadow: "0 2px 8px rgba(30,144,255,0.10)",
-    cursor: "pointer",
-    transition: "all 0.2s",
-    outline: "none",
-    '&:hover': {
-      background: "#1565c0",
-      color: "#fff",
-      boxShadow: "0 4px 16px rgba(33,150,243,0.18)",
-    },
-  },
-  contentSection: {
-    background: "rgba(255,255,255,0.97)",
-    padding: "2.5rem 1.5rem",
-    '@media (max-width: 900px)': { 
-      padding: "1.5rem 0.5rem",
-    },
-    borderRadius: 24,
-    boxShadow: "0 8px 32px rgba(30,144,255,0.10)",
-    maxWidth: 1100,
-    margin: "-3rem auto 2.5rem auto",
-    position: "relative",
-    zIndex: 3,
-  },
-  contentInner: {
-    maxWidth: 900,
-    margin: "0 auto",
-  },
-  sectionTitle: {
-    fontSize: "1.5rem",
-    fontWeight: 800,
-    color: "#23408e",
-    marginBottom: "1.5rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.8rem",
-    "&::before": {
-      content: '""',
-      display: "block",
-      width: "4px",
-      height: "28px",
-      background: "linear-gradient(to bottom, #2196f3 0%, #1565c0 100%)",
-      borderRadius: "2px",
-    },
-  },
-  description: {
-    fontSize: "1.1rem",
-    color: "#23408e",
-    marginBottom: "2rem",
-    lineHeight: 1.6,
-    fontWeight: 500,
-  },
-  detailGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "1.5rem",
-    background: "rgba(33,150,243,0.04)",
-    padding: "1.5rem",
-    borderRadius: "1rem",
-    marginBottom: "2rem",
-    boxShadow: "0 10px 40px rgba(30,144,255,0.05)",
-  },
-  detailItem: {
-    padding: "1rem",
-    background: "#fff",
-    borderRadius: "0.8rem",
-    boxShadow: "0 4px 15px rgba(30,144,255,0.05)",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      transform: "translateY(-3px)",
-      boxShadow: "0 8px 25px rgba(30,144,255,0.08)",
-    },
-    "& h4": {
-      fontSize: "0.8rem",
-      color: "#2196f3",
-      marginBottom: "0.5rem",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: "0.05em",
-    },
-    "& p": {
-      fontSize: "1.1rem",
-      color: "#23408e",
-      fontWeight: 700,
-    },
-  },
-  relatedWrap: {
-    marginTop: "2rem",
-  },
-  relatedGrid: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "1.5rem",
-    marginTop: "1.5rem",
-    overflowX: "auto",
-    paddingBottom: "0.5rem",
-    scrollSnapType: "x mandatory",
-    WebkitOverflowScrolling: "touch",
-  },
-  relatedCard: {
-    background: "#fff",
-    borderRadius: "1rem",
-    overflow: "hidden",
-    cursor: "pointer",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-    transition: "all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
-    minWidth: 320,
-    maxWidth: 340,
-    flex: "0 0 320px",
-    scrollSnapAlign: "start",
-    "&:hover": { 
-      transform: "translateY(-5px)",
-      boxShadow: "0 15px 40px rgba(0,0,0,0.12)",
-      "& $relatedImg": {
+      '& $heroImage': {
         transform: "scale(1.05)",
       },
-    },
-  },
-  relatedImg: {
-    width: "100%",
-    height: "200px",
-    objectFit: "cover",
-    transition: "transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
-  },
-  relatedTitle: {
-    padding: "1rem 1rem 0.5rem 1rem",
-    fontSize: "1.1rem",
-    fontWeight: 700,
-    color: "rgba(161, 61, 35, 0.98)",
-    lineHeight: 1.4,
-  },
-  relatedMeta: {
-    padding: "0 1rem 1rem 1rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    fontSize: "0.9rem",
-    color: "#666",
-    "& span": {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.3rem",
-      transition: "color 0.3s ease",
-      "&:hover": {
-        color: "rgba(161, 61, 35, 0.98)",
+      '& $playButton': {
+        transform: "translate(-50%, -50%) scale(1.1)",
       },
     },
   },
-  videoModal: {
-    background: "transparent",
-    maxWidth: "1200px",
-    width: "90%",
-    margin: "auto",
-    padding: 0,
-    position: "relative",
-    outline: "none",
-    "@media (max-width: 768px)": {
-      width: "95%"
-    }
-  },
-  videoModalOverlay: {
-    position: "fixed",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    zIndex: 10000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "2rem"
+  heroImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
   },
   playButton: {
     position: "absolute",
@@ -318,45 +119,526 @@ const useStyles = createUseStyles({
     transform: "translate(-50%, -50%)",
     width: 80,
     height: 80,
-    background: "rgba(183,28,28,0.92)",
+    background: "rgba(63,114,175,0.95)",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    boxShadow: "0 4px 20px rgba(183,28,28,0.3)",
-    transition: "all 0.3s ease",
-    "&:hover": {
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 8px 32px rgba(63,114,175,0.25)",
+    border: "none",
+    color: "#fff",
+    fontSize: "1.8rem",
+    '&:hover': {
+      background: "rgba(63,114,175,1)",
       transform: "translate(-50%, -50%) scale(1.1)",
-      background: "rgba(183,28,28,1)",
     },
-    "& i": {
-      fontSize: "2.5rem",
-      color: "#fff",
-      marginLeft: 8,
-    }
   },
-  heroImageOverlay: {
-    position: "absolute",
+  infoSection: {
+    flex: "1 1 45%",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.5rem",
+    '@media (max-width: 1024px)': {
+      width: "100%",
+    },
+  },
+  title: {
+    fontSize: "2.5rem",
+    fontWeight: 800,
+    color: "#112D4E",
+    lineHeight: 1.2,
+    marginBottom: "1rem",
+    fontFamily: "'Sarabun', sans-serif",
+    '@media (max-width: 768px)': {
+      fontSize: "2rem",
+    },
+  },
+  metaRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "2rem",
+    flexWrap: "wrap",
+    marginBottom: "1rem",
+    padding: "1rem",
+    borderRadius: "12px",
+  },
+  metaItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    color: "#3F72AF",
+    fontSize: "1rem",
+    '& svg': {
+      fontSize: "1.2rem",
+    },
+  },
+  tagRow: {
+    display: "flex",
+    gap: "0.8rem",
+    flexWrap: "wrap",
+    marginBottom: "1.5rem",
+  },
+  tag: {
+    background: "rgba(63,114,175,0.1)",
+    color: "#3F72AF",
+    padding: "0.5rem 1rem",
+    borderRadius: "12px",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    transition: "all 0.2s",
+    '&:hover': {
+      background: "rgba(63,114,175,0.15)",
+      transform: "translateY(-2px)",
+    },
+  },
+  actionRow: {
+    display: "flex",
+    gap: "1rem",
+    marginTop: "1rem",
+    flexWrap: "wrap",
+  },
+  primaryButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.8rem",
+    padding: "1rem 2rem",
+    background: "#3F72AF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "12px",
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.3s",
+    boxShadow: "0 4px 20px rgba(63,114,175,0.2)",
+    '&:hover': {
+      background: "#112D4E",
+      transform: "translateY(-2px)",
+      boxShadow: "0 8px 30px rgba(63,114,175,0.3)",
+    },
+  },
+  secondaryButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.8rem",
+    padding: "1rem 2rem",
+    background: "#fff",
+    color: "#3F72AF",
+    border: "2px solid #3F72AF",
+    borderRadius: "12px",
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.3s",
+    '&:hover': {
+      background: "rgba(63,114,175,0.05)",
+      transform: "translateY(-2px)",
+    },
+  },
+  contentSection: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    '@media (max-width: 768px)': {
+      padding: "2rem 1rem",
+    },
+  },
+  contentSectionGray: {
+    width: "100%",
+    background: "#f8faff",
+    '@media (max-width: 768px)': {
+      padding: "2rem 0",
+    },
+  },
+  contentWrapper: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    padding: "0 2rem",
+    '@media (max-width: 768px)': {
+      padding: "0 1rem",
+    },
+  },
+  mainContent: {
+    borderRadius: 24,
+    '@media (max-width: 768px)': {
+      padding: "1.5rem",
+      borderRadius: 16,
+    },
+  },
+  sectionTitle: {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    color: "#112D4E",
+    marginBottom: "1.5rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    '&::before': {
+      content: '""',
+      width: 4,
+      height: 24,
+      background: "#3F72AF",
+      borderRadius: 2,
+    },
+  },
+  description: {
+    fontSize: "1.1rem",
+    lineHeight: 1.7,
+    color: "#666",
+    '& p': {
+      marginBottom: "1rem",
+    },
+  },
+  detailsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "1.5rem",
+    marginTop: "2rem",
+    padding: "1.5rem",
+    borderRadius: 16,
+  },
+  detailItem: {
+    background: "#fff",
+    padding: "1.2rem",
+    borderRadius: 12,
+    boxShadow: "0 4px 12px rgba(63,114,175,0.06)",
+    transition: "all 0.2s",
+    '&:hover': {
+      transform: "translateY(-3px)",
+      boxShadow: "0 8px 24px rgba(63,114,175,0.1)",
+    },
+  },
+  detailLabel: {
+    fontSize: "0.9rem",
+    color: "#666",
+    marginBottom: "0.5rem",
+  },
+  detailValue: {
+    fontSize: "1.1rem",
+    color: "#112D4E",
+    fontWeight: 600,
+  },
+  sidebar: {
+    position: "sticky",
+    top: "2rem",
+    background: "#fff",
+    borderRadius: 24,
+    padding: "2rem",
+    boxShadow: "0 8px 32px rgba(63,114,175,0.08)",
+    height: "fit-content",
+  },
+  relatedSection: {
+    background: "#fff",
+    padding: "3rem 0",
+    width: "100%",
+    '@media (max-width: 768px)': {
+      padding: "1.5rem 0",
+    },
+  },
+  relatedGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "1.5rem",
+    marginTop: "1.5rem",
+    padding: "0 3rem",
+    '@media (max-width: 768px)': {
+      padding: "0 1.5rem",
+      gap: "1rem",
+    },
+  },
+  relatedHeader: {
+    padding: "0 3rem",
+    '@media (max-width: 768px)': {
+      padding: "0 1.5rem",
+    },
+  },
+  relatedCard: {
+    background: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    boxShadow: "0 4px 12px rgba(63,114,175,0.08)",
+    transition: "all 0.3s",
+    cursor: "pointer",
+    '&:hover': {
+      transform: "translateY(-5px)",
+      boxShadow: "0 12px 32px rgba(63,114,175,0.12)",
+      '& $relatedImage': {
+        transform: "scale(1.05)",
+      },
+    },
+  },
+  relatedImage: {
+    width: "100%",
+    height: 180,
+    objectFit: "cover",
+    transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  relatedInfo: {
+    padding: "1.2rem",
+  },
+  relatedTitle: {
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    color: "#112D4E",
+    marginBottom: "0.8rem",
+    display: "-webkit-box",
+    "-webkit-line-clamp": 2,
+    "-webkit-box-orient": "vertical",
+    overflow: "hidden",
+  },
+  relatedMeta: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    color: "#666",
+    fontSize: "0.9rem",
+  },
+  videoModal: {
+    position: "fixed",
     top: 0,
     left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.9)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "2rem",
+  },
+  videoContainer: {
+    position: "relative",
     width: "100%",
-    height: "100%",
-    zIndex: 2,
+    maxWidth: 1200,
+    aspectRatio: "16/9",
+    background: "#000",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  closeButton: {
+    position: "absolute",
+    top: -20,
+    right: -20,
+    width: 40,
+    height: 40,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.1)",
+    border: "none",
+    color: "#fff",
+    fontSize: "1.5rem",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    background: "rgba(0,0,0,0.0)",
-    transition: "background 0.2s",
+    transition: "all 0.2s",
     '&:hover': {
-      background: "rgba(0,0,0,0.18)",
-      '& $playButton': {
-        transform: "translate(-50%, -50%) scale(1.15)",
-        background: "rgba(183,28,28,1)",
+      background: "rgba(255,255,255,0.2)",
+      transform: "scale(1.1)",
+    },
+  },
+  "@keyframes slideUp": {
+    from: { transform: "translateY(20px)", opacity: 0 },
+    to: { transform: "translateY(0)", opacity: 1 }
+  },
+  animatedEntry: {
+    animation: "$slideUp 0.5s ease-out forwards",
+  },
+  breadcrumb: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    fontSize: "0.9rem",
+    color: THEME.colors.text.secondary,
+    marginBottom: "2rem",
+    '& a': {
+      color: THEME.colors.text.secondary,
+      textDecoration: "none",
+      '&:hover': {
+        color: THEME.colors.secondary,
       }
     },
-    outline: "none",
+  },
+  mainImage: {
+    width: "100%",
+    maxHeight: "600px",
+    objectFit: "contain",
+    borderRadius: THEME.borderRadius.lg,
+    marginBottom: "2rem",
+    background: THEME.colors.background.light,
+  },
+  attributesSection: {
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    padding: "2rem",
+    marginBottom: "2rem",
+    boxShadow: THEME.shadows.card,
+  },
+  attributeTitle: {
+    fontSize: "1.2rem",
+    fontWeight: 600,
+    color: THEME.colors.text.primary,
+    marginBottom: "1.5rem",
+  },
+  attributeGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "1.5rem",
+  },
+  attributeItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+  },
+  attributeLabel: {
+    fontSize: "0.9rem",
+    color: THEME.colors.text.secondary,
+  },
+  attributeValue: {
+    fontSize: "1rem",
+    color: THEME.colors.text.primary,
+    fontWeight: 500,
+  },
+  addToCollectionButton: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    width: "100%",
+    padding: "1rem",
+    background: THEME.colors.background.main,
+    border: `2px solid ${THEME.colors.border}`,
+    borderRadius: THEME.borderRadius.md,
+    color: THEME.colors.text.primary,
+    fontSize: "1rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    marginBottom: "1rem",
+    '&:hover': {
+      background: THEME.colors.background.light,
+      borderColor: THEME.colors.secondary,
+    }
+  },
+  signInLink: {
+    textAlign: "center",
+    fontSize: "0.9rem",
+    color: THEME.colors.text.secondary,
+    marginBottom: "2rem",
+    '& a': {
+      color: THEME.colors.secondary,
+      textDecoration: "none",
+      fontWeight: 500,
+      '&:hover': {
+        textDecoration: "underline",
+      }
+    }
+  },
+  tagsContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+    marginTop: "1rem",
+  },
+  gallerySection: {
+    width: "100%",
+    position: "relative",
+    padding: "1rem",
+    background: "rgba(63,114,175,0.02)",
+    borderRadius: "16px",
+  },
+  galleryGrid: {
+    display: "flex",
+    gap: "1rem",
+    overflowX: "hidden",
+    scrollBehavior: "smooth",
+    padding: "0.5rem",
+    marginLeft: "-0.5rem",
+    marginRight: "-0.5rem",
+  },
+  galleryItem: {
+    flex: "0 0 280px",
+    position: "relative",
+    aspectRatio: "16/9",
+    borderRadius: "12px",
+    overflow: "hidden",
+    cursor: "pointer",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(63,114,175,0.08)",
+    transition: "all 0.3s",
+    '&:hover': {
+      transform: "translateY(-4px)",
+      boxShadow: "0 12px 24px rgba(63,114,175,0.12)",
+      '& $galleryImage': {
+        transform: "scale(1.05)",
+      },
+    },
+  },
+  carouselButton: {
+    position: "absolute",
+    top: "62%",
+    transform: "translateY(-50%)",
+    width: "44px",
+    height: "44px",
+    borderRadius: "50%",
+    background: "#fff",
+    border: "none",
+    boxShadow: "0 8px 24px rgba(63,114,175,0.15)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    zIndex: 10,
+    transition: "all 0.3s",
+    color: "#3F72AF",
+    '&:hover': {
+      background: "#3F72AF",
+      color: "#fff",
+      transform: "translateY(-50%) scale(1.1)",
+    },
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: "not-allowed",
+      '&:hover': {
+        background: "#fff",
+        color: "#3F72AF",
+        transform: "translateY(-50%)",
+      },
+    },
+    '& svg': {
+      fontSize: "1.2rem",
+    },
+  },
+  prevButton: {
+    left: "-22px",
+  },
+  nextButton: {
+    right: "-28px",
+  },
+  galleryImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  imageModal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.9)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "2rem",
+  },
+  modalImage: {
+    maxWidth: "90%",
+    maxHeight: "90vh",
+    objectFit: "contain",
+    borderRadius: 8,
   },
 });
 
@@ -368,6 +650,25 @@ const embedYouTube = (url: string) => {
     : url;
 };
 
+// Add type definition for Resource
+interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  category: string;
+  tags: string[];
+  fileUrl: string;
+  thumbnailUrl: string;
+  gallery?: string[];
+  uploadedBy: string;
+  downloadCount: number;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  videoUrl?: string;
+}
+
 const ResourceDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -378,15 +679,51 @@ const ResourceDetailPage = () => {
   const [showFullDesc, setShowFullDesc] = useState(false);
   const descRef = useRef<HTMLDivElement>(null);
   const [descOverflow, setDescOverflow] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const { isBookmarked, addBookmark, removeBookmark } = useBookmarks();
+  const [bookmarkStatus, setBookmarkStatus] = useState(false);
   
-  const resource = resourcesData.resources.find((r) => r.id === id);
-  if (!resource) return <p style={{ textAlign: "center" }}>ไม่พบข้อมูลทรัพยากร</p>;
+  const resource = resourcesData.resources.find((r) => r.id === id) as Resource;
+  
+  // Use gallery images from resource data
+  const images = resource?.gallery || [resource?.thumbnailUrl];
+
+  if (!resource) {
+    return (
+      <div style={{ 
+        minHeight: "100vh", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: "1rem",
+        background: "linear-gradient(180deg, #f8faff 0%, #ffffff 100%)",
+      }}>
+        <h2 style={{ fontSize: "2rem", color: "#112D4E" }}>ไม่พบข้อมูลทรัพยากร</h2>
+        <button 
+          className={classes.secondaryButton}
+          onClick={() => navigate(-1)}
+        >
+          กลับไปหน้าก่อนหน้า
+        </button>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (descRef.current) {
       setDescOverflow(descRef.current.scrollHeight > 300);
     }
   }, [resource.description]);
+
+  useEffect(() => {
+    if (resource) {
+      setBookmarkStatus(isBookmarked(resource.id));
+    }
+  }, [resource, isBookmarked]);
 
   const handleOpenVideoModal = useCallback(() => {
     setIsVideoModalOpen(true);
@@ -402,8 +739,7 @@ const ResourceDetailPage = () => {
     .filter((item) =>
       item.category === resource.category &&
       item.id !== resource.id
-      
-    ).slice(0, 5);
+    ).slice(0, 6);
 
   const handleLoginRedirect = () => {
     navigate(`/login?redirect=/resource/${id}`);
@@ -414,9 +750,10 @@ const ResourceDetailPage = () => {
     addDownload(user.id, {
       id: resource.id,
       title: resource.title,
+      description: resource.description,
       type: resource.type,
-      date: new Date().toISOString(),
-      url: resource.fileUrl,
+      fileUrl: resource.fileUrl,
+      downloadedAt: new Date().toISOString()
     });
     const link = document.createElement("a");
     link.href = resource.fileUrl;
@@ -429,173 +766,197 @@ const ResourceDetailPage = () => {
   const isVideo = resource.type === "video";
   const isYouTube = resource.videoUrl?.includes("youtube.com") || resource.videoUrl?.includes("youtu.be");
 
+  const checkScrollButtons = useCallback(() => {
+    if (galleryRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = galleryRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
+    }
+  }, []);
+
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    if (galleryRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = galleryRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+      galleryRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const gallery = galleryRef.current;
+    if (gallery) {
+      gallery.addEventListener('scroll', checkScrollButtons);
+      checkScrollButtons();
+      return () => gallery.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [checkScrollButtons]);
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: resource.title,
+          text: resource.description,
+          url: window.location.href,
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('ลิงก์ถูกคัดลอกไปยังคลิปบอร์ดแล้ว');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  const handleBookmark = () => {
+    if (!user) {
+      handleLoginRedirect();
+      return;
+    }
+
+    if (bookmarkStatus) {
+      removeBookmark(resource.id);
+      setBookmarkStatus(false);
+    } else {
+      addBookmark({
+        id: resource.id,
+        title: resource.title,
+        description: resource.description,
+        imageUrl: resource.thumbnailUrl,
+        type: resource.type,
+        category: resource.category,
+        createdAt: resource.createdAt
+      });
+      setBookmarkStatus(true);
+    }
+  };
+
   return (
     <div className={classes.container}>
-      <div className={classes.heroImageWrap}>
-        <img src={`${import.meta.env.BASE_URL}${resource.thumbnailUrl.replace(/^\//, '')}`} alt={resource.title} />
-        {isVideo && (
-          <div
-            className={classes.heroImageOverlay}
-            tabIndex={0}
-            role="button"
-            aria-label="เล่นวิดีโอ"
-            onClick={handleOpenVideoModal}
-            onKeyDown={e => {
-              if (e.key === "Enter" || e.key === " ") handleOpenVideoModal();
-            }}
-          >
-            <div className={classes.playButton}>
-              <i className="pi pi-play" />
-            </div>
-          </div>
-        )}
-        <div className={classes.mainInfo}>
-          <div className={classes.infoBlock}>
-            <div className={classes.title}>{resource.title}</div>
-            <div className={classes.tagRow}>
-              <span className={classes.tag}>
-                {resource.type?.toUpperCase()}
-              </span>
-              {resource.tags && resource.tags.map((t, i) =>
-                <span key={i} className={classes.tag}>{t}</span>
+      <div className={classes.heroSection}>
+        <div className={classes.heroContent}>
+          <div className={classes.heroMain}>
+            <div className={classes.heroImageWrap}>
+              <img 
+                src={`${import.meta.env.BASE_URL}${resource.thumbnailUrl.replace(/^\//, '')}`}
+                alt={resource.title}
+                className={classes.heroImage}
+              />
+              {isVideo && (
+                <button
+                  className={classes.playButton}
+                  onClick={handleOpenVideoModal}
+                  aria-label="เล่นวิดีโอ"
+                >
+                  <FaPlay />
+                </button>
               )}
             </div>
-            <div className={classes.meta}>
-              <div className={classes.viewBox}>
-                <i className="pi pi-user" style={{ fontSize: "1.4rem" }} />
-                {resource.uploadedBy}
-              </div>
-              <div className={classes.viewBox}>
-                <i className="pi pi-eye" style={{ fontSize: "1.4rem" }} />
-                {resource.viewCount || 0} ครั้ง
-              </div>
-              <div className={classes.viewBox}>
-                <i className="pi pi-download" style={{ fontSize: "1.4rem" }} />
-                {resource.downloadCount || 0} ครั้ง
+            
+            <div className={classes.infoSection}>
+              <h1 className={classes.title}>{resource.title}</h1>
+              
+              <div className={classes.actionRow} style={{ gap: '1rem', marginBottom: '2rem' }}>
+                {user ? (
+                  <button 
+                    className={classes.primaryButton}
+                    onClick={handleDownload}
+                    style={{ flex: 2 }}
+                  >
+                    <FaDownload />
+                    ดาวน์โหลด
+                  </button>
+                ) : (
+                  <button 
+                    className={classes.primaryButton}
+                    onClick={handleLoginRedirect}
+                    style={{ flex: 2 }}
+                  >
+                    <FaDownload />
+                    เข้าสู่ระบบเพื่อดาวน์โหลด
+                  </button>
+                )}
+                
+                <button 
+                  className={classes.secondaryButton}
+                  onClick={handleShare}
+                  style={{ flex: 1 }}
+                >
+                  <FaShare />
+                  แชร์
+                </button>
+                
+                <button 
+                  className={classes.secondaryButton}
+                  onClick={handleBookmark}
+                  style={{ 
+                    flex: 1,
+                    background: bookmarkStatus ? 'rgba(63,114,175,0.1)' : undefined,
+                    borderColor: bookmarkStatus ? '#3F72AF' : undefined,
+                  }}
+                >
+                  <FaBookmark style={{ color: bookmarkStatus ? '#3F72AF' : undefined }} />
+                  {bookmarkStatus ? 'บันทึกแล้ว' : 'บันทึก'}
+                </button>
               </div>
             </div>
-            {user ? (
-              <button className={classes.button} onClick={handleDownload}>
-                <i className="pi pi-download" style={{ fontSize: "1.4rem" }} />
-                ดาวน์โหลด
-              </button>
-            ) : (
-              <button className={classes.button} onClick={handleLoginRedirect}>
-                <i className="pi pi-sign-in" style={{ fontSize: "1.4rem" }} />
-                เข้าสู่ระบบเพื่อดาวน์โหลด
-              </button>
-            )}
           </div>
+
+          {images.length > 1 && (
+            <div className={classes.gallerySection}>
+              <h2 className={classes.sectionTitle}>รูปภาพทั้งหมด</h2>
+              <button 
+                className={`${classes.carouselButton} ${classes.prevButton}`}
+                onClick={() => scroll('left')}
+                disabled={!canScrollLeft}
+                aria-label="Previous images"
+              >
+                <FaChevronLeft />
+              </button>
+              <button 
+                className={`${classes.carouselButton} ${classes.nextButton}`}
+                onClick={() => scroll('right')}
+                disabled={!canScrollRight}
+                aria-label="Next images"
+              >
+                <FaChevronRight />
+              </button>
+              <div className={classes.galleryGrid} ref={galleryRef}>
+                {images.map((image: string, index: number) => (
+                  <div 
+                    key={index}
+                    className={classes.galleryItem}
+                    onClick={() => setSelectedImage(image)}
+                  >
+                    <img
+                      src={`${import.meta.env.BASE_URL}${image.replace(/^\//, '')}`}
+                      alt={`รูปภาพที่ ${index + 1}`}
+                      className={classes.galleryImage}
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Video Modal */}
-      <Modal
-        isOpen={isVideoModalOpen}
-        onRequestClose={handleCloseVideoModal}
-        contentLabel="Video Player Modal"
-        className={classes.videoModal}
-        overlayClassName={classes.videoModalOverlay}
-        shouldCloseOnOverlayClick={true}
-        shouldCloseOnEsc={true}
-      >
-        <button
-          onClick={handleCloseVideoModal}
-          style={{
-            position: "absolute",
-            top: -15,
-            right: -15,
-            zIndex: 10020,
-            width: 36,
-            height: 36,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "none",
-            borderRadius: "50%",
-            background: "rgba(20,20,20,0.8)",
-            color: "#fff",
-            fontSize: 24,
-            lineHeight: '36px',
-            cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-            transition: "all 0.2s ease",
-          }}
-          aria-label="ปิด"
-        >
-          ×
-        </button>
-        
-        <div style={{
-          width: "100%",
-          aspectRatio: "16/9",
-          background: "#000",
-          borderRadius: "10px",
-          overflow: "hidden",
-        }}>
-          {isYouTube ? (
-            <iframe
-              style={{
-                width: "100%",
-                height: "100%",
-                border: 0,
-              }}
-              src={embedYouTube(resource.videoUrl || "")}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              title={resource.title}
-            />
-          ) : (
-            <video
-              style={{
-                width: "100%",
-                height: "100%",
-                background: "#000",
-                border: 0,
-              }}
-              src={resource.fileUrl || resource.videoUrl}
-              poster={resource.thumbnailUrl}
-              controls
-              preload="metadata"
-              autoPlay
-            />
-          )}
-        </div>
-      </Modal>
-
       <div className={classes.contentSection}>
-        <div className={classes.contentInner}>
-          <div className={classes.detailGrid}>
-            <div className={classes.detailItem}>
-              <h4>หมวดหมู่</h4>
-              <p>{resource.category}</p>
-            </div>
-            <div className={classes.detailItem}>
-              <h4>ประเภทไฟล์</h4>
-              <p>{resource.type}</p>
-            </div>
-            <div className={classes.detailItem}>
-              <h4>เผยแพร่เมื่อ</h4>
-              <p>{new Date(resource.createdAt).toLocaleDateString("th-TH")}</p>
-            </div>
-            <div className={classes.detailItem}>
-              <h4>อัปเดตล่าสุด</h4>
-              <p>{new Date(resource.updatedAt).toLocaleDateString("th-TH")}</p>
-            </div>
-          </div>
-
+        <div className={classes.mainContent}>
           {resource.description && (
-            <div style={{ width: '100%', position: 'relative', marginBottom: 24 }}>
-              <div className={classes.sectionTitle} style={{marginBottom: 12}}>เนื้อหา</div>
+            <div style={{ marginTop: "2rem" }}>
+              <h2 className={classes.sectionTitle}>เนื้อหา</h2>
               <div
                 ref={descRef}
                 className={classes.description}
                 style={{
-                  maxHeight: showFullDesc ? 'none' : 200,
+                  maxHeight: showFullDesc ? 'none' : 300,
                   overflow: showFullDesc ? 'visible' : 'hidden',
                   position: 'relative',
-                  transition: 'max-height 0.3s',
-                  paddingRight: descOverflow && !showFullDesc ? 24 : undefined,
                 }}
               >
                 {resource.description}
@@ -605,9 +966,8 @@ const ResourceDetailPage = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    height: 48,
-                    background: 'linear-gradient(to bottom, rgba(255,255,255,0), #fff 90%)',
-                    pointerEvents: 'none',
+                    height: 100,
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0), #fff)',
                   }} />
                 )}
               </div>
@@ -615,177 +975,164 @@ const ResourceDetailPage = () => {
                 <button
                   onClick={() => setShowFullDesc(v => !v)}
                   style={{
-                    marginTop: 8,
-                    background: 'none',
-                    border: 'none',
-                    color: '#d32f2f',
-                    fontWeight: 700,
-                    fontSize: 16,
-                    cursor: 'pointer',
-                    outline: 'none',
+                    marginTop: "1rem",
+                    background: "none",
+                    border: "none",
+                    color: "#3F72AF",
+                    fontWeight: 600,
+                    cursor: "pointer",
                     padding: 0,
                   }}
                 >
-                  {showFullDesc ? 'ย่อ' : 'เพิ่มเติม'}
+                  {showFullDesc ? "แสดงน้อยลง" : "อ่านเพิ่มเติม"}
                 </button>
               )}
             </div>
           )}
 
-          {relatedByCategory.length > 0 && (
-            <div className={classes.relatedWrap}>
-              <div className={classes.sectionTitle}>รายการที่เกี่ยวข้อง</div>
-              <div style={{ position: "relative", width: "100%", overflow: "hidden", margin: "0 auto 2rem auto" }}>
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("related-scroll");
-                    if (el) el.scrollBy({ left: -360, behavior: "smooth" });
-                  }}
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    zIndex: 2,
-                    background: "rgba(255,255,255,0.95)",
-                    border: "1px solid #ddd",
-                    borderRadius: "50%",
-                    width: 40,
-                    height: 40,
-                    fontSize: 22,
-                    color: "#b71c1c",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                    transition: "all 0.18s",
-                    opacity: 0.85
-                  }}
-                  aria-label="เลื่อนไปก่อนหน้า"
-                >
-                  <i className="pi pi-chevron-left" />
-                </button>
-                <div
-                  id="related-scroll"
-                  style={{
-                    display: "flex",
-                    gap: 28,
-                    overflowX: "auto",
-                    scrollSnapType: "x mandatory",
-                    scrollBehavior: "smooth",
-                    padding: "0.5rem 2.5rem",
-                    WebkitOverflowScrolling: "touch",
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                  }}
-                  onWheel={e => {
-                    const el = e.currentTarget;
-                    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
-                      el.scrollLeft += e.deltaY;
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  {relatedByCategory.map((item) => (
-                    <div
-                      key={item.id}
-                      className={classes.relatedCard}
-                      style={{ minWidth: 320, maxWidth: 340, width: 320, flex: "0 0 320px", scrollSnapAlign: "center", aspectRatio: "4/3", position: "relative", background: "#f8f9fa", cursor: "pointer" }}
-                      onClick={() => navigate(`/resource/${item.id}`)}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.transform = "translateY(-8px)";
-                        e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.16)";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.10)";
-                      }}
-                    >
-                      <img src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`} alt={item.title} className={classes.relatedImg} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          padding: "1.2rem",
-                          background: "linear-gradient(0deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.18) 80%, rgba(0,0,0,0) 100%)",
-                          color: "#fff",
-                          transition: "opacity 0.3s",
-                          zIndex: 3,
-                          pointerEvents: "none"
-                        }}
-                      >
-                        <div style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 6, textShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>{item.title}</div>
-                        {item.category && (
-                          <div style={{ fontSize: "0.95rem", opacity: 0.85, marginBottom: 4 }}>
-                            <i className="pi pi-folder" style={{ marginRight: 6, fontSize: "0.9em" }} />
-                            {Array.isArray(item.category) ? item.category.join(', ') : item.category}
-                          </div>
-                        )}
-                        {item.tags && item.tags.length > 0 && (
-                          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: 4 }}>
-                            {item.tags.slice(0, 3).map((tag, i) => (
-                              <span key={i} style={{
-                                background: "rgba(255,255,255,0.13)",
-                                borderRadius: 12,
-                                padding: "2px 10px",
-                                fontSize: "0.85rem",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 4,
-                                fontWeight: 500
-                              }}>
-                                <i className="pi pi-tag" style={{ fontSize: "0.8em" }} />
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <div style={{ marginTop: 10, display: "flex", gap: "1.5rem", fontSize: "0.95rem", color: "#eee", alignItems: "center" }}>
-                          <span><i className="pi pi-eye" style={{ marginRight: 4 }} />{item.viewCount || 0}</span>
-                          <span><i className="pi pi-download" style={{ marginRight: 4 }} />{item.downloadCount || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+          <div style={{ 
+            marginTop: "3rem",
+            borderRadius: "16px",
+          }}>
+            <h2 className={classes.sectionTitle}>รายละเอียด</h2>
+            <div className={classes.detailsGrid}>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>หมวดหมู่</div>
+                <div className={classes.detailValue}>{resource.category}</div>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>ประเภทไฟล์</div>
+                <div className={classes.detailValue}>{resource.type}</div>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>เผยแพร่เมื่อ</div>
+                <div className={classes.detailValue}>
+                  {new Date(resource.createdAt).toLocaleDateString("th-TH")}
                 </div>
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("related-scroll");
-                    if (el) el.scrollBy({ left: 360, behavior: "smooth" });
-                  }}
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    zIndex: 2,
-                    background: "rgba(255,255,255,0.95)",
-                    border: "1px solid #ddd",
-                    borderRadius: "50%",
-                    width: 40,
-                    height: 40,
-                    fontSize: 22,
-                    color: "#b71c1c",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                    transition: "all 0.18s",
-                    opacity: 0.85
-                  }}
-                  aria-label="เลื่อนไปถัดไป"
-                >
-                  <i className="pi pi-chevron-right" />
-                </button>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>อัปเดตล่าสุด</div>
+                <div className={classes.detailValue}>
+                  {new Date(resource.updatedAt).toLocaleDateString("th-TH")}
+                </div>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>จำนวนการดู</div>
+                <div className={classes.detailValue}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaEye />
+                    {resource.viewCount || 0} ครั้ง
+                  </div>
+                </div>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>จำนวนดาวน์โหลด</div>
+                <div className={classes.detailValue}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaDownload />
+                    {resource.downloadCount || 0} ครั้ง
+                  </div>
+                </div>
+              </div>
+              <div className={classes.detailItem}>
+                <div className={classes.detailLabel}>ผู้เผยแพร่</div>
+                <div className={classes.detailValue}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaHeart />
+                    {resource.uploadedBy}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+
+
+              <div className={classes.tagRow} style={{ marginBottom: "1.5rem" }}>
+                <span className={classes.tag}>
+                  {resource.type?.toUpperCase()}
+                </span>
+                {resource.tags && resource.tags.map((t, i) => (
+                  <span key={i} className={classes.tag}>{t}</span>
+                ))}
+              </div>
+          </div>
         </div>
       </div>
+
+      <div className={classes.contentSectionGray}>
+        <div className={classes.relatedSection}>
+          <div className={classes.relatedHeader}>
+            <h2 className={classes.sectionTitle}>รายการที่เกี่ยวข้อง</h2>
+          </div>
+          <div className={classes.relatedGrid}>
+            {relatedByCategory.map((item) => (
+              <div
+                key={item.id}
+                className={classes.relatedCard}
+                onClick={() => navigate(`/resource/${item.id}`)}
+              >
+                <img
+                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
+                  alt={item.title}
+                  className={classes.relatedImage}
+                />
+                <div className={classes.relatedInfo}>
+                  <h3 className={classes.relatedTitle}>{item.title}</h3>
+                  <div className={classes.relatedMeta}>
+                    <span>{item.category}</span>
+                    <span>{new Date(item.createdAt).toLocaleDateString("th-TH")}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {selectedImage && (
+        <div className={classes.imageModal} onClick={() => setSelectedImage(null)}>
+          <img
+            src={`${import.meta.env.BASE_URL}${selectedImage.replace(/^\//, '')}`}
+            alt="รูปภาพขยาย"
+            className={classes.modalImage}
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      {isVideoModalOpen && (
+        <div className={classes.videoModal} onClick={handleCloseVideoModal}>
+          <div className={classes.videoContainer} onClick={e => e.stopPropagation()}>
+            <button className={classes.closeButton} onClick={handleCloseVideoModal}>
+              <FaTimes />
+            </button>
+            {isYouTube ? (
+              <iframe
+                src={embedYouTube(resource.videoUrl || "")}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: 0,
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={resource.title}
+              />
+            ) : (
+              <video
+                src={resource.fileUrl || resource.videoUrl}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  background: "#000",
+                }}
+                controls
+                autoPlay
+                poster={resource.thumbnailUrl}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

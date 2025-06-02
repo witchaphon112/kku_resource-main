@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+interface SavedItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -11,7 +18,9 @@ export interface User {
   stats?: {
     uploadCount?: number;
     downloadCount?: number;
+    savedCount?: number;
   };
+  savedItems?: SavedItem[];
 }
 
 interface AuthContextType {
