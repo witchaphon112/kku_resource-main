@@ -30,16 +30,24 @@ const useStyles = {
   container: {
     maxWidth: 1200,
     margin: "40px auto",
-    padding: "4rem",
+    padding: "4rem 2rem",
     background: GRADIENTS.background,
     borderRadius: 24,
     boxShadow: "0 4px 24px rgba(45,52,54,0.08)",
     transition: "all 0.3s ease",
+    "@media (max-width: 768px)": {
+      padding: "2rem 1rem",
+      margin: "20px auto",
+      borderRadius: 16,
+    }
   },
   header: {
     textAlign: "center" as const,
     marginBottom: 48,
     animation: "fadeIn 0.5s ease-out",
+    "@media (max-width: 768px)": {
+      marginBottom: 32,
+    }
   },
   title: {
     fontSize: 36,
@@ -49,6 +57,9 @@ const useStyles = {
     letterSpacing: 0.5,
     position: "relative" as const,
     display: "inline-block",
+    "@media (max-width: 768px)": {
+      fontSize: 28,
+    },
     "&::after": {
       content: '""',
       position: "absolute" as const,
@@ -59,7 +70,7 @@ const useStyles = {
       height: 4,
       background: COLORS.accent,
       borderRadius: 2,
-    },
+    }
   },
   subtitle: {
     fontSize: 18,
@@ -67,6 +78,10 @@ const useStyles = {
     maxWidth: 580,
     margin: "0 auto 20px auto",
     lineHeight: 1.6,
+    "@media (max-width: 768px)": {
+      fontSize: 16,
+      maxWidth: "100%",
+    }
   },
   filterSection: {
     display: "flex",
@@ -79,22 +94,37 @@ const useStyles = {
     borderRadius: 16,
     boxShadow: "0 2px 12px rgba(30,60,120,0.05)",
     transition: "all 0.3s ease",
+    "@media (max-width: 768px)": {
+      padding: "16px",
+      gap: 12,
+      flexDirection: "column",
+    },
     "&:hover": {
       boxShadow: "0 4px 20px rgba(30,60,120,0.1)",
-    },
+    }
   },
   searchBox: {
     flex: 1,
     minWidth: 280,
+    "@media (max-width: 768px)": {
+      width: "100%",
+    }
   },
   filterBox: {
     minWidth: 180,
+    "@media (max-width: 768px)": {
+      width: "100%",
+    }
   },
   statsSection: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: 24,
     marginBottom: 40,
+    "@media (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: 16,
+    }
   },
   statCard: {
     background: GRADIENTS.card,
@@ -149,15 +179,24 @@ const useStyles = {
     background: COLORS.white,
     boxShadow: "0 2px 12px rgba(30,60,120,0.05)",
     transition: "all 0.3s ease",
+    "@media (max-width: 768px)": {
+      borderRadius: 12,
+    },
     "&:hover": {
       boxShadow: "0 4px 20px rgba(30,60,120,0.1)",
-    },
+    }
   },
   table: {
     width: "100%",
     borderCollapse: "separate" as const,
     borderSpacing: "0",
     minWidth: 820,
+    "@media (max-width: 768px)": {
+      minWidth: "100%",
+      "& th, & td": {
+        padding: "12px 16px",
+      }
+    }
   },
   tableHeader: {
     background: GRADIENTS.header,
@@ -225,6 +264,10 @@ const useStyles = {
     background: COLORS.white,
     borderRadius: 20,
     boxShadow: "0 2px 12px rgba(30,60,120,0.05)",
+    "@media (max-width: 768px)": {
+      padding: "40px 16px",
+      borderRadius: 12,
+    }
   },
   emptyIcon: {
     fontSize: 64,
@@ -267,10 +310,18 @@ const useStyles = {
   actionButtons: {
     display: "flex",
     gap: "12px",
+    "@media (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "8px",
+    },
     "& .p-button": {
       width: 36,
       height: 36,
       transition: "all 0.2s ease",
+      "@media (max-width: 768px)": {
+        width: "100%",
+        height: 32,
+      }
     },
     "& .p-button:hover": {
       transform: "translateY(-2px)",

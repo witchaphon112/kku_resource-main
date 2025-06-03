@@ -50,6 +50,9 @@ const useStyles = createUseStyles({
     background: "linear-gradient(180deg, #f8faff 0%, #ffffff 100%)",
     position: "relative",
     overflow: "hidden",
+    '@media (max-width: 768px)': {
+      paddingTop: "60px"
+    }
   },
   heroSection: {
     position: "relative",
@@ -60,8 +63,8 @@ const useStyles = createUseStyles({
     padding: "2rem",
     background: "linear-gradient(180deg, rgba(63,114,175,0.05) 0%, rgba(255,255,255,0) 100%)",
     '@media (max-width: 768px)': {
-      padding: "1.5rem",
-    },
+      padding: "1rem 0.5rem",
+    }
   },
   heroContent: {
     maxWidth: 1400,
@@ -72,9 +75,14 @@ const useStyles = createUseStyles({
     borderRadius: "24px",
     padding: "2rem",
     '@media (max-width: 1024px)': {
-      gap: "2rem",
-      padding: "1.5rem",
+      gap: "1.5rem",
+      padding: "1rem",
     },
+    '@media (max-width: 768px)': {
+      padding: "0.75rem",
+      gap: "1rem",
+      borderRadius: "16px",
+    }
   },
   heroMain: {
     display: "flex",
@@ -83,8 +91,13 @@ const useStyles = createUseStyles({
     alignItems: "flex-start",
     '@media (max-width: 1024px)': {
       flexDirection: "column",
-      gap: "2rem",
+      gap: "1.5rem",
+      padding: "1rem",
     },
+    '@media (max-width: 768px)': {
+      padding: "0.5rem",
+      gap: "1rem",
+    }
   },
   heroImageWrap: {
     flex: "1 1 55%",
@@ -96,6 +109,11 @@ const useStyles = createUseStyles({
     aspectRatio: "16/9",
     '@media (max-width: 1024px)': {
       width: "100%",
+    },
+    '@media (max-width: 768px)': {
+      borderRadius: "12px",
+      boxShadow: "0 8px 16px rgba(63,114,175,0.1)",
+      aspectRatio: "4/3",
     },
     '&:hover': {
       '& $heroImage': {
@@ -152,8 +170,12 @@ const useStyles = createUseStyles({
     marginBottom: "1rem",
     fontFamily: "'Sarabun', sans-serif",
     '@media (max-width: 768px)': {
-      fontSize: "2rem",
+      fontSize: "1.75rem",
+      marginBottom: "0.75rem"
     },
+    '@media (max-width: 480px)': {
+      fontSize: "1.5rem"
+    }
   },
   metaRow: {
     display: "flex",
@@ -179,6 +201,10 @@ const useStyles = createUseStyles({
     gap: "0.8rem",
     flexWrap: "wrap",
     marginBottom: "1.5rem",
+    '@media (max-width: 768px)': {
+      gap: "0.5rem",
+      marginBottom: "1rem",
+    }
   },
   tag: {
     background: "rgba(63,114,175,0.1)",
@@ -188,20 +214,25 @@ const useStyles = createUseStyles({
     fontSize: "0.95rem",
     fontWeight: 600,
     transition: "all 0.2s",
-    '&:hover': {
-      background: "rgba(63,114,175,0.15)",
-      transform: "translateY(-2px)",
-    },
+    '@media (max-width: 768px)': {
+      padding: "0.375rem 0.75rem",
+      fontSize: "0.875rem",
+    }
   },
   actionRow: {
     display: "flex",
     gap: "1rem",
     marginTop: "1rem",
     flexWrap: "wrap",
+    '@media (max-width: 768px)': {
+      gap: "0.5rem",
+      flexDirection: "column"
+    }
   },
   primaryButton: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "0.8rem",
     padding: "1rem 2rem",
     background: "#3F72AF",
@@ -213,15 +244,16 @@ const useStyles = createUseStyles({
     cursor: "pointer",
     transition: "all 0.3s",
     boxShadow: "0 4px 20px rgba(63,114,175,0.2)",
-    '&:hover': {
-      background: "#112D4E",
-      transform: "translateY(-2px)",
-      boxShadow: "0 8px 30px rgba(63,114,175,0.3)",
-    },
+    '@media (max-width: 768px)': {
+      padding: "0.875rem 1.5rem",
+      fontSize: "1rem",
+      width: "100%"
+    }
   },
   secondaryButton: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "0.8rem",
     padding: "1rem 2rem",
     background: "#fff",
@@ -232,17 +264,21 @@ const useStyles = createUseStyles({
     fontWeight: 600,
     cursor: "pointer",
     transition: "all 0.3s",
-    '&:hover': {
-      background: "rgba(63,114,175,0.05)",
-      transform: "translateY(-2px)",
-    },
+    '@media (max-width: 768px)': {
+      padding: "0.75rem 1.5rem",
+      fontSize: "1rem",
+      width: "100%"
+    }
   },
   contentSection: {
     maxWidth: 1200,
     margin: "0 auto",
     '@media (max-width: 768px)': {
-      padding: "2rem 1rem",
+      padding: "1.5rem 1rem",
     },
+    '@media (max-width: 480px)': {
+      padding: "1rem 0.75rem",
+    }
   },
   contentSectionGray: {
     width: "100%",
@@ -286,9 +322,13 @@ const useStyles = createUseStyles({
     fontSize: "1.1rem",
     lineHeight: 1.7,
     color: "#666",
+    '@media (max-width: 768px)': {
+      fontSize: "1rem",
+      lineHeight: 1.6,
+    },
     '& p': {
       marginBottom: "1rem",
-    },
+    }
   },
   detailsGrid: {
     display: "grid",
@@ -297,6 +337,16 @@ const useStyles = createUseStyles({
     marginTop: "2rem",
     padding: "1.5rem",
     borderRadius: 16,
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "1rem",
+      padding: "1rem",
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: "1fr",
+      gap: "0.75rem",
+      padding: "0.5rem",
+    }
   },
   detailItem: {
     background: "#fff",
@@ -304,10 +354,12 @@ const useStyles = createUseStyles({
     borderRadius: 12,
     boxShadow: "0 4px 12px rgba(63,114,175,0.06)",
     transition: "all 0.2s",
-    '&:hover': {
-      transform: "translateY(-3px)",
-      boxShadow: "0 8px 24px rgba(63,114,175,0.1)",
+    '@media (max-width: 768px)': {
+      padding: "1rem",
     },
+    '@media (max-width: 480px)': {
+      padding: "0.875rem",
+    }
   },
   detailLabel: {
     fontSize: "0.9rem",
@@ -343,9 +395,14 @@ const useStyles = createUseStyles({
     marginTop: "1.5rem",
     padding: "0 3rem",
     '@media (max-width: 768px)': {
-      padding: "0 1.5rem",
+      gridTemplateColumns: "repeat(2, 1fr)",
       gap: "1rem",
+      padding: "0 1rem",
     },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: "1fr",
+      padding: "0 0.75rem",
+    }
   },
   relatedHeader: {
     padding: "0 3rem",
@@ -406,6 +463,9 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     zIndex: 1000,
     padding: "2rem",
+    '@media (max-width: 768px)': {
+      padding: "1rem",
+    }
   },
   videoContainer: {
     position: "relative",
@@ -415,6 +475,9 @@ const useStyles = createUseStyles({
     background: "#000",
     borderRadius: 16,
     overflow: "hidden",
+    '@media (max-width: 768px)': {
+      borderRadius: 8,
+    }
   },
   closeButton: {
     position: "absolute",
@@ -546,15 +609,24 @@ const useStyles = createUseStyles({
     padding: "1rem",
     background: "rgba(63,114,175,0.02)",
     borderRadius: "16px",
+    '@media (max-width: 768px)': {
+      padding: "0.75rem",
+      marginTop: "1rem"
+    }
   },
   galleryGrid: {
     display: "flex",
     gap: "1rem",
-    overflowX: "hidden",
+    overflowX: "auto",
     scrollBehavior: "smooth",
     padding: "0.5rem",
     marginLeft: "-0.5rem",
     marginRight: "-0.5rem",
+    '@media (max-width: 768px)': {
+      gap: "0.75rem",
+      padding: "0.25rem",
+      scrollSnapType: "x mandatory",
+    }
   },
   galleryItem: {
     flex: "0 0 280px",
@@ -566,13 +638,10 @@ const useStyles = createUseStyles({
     background: "#fff",
     boxShadow: "0 4px 12px rgba(63,114,175,0.08)",
     transition: "all 0.3s",
-    '&:hover': {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(63,114,175,0.12)",
-      '& $galleryImage': {
-        transform: "scale(1.05)",
-      },
-    },
+    '@media (max-width: 768px)': {
+      flex: "0 0 220px",
+      scrollSnapAlign: "start",
+    }
   },
   carouselButton: {
     position: "absolute",

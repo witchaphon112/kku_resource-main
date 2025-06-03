@@ -38,6 +38,9 @@ const useStyles = createUseStyles({
     padding: "4rem 2rem",
     maxWidth: 1400,
     margin: "0 auto",
+    "@media (max-width: 768px)": {
+      padding: "2rem 1rem",
+    }
   },
   header: {
     marginBottom: "3rem",
@@ -49,6 +52,9 @@ const useStyles = createUseStyles({
       marginBottom: "1rem",
       position: "relative",
       display: "inline-block",
+      "@media (max-width: 768px)": {
+        fontSize: "2rem",
+      },
       "&::after": {
         content: '""',
         position: "absolute",
@@ -59,7 +65,7 @@ const useStyles = createUseStyles({
         height: 4,
         background: COLORS.accent,
         borderRadius: 2,
-      },
+      }
     },
     "& p": {
       color: COLORS.darkGray,
@@ -67,7 +73,11 @@ const useStyles = createUseStyles({
       maxWidth: 600,
       margin: "0 auto",
       lineHeight: 1.6,
-    },
+      "@media (max-width: 768px)": {
+        fontSize: "1rem",
+        maxWidth: "100%",
+      }
+    }
   },
   card: {
     background: GRADIENTS.card,
@@ -76,6 +86,9 @@ const useStyles = createUseStyles({
     border: `2px solid ${COLORS.lightGray}`,
     transition: "all 0.3s ease",
     overflow: "hidden",
+    "@media (max-width: 768px)": {
+      borderRadius: "16px",
+    },
     "&:hover": {
       boxShadow: "0 6px 30px rgba(0,0,0,0.12)",
       transform: "translateY(-5px)",
@@ -85,10 +98,16 @@ const useStyles = createUseStyles({
       fontSize: "1.75rem",
       fontWeight: 700,
       marginBottom: "1.5rem",
+      "@media (max-width: 768px)": {
+        fontSize: "1.5rem",
+      }
     },
     "& .p-card-content": {
       padding: "2rem",
-    },
+      "@media (max-width: 768px)": {
+        padding: "1.5rem",
+      }
+    }
   },
   formLabel: {
     color: COLORS.primary,
@@ -96,6 +115,9 @@ const useStyles = createUseStyles({
     marginBottom: "0.75rem",
     display: "block",
     fontSize: "1.1rem",
+    "@media (max-width: 768px)": {
+      fontSize: "1rem",
+    }
   },
   input: {
     "& .p-inputtext": {
@@ -104,20 +126,27 @@ const useStyles = createUseStyles({
       padding: "1rem 1.25rem",
       fontSize: "1rem",
       transition: "all 0.3s ease",
+      "@media (max-width: 768px)": {
+        padding: "0.75rem 1rem",
+        fontSize: "0.95rem",
+      },
       "&:focus": {
         borderColor: COLORS.accent,
         boxShadow: "0 0 0 3px rgba(74,144,226,0.1)",
       },
       "&:hover": {
         borderColor: COLORS.accent,
-      },
-    },
+      }
+    }
   },
   dropdown: {
     "& .p-dropdown": {
       border: `2px solid ${COLORS.lightGray}`,
       borderRadius: "12px",
       transition: "all 0.3s ease",
+      "@media (max-width: 768px)": {
+        width: "100%",
+      },
       "&:hover": {
         borderColor: COLORS.accent,
       },
@@ -128,8 +157,12 @@ const useStyles = createUseStyles({
       "& .p-dropdown-label": {
         padding: "1rem 1.25rem",
         fontSize: "1rem",
-      },
-    },
+        "@media (max-width: 768px)": {
+          padding: "0.75rem 1rem",
+          fontSize: "0.95rem",
+        }
+      }
+    }
   },
   fileUpload: {
     "& .p-button": {
@@ -140,12 +173,16 @@ const useStyles = createUseStyles({
       fontSize: "1rem",
       fontWeight: 600,
       transition: "all 0.3s ease",
+      "@media (max-width: 768px)": {
+        width: "100%",
+        padding: "0.75rem 1rem",
+      },
       "&:hover": {
         background: COLORS.primary,
         transform: "translateY(-2px)",
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      },
-    },
+      }
+    }
   },
   submitButton: {
     background: GRADIENTS.accent,
@@ -155,21 +192,32 @@ const useStyles = createUseStyles({
     fontSize: "1.1rem",
     fontWeight: 700,
     transition: "all 0.3s ease",
+    "@media (max-width: 768px)": {
+      width: "100%",
+      padding: "0.75rem 1.5rem",
+      fontSize: "1rem",
+    },
     "&:hover": {
       background: COLORS.accent,
       transform: "translateY(-2px)",
       boxShadow: "0 4px 12px rgba(74,144,226,0.25)",
-    },
+    }
   },
   table: {
     "& .p-datatable": {
       borderRadius: "16px",
       overflow: "hidden",
       border: `2px solid ${COLORS.lightGray}`,
+      "@media (max-width: 768px)": {
+        borderRadius: "12px",
+      },
       "& .p-datatable-header": {
         background: COLORS.white,
         padding: "1.5rem",
         border: "none",
+        "@media (max-width: 768px)": {
+          padding: "1rem",
+        }
       },
       "& .p-datatable-thead > tr > th": {
         background: GRADIENTS.primary,
@@ -178,31 +226,29 @@ const useStyles = createUseStyles({
         fontWeight: 600,
         fontSize: "1rem",
         border: "none",
+        "@media (max-width: 768px)": {
+          padding: "1rem",
+          fontSize: "0.9rem",
+        }
       },
       "& .p-datatable-tbody > tr": {
         transition: "all 0.3s ease",
         "& > td": {
           padding: "1rem 1.5rem",
           fontSize: "1rem",
+          "@media (max-width: 768px)": {
+            padding: "0.75rem 1rem",
+            fontSize: "0.9rem",
+          }
         },
         "&:hover": {
           background: COLORS.lightGray,
           "& > td": {
             color: COLORS.primary,
-          },
-        },
-      },
-      "& .p-paginator": {
-        padding: "1rem",
-        background: COLORS.white,
-        "& .p-paginator-element": {
-          borderRadius: "8px",
-          "&:focus": {
-            boxShadow: "0 0 0 3px rgba(74,144,226,0.1)",
-          },
-        },
-      },
-    },
+          }
+        }
+      }
+    }
   },
   chart: {
     background: COLORS.white,
@@ -211,6 +257,10 @@ const useStyles = createUseStyles({
     boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
     border: `2px solid ${COLORS.lightGray}`,
     transition: "all 0.3s ease",
+    "@media (max-width: 768px)": {
+      padding: "1.5rem",
+      borderRadius: "16px",
+    },
     "&:hover": {
       transform: "translateY(-5px)",
       boxShadow: "0 6px 30px rgba(0,0,0,0.12)",
@@ -221,14 +271,26 @@ const useStyles = createUseStyles({
       fontWeight: 700,
       marginBottom: "1.5rem",
       textAlign: "center",
-    },
+      "@media (max-width: 768px)": {
+        fontSize: "1.3rem",
+        marginBottom: "1rem",
+      }
+    }
   },
   tabView: {
     "& .p-tabview-nav": {
       border: "none",
       marginBottom: "2rem",
+      "@media (max-width: 768px)": {
+        flexWrap: "wrap",
+        gap: "0.5rem",
+      },
       "& li": {
         margin: "0 0.5rem",
+        "@media (max-width: 768px)": {
+          width: "100%",
+          margin: 0,
+        },
         "&:first-child": {
           marginLeft: 0,
         },
@@ -243,19 +305,24 @@ const useStyles = createUseStyles({
           color: COLORS.darkGray,
           fontWeight: 600,
           transition: "all 0.3s ease",
+          "@media (max-width: 768px)": {
+            width: "100%",
+            justifyContent: "center",
+            padding: "0.75rem 1rem",
+          },
           "&:hover": {
             background: COLORS.lightGray,
             borderColor: COLORS.accent,
             color: COLORS.accent,
-          },
+          }
         },
         "&.p-highlight .p-tabview-nav-link": {
           background: COLORS.accent,
           borderColor: COLORS.accent,
           color: COLORS.white,
-        },
-      },
-    },
+        }
+      }
+    }
   },
   tag: {
     borderRadius: "8px",

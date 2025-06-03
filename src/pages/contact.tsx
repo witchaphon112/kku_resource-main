@@ -35,7 +35,7 @@ const useStyles = createUseStyles({
     maxWidth: 1100,
     margin: "0 auto",
     "@media (max-width: 768px)": {
-      padding: "2rem 1rem",
+      padding: "3rem 1rem",
     }
   },
   header: {
@@ -59,6 +59,7 @@ const useStyles = createUseStyles({
       lineHeight: 1.6,
       "@media (max-width: 768px)": {
         fontSize: "1rem",
+        maxWidth: "100%",
       }
     }
   },
@@ -82,21 +83,32 @@ const useStyles = createUseStyles({
     },
     "@media (max-width: 768px)": {
       padding: "1.5rem",
+      borderRadius: THEME.borderRadius.md,
     }
   },
   formGroup: {
     marginBottom: "1.5rem",
+    "@media (max-width: 768px)": {
+      marginBottom: "1.2rem",
+    },
     "& label": {
       display: "block",
       marginBottom: "0.5rem",
       color: THEME.colors.text.secondary,
       fontWeight: 500,
+      "@media (max-width: 768px)": {
+        fontSize: "0.95rem",
+      }
     },
     "& .p-inputtext, & .p-inputtextarea": {
       width: "100%",
       padding: "0.75rem",
       borderRadius: THEME.borderRadius.sm,
       border: `1px solid ${THEME.colors.text.light}`,
+      "@media (max-width: 768px)": {
+        padding: "0.7rem",
+        fontSize: "0.95rem",
+      },
       "&:focus": {
         borderColor: THEME.colors.secondary,
         boxShadow: `0 0 0 2px ${THEME.colors.text.light}`,
@@ -148,6 +160,8 @@ const useStyles = createUseStyles({
     "@media (max-width: 768px)": {
       padding: "1.2rem",
       gap: "1rem",
+      borderRadius: THEME.borderRadius.md,
+      marginBottom: "1rem",
     }
   },
   infoContent: {
@@ -156,17 +170,28 @@ const useStyles = createUseStyles({
       color: THEME.colors.primary,
       marginBottom: "0.5rem",
       fontWeight: 600,
+      "@media (max-width: 768px)": {
+        fontSize: "1.1rem",
+      }
     },
     "& p": {
       color: THEME.colors.text.secondary,
       margin: "0 0 0.3rem 0",
       lineHeight: 1.6,
+      "@media (max-width: 768px)": {
+        fontSize: "0.95rem",
+        lineHeight: 1.5,
+      }
     }
   },
   socialLinks: {
     display: "flex",
     gap: "1.2rem",
     marginTop: "2.5rem",
+    "@media (max-width: 768px)": {
+      marginTop: "2rem",
+      justifyContent: "center",
+    },
     "& a": {
       color: THEME.colors.secondary,
       fontSize: "1.5rem",
@@ -181,6 +206,9 @@ const useStyles = createUseStyles({
         transform: "translateY(-3px)",
         color: THEME.colors.primary,
         background: THEME.colors.text.light,
+      },
+      "@media (max-width: 768px)": {
+        fontSize: "1.3rem",
       }
     }
   },
@@ -194,6 +222,10 @@ const useStyles = createUseStyles({
     },
     "&:focus": {
       boxShadow: `0 0 0 2px ${THEME.colors.text.light}`,
+    },
+    "@media (max-width: 768px)": {
+      padding: "0.7rem 1rem",
+      fontSize: "0.95rem",
     }
   }
 });

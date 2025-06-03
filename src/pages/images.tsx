@@ -27,6 +27,15 @@ const useStyles = createUseStyles({
     justifyContent: "space-between",
     alignItems: "center",
     padding: "0 0.5rem",
+    gap: "1rem",
+    flexWrap: "wrap",
+    marginTop: "60px",
+    "@media (max-width: 600px)": {
+      flexDirection: "column",
+      alignItems: "stretch",
+      gap: "0.8rem",
+      marginTop: "70px",
+    }
   },
   toggleFiltersBtn: {
     display: "flex",
@@ -81,6 +90,25 @@ const useStyles = createUseStyles({
       opacity: 0,
       visibility: "hidden",
       border: "none",
+    },
+    "@media (max-width: 768px)": {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: "100%",
+      minWidth: "unset",
+      maxWidth: "100%",
+      height: "100%",
+      borderRadius: 0,
+      margin: 0,
+      zIndex: 1000,
+      transform: "translateY(0)",
+      overflowY: "auto",
+      "&.collapsed": {
+        transform: "translateY(100%)",
+      }
     }
   },
   filterHeader: {
@@ -88,30 +116,48 @@ const useStyles = createUseStyles({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "2rem",
+    "@media (max-width: 768px)": {
+      position: "sticky",
+      top: 0,
+      background: "#fff",
+      padding: "1rem",
+      borderBottom: "1px solid #eee",
+      marginBottom: "1rem",
+      zIndex: 1,
+    },
     "& h3": {
       fontSize: "1.2rem",
       fontWeight: 600,
       color: "#1a1a1a",
     }
   },
-  clearAll: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    padding: "0.5rem 1rem",
-    background: "none",
-    border: "none",
-    color: "#666",
-    fontSize: "0.9rem",
-    cursor: "pointer",
-    borderRadius: "8px",
-    transition: "all 0.2s",
-    "&:hover": {
-      background: "#f5f5f5",
+  dateSection: {
+    marginTop: "1.5rem",
+    "& h4": {
+      fontSize: "1.1rem",
+      fontWeight: 600,
       color: "#333",
-    },
-    "& i": {
-      fontSize: "0.9rem",
+      marginBottom: "1rem",
+    }
+  },
+  overlay: {
+    display: "none",
+    "@media (max-width: 768px)": {
+      display: "block",
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.5)",
+      opacity: 0,
+      visibility: "hidden",
+      transition: "all 0.3s ease",
+      zIndex: 999,
+      "&.visible": {
+        opacity: 1,
+        visibility: "visible",
+      }
     }
   },
   filterSection: {
@@ -121,37 +167,63 @@ const useStyles = createUseStyles({
     }
   },
   filterTitle: {
-    fontSize: "1rem",
+    fontSize: "1.1rem",
     fontWeight: 600,
     color: "#333",
-    marginBottom: "1rem",
+    marginBottom: "1.2rem",
+    paddingBottom: "0.8rem",
+    borderBottom: "1px solid #eee",
   },
   filterOption: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0.7rem 1rem",
+    padding: "0.8rem 1rem",
     cursor: "pointer",
     color: "#666",
     borderRadius: "10px",
     transition: "all 0.2s",
+    marginBottom: "0.5rem",
     "&:hover": {
       background: "#f8faff",
       color: "#3F72AF",
     },
     "& span": {
       fontSize: "0.95rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.8rem",
+      "& svg": {
+        fontSize: "1.1rem",
+        color: "#666",
+      }
     },
     "& input[type='checkbox']": {
+      appearance: "none",
       width: 20,
       height: 20,
       borderRadius: "6px",
       border: "2px solid #ddd",
-      transition: "all 0.2s",
+      position: "relative",
       cursor: "pointer",
+      transition: "all 0.2s",
       "&:checked": {
         borderColor: "#3F72AF",
         backgroundColor: "#3F72AF",
+        "&:after": {
+          content: '""',
+          position: "absolute",
+          left: "6px",
+          top: "2px",
+          width: "4px",
+          height: "9px",
+          border: "solid #ffffff",
+          borderWidth: "0 2px 2px 0",
+          transform: "rotate(45deg)",
+        }
+      },
+      "&:hover": {
+        borderColor: "#3F72AF",
       }
     }
   },
@@ -583,6 +655,12 @@ const useStyles = createUseStyles({
       fontSize: '1.1rem',
     },
   },
+  filterActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '0.5rem',
+    marginTop: '1rem',
+  },
 });
 
 const categories = [
@@ -722,8 +800,8 @@ const ImagesPage = () => {
           className={classes.toggleFiltersBtn}
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
-          <i className="pi pi-filter" />
-          {sidebarCollapsed ? 'Show Filters' : 'ซ่อนตัวกรอง'}
+          <FaFilter />
+          {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
         </button>
 
         <select 
@@ -743,13 +821,16 @@ const ImagesPage = () => {
         <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className={classes.filterHeader}>
             <h3>ตัวกรอง</h3>
+            <button className={classes.closeButton} onClick={() => setSidebarCollapsed(true)}>
+              <FaTimes />
+            </button>
           </div>
           
           <div className={classes.filterSection}>
             <h4 className={classes.filterTitle}>หมวดหมู่</h4>
             {categories.map(cat => (
               <label key={cat.value} className={classes.filterOption}>
-                <span>{cat.label}</span>
+                <span>{cat.icon} {cat.label}</span>
                 <input
                   type="checkbox"
                   checked={category === cat.value}
@@ -759,11 +840,25 @@ const ImagesPage = () => {
             ))}
           </div>
 
-          <div className={classes.filterSection}>
-            <h4 className={classes.filterTitle}>Date Added</h4>
-            {/* Add date filter options here */}
+          <div className={classes.filterActions}>
+            <button className="clear" onClick={() => {
+              setCategory("all");
+              setSidebarCollapsed(true);
+            }}>
+              ล้างตัวกรอง
+            </button>
+            <button className="apply" onClick={() => setSidebarCollapsed(true)}>
+              แสดงผล
+            </button>
           </div>
         </aside>
+
+        {!sidebarCollapsed && (
+          <div 
+            className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
+            onClick={() => setSidebarCollapsed(true)}
+          />
+        )}
 
         <main className={`${classes.main}`}>
           <div className={`${classes.grid} ${sidebarCollapsed ? 'expanded' : ''}`}>

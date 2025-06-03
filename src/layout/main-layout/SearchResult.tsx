@@ -33,6 +33,9 @@ const useStyles = createUseStyles({
       flexDirection: "column",
       padding: "24px 16px",
     },
+    '@media (max-width: 480px)': {
+      padding: "16px 12px",
+    }
   },
   sidebar: {
     width: 280,
@@ -53,6 +56,13 @@ const useStyles = createUseStyles({
       marginBottom: 24,
       position: "relative",
       top: 0,
+      minHeight: "auto",
+      padding: "1rem",
+    },
+    '@media (max-width: 480px)': {
+      padding: "0.75rem",
+      marginBottom: 16,
+      fontSize: "0.9rem",
     }
   },
   main: {
@@ -64,13 +74,20 @@ const useStyles = createUseStyles({
     minHeight: 400,
     fontFamily: "var(--bs-font-primary)",
     '@media (max-width: 900px)': { 
-      padding: "1.2rem 0.6rem" 
+      padding: "1.2rem 1rem" 
+    },
+    '@media (max-width: 480px)': {
+      padding: "1rem 0.75rem",
+      borderRadius: 12,
     }
   },
   viewToggle: {
     display: 'flex',
     gap: 8,
     marginLeft: 'auto',
+    '@media (max-width: 480px)': {
+      gap: 4,
+    }
   },
   viewToggleButton: {
     background: 'transparent',
@@ -84,6 +101,11 @@ const useStyles = createUseStyles({
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
+    '@media (max-width: 480px)': {
+      padding: '4px 8px',
+      fontSize: 12,
+      gap: 4,
+    }
   },
   viewToggleButtonActive: {
     color: '#fff',
@@ -412,7 +434,6 @@ const useStyles = createUseStyles({
     maxWidth: 450,
     letterSpacing: 0.1
   },
-
   desc: {
     fontSize: "0.97rem",
     color: "#666",
@@ -684,6 +705,19 @@ const useStyles = createUseStyles({
       fontSize: '0.95rem',
     },
   },
+  searchResults: {
+    display: "grid",
+    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    '@media (max-width: 768px)': {
+      gap: "1rem",
+      gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+    },
+    '@media (max-width: 480px)': {
+      gap: "0.75rem",
+      gridTemplateColumns: "1fr",
+    }
+  }
 });
 
 function useQuery() {
@@ -974,8 +1008,6 @@ const SearchResult = () => {
                 value={keyword}
                 onChange={e => setKeyword(e.target.value)}
               />
-
-
 
               <div className={classes.label}>ค้นหาจาก</div>
               <div className={classes.radioGroup}>

@@ -31,7 +31,7 @@ const useStyles = createUseStyles({
     maxWidth: 900,
     margin: "0 auto",
     "@media (max-width: 768px)": {
-      padding: "2rem 1rem",
+      padding: "3rem 1rem",
     }
   },
   header: {
@@ -63,6 +63,9 @@ const useStyles = createUseStyles({
       padding: "1.5rem",
       marginBottom: "1.5rem",
       borderRadius: THEME.borderRadius.md,
+      "&:hover": {
+        transform: "none",
+      }
     }
   },
   sectionTitle: {
@@ -94,8 +97,9 @@ const useStyles = createUseStyles({
     "& p": {
       marginBottom: "1.2rem",
       "@media (max-width: 768px)": {
-        fontSize: "1rem",
+        fontSize: "0.95rem",
         marginBottom: "1rem",
+        lineHeight: 1.6,
       }
     },
     "& ul": {
@@ -103,6 +107,7 @@ const useStyles = createUseStyles({
       paddingLeft: "1.5rem",
       "@media (max-width: 768px)": {
         paddingLeft: "1.2rem",
+        marginBottom: "1rem",
       }
     },
     "& li": {
@@ -113,8 +118,9 @@ const useStyles = createUseStyles({
         color: THEME.colors.secondary,
       },
       "@media (max-width: 768px)": {
-        fontSize: "1rem",
+        fontSize: "0.95rem",
         marginBottom: "0.6rem",
+        lineHeight: 1.6,
       }
     }
   }
