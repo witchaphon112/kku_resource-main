@@ -1,46 +1,121 @@
 import { createUseStyles } from "react-jss";
 
+const THEME = {
+  colors: {
+    primary: "#112D4E",
+    secondary: "#3F72AF",
+    text: {
+      primary: "#112D4E",
+      secondary: "#666666",
+      light: "#DBE2EF"
+    },
+    background: {
+      main: "#ffffff",
+      light: "#F9F7F7"
+    }
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "12px",
+    lg: "16px"
+  },
+  shadows: {
+    card: "0 4px 20px rgba(17,45,78,0.08)",
+    cardHover: "0 8px 30px rgba(17,45,78,0.12)",
+  }
+};
+
 const useStyles = createUseStyles({
   termsPage: {
-    padding: "2rem 0",
+    padding: "4rem 2rem",
     maxWidth: 900,
     margin: "0 auto",
+    "@media (max-width: 768px)": {
+      padding: "2rem 1rem",
+    }
   },
   header: {
     textAlign: "center",
     marginBottom: "3rem",
     "& h1": {
       fontSize: "2.5rem",
-      color: "#a13d23",
-      marginBottom: "1rem",
-      fontWeight: 600,
+      color: THEME.colors.primary,
+      marginBottom: "1.2rem",
+      fontWeight: 700,
+      "@media (max-width: 768px)": {
+        fontSize: "2rem",
+        marginBottom: "1rem",
+      }
     }
   },
   section: {
-    background: "#fff",
-    borderRadius: 16,
-    padding: "2rem",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    padding: "2.5rem",
     marginBottom: "2rem",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    boxShadow: THEME.shadows.card,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      boxShadow: THEME.shadows.cardHover,
+      transform: "translateY(-2px)",
+    },
+    "@media (max-width: 768px)": {
+      padding: "1.5rem",
+      marginBottom: "1.5rem",
+      borderRadius: THEME.borderRadius.md,
+    }
   },
   sectionTitle: {
     fontSize: "1.5rem",
-    color: "#a13d23",
-    marginBottom: "1rem",
+    color: THEME.colors.secondary,
+    marginBottom: "1.2rem",
     fontWeight: 600,
+    position: "relative",
+    paddingBottom: "0.8rem",
+    "&:after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      width: "40px",
+      height: "3px",
+      background: THEME.colors.secondary,
+      borderRadius: "2px",
+    },
+    "@media (max-width: 768px)": {
+      fontSize: "1.3rem",
+      marginBottom: "1rem",
+    }
   },
   sectionContent: {
-    color: "#666",
+    color: THEME.colors.text.secondary,
     lineHeight: 1.8,
+    fontSize: "1.05rem",
     "& p": {
-      marginBottom: "1rem",
+      marginBottom: "1.2rem",
+      "@media (max-width: 768px)": {
+        fontSize: "1rem",
+        marginBottom: "1rem",
+      }
     },
     "& ul": {
-      marginBottom: "1rem",
+      marginBottom: "1.2rem",
       paddingLeft: "1.5rem",
+      "@media (max-width: 768px)": {
+        paddingLeft: "1.2rem",
+      }
     },
     "& li": {
-      marginBottom: "0.5rem",
+      marginBottom: "0.8rem",
+      position: "relative",
+      paddingLeft: "0.5rem",
+      "&::marker": {
+        color: THEME.colors.secondary,
+      },
+      "@media (max-width: 768px)": {
+        fontSize: "1rem",
+        marginBottom: "0.6rem",
+      }
     }
   }
 });

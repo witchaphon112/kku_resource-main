@@ -4,27 +4,62 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { useState } from "react";
 
+const THEME = {
+  colors: {
+    primary: "#112D4E",
+    secondary: "#3F72AF",
+    text: {
+      primary: "#112D4E",
+      secondary: "#666666",
+      light: "#DBE2EF"
+    },
+    background: {
+      main: "#ffffff",
+      light: "#F9F7F7"
+    }
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "12px",
+    lg: "16px"
+  },
+  shadows: {
+    card: "0 4px 20px rgba(17,45,78,0.08)",
+    cardHover: "0 8px 30px rgba(17,45,78,0.12)",
+  }
+};
+
 const useStyles = createUseStyles({
   contactPage: {
-    padding: "2rem 0",
-    maxWidth: 900,
+    padding: "4rem 2rem",
+    maxWidth: 1100,
     margin: "0 auto",
+    "@media (max-width: 768px)": {
+      padding: "2rem 1rem",
+    }
   },
   header: {
     textAlign: "center",
     marginBottom: "3rem",
     "& h1": {
       fontSize: "2.5rem",
-      color: "#a13d23",
-      marginBottom: "1rem",
-      fontWeight: 600,
+      color: THEME.colors.primary,
+      marginBottom: "1.2rem",
+      fontWeight: 700,
+      "@media (max-width: 768px)": {
+        fontSize: "2rem",
+        marginBottom: "1rem",
+      }
     },
     "& p": {
       fontSize: "1.1rem",
-      color: "#666",
+      color: THEME.colors.text.secondary,
       maxWidth: 600,
       margin: "0 auto",
       lineHeight: 1.6,
+      "@media (max-width: 768px)": {
+        fontSize: "1rem",
+      }
     }
   },
   content: {
@@ -33,78 +68,132 @@ const useStyles = createUseStyles({
     gap: "3rem",
     "@media (max-width: 768px)": {
       gridTemplateColumns: "1fr",
+      gap: "2rem",
     }
   },
   contactForm: {
-    background: "#fff",
-    borderRadius: 16,
-    padding: "2rem",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    padding: "2.5rem",
+    boxShadow: THEME.shadows.card,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      boxShadow: THEME.shadows.cardHover,
+    },
+    "@media (max-width: 768px)": {
+      padding: "1.5rem",
+    }
   },
   formGroup: {
     marginBottom: "1.5rem",
     "& label": {
       display: "block",
       marginBottom: "0.5rem",
-      color: "#666",
+      color: THEME.colors.text.secondary,
       fontWeight: 500,
     },
     "& .p-inputtext, & .p-inputtextarea": {
       width: "100%",
       padding: "0.75rem",
-      borderRadius: 8,
-      border: "1px solid #ddd",
+      borderRadius: THEME.borderRadius.sm,
+      border: `1px solid ${THEME.colors.text.light}`,
       "&:focus": {
-        borderColor: "#a13d23",
-        boxShadow: "0 0 0 2px rgba(161, 61, 35, 0.1)",
+        borderColor: THEME.colors.secondary,
+        boxShadow: `0 0 0 2px ${THEME.colors.text.light}`,
       }
     }
   },
   contactInfo: {
     "& h2": {
-      fontSize: "1.5rem",
-      color: "#a13d23",
-      marginBottom: "1.5rem",
+      fontSize: "1.8rem",
+      color: THEME.colors.primary,
+      marginBottom: "1.8rem",
       fontWeight: 600,
+      position: "relative",
+      paddingBottom: "0.8rem",
+      "&:after": {
+        content: '""',
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        width: "40px",
+        height: "3px",
+        background: THEME.colors.secondary,
+        borderRadius: "2px",
+      },
+      "@media (max-width: 768px)": {
+        fontSize: "1.5rem",
+        marginBottom: "1.5rem",
+      }
     }
   },
   infoCard: {
-    background: "#fff",
-    borderRadius: 16,
-    padding: "1.5rem",
+    background: THEME.colors.background.main,
+    borderRadius: THEME.borderRadius.lg,
+    padding: "1.8rem",
     marginBottom: "1.5rem",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    boxShadow: THEME.shadows.card,
     display: "flex",
-    alignItems: "center",
-    gap: "1rem",
+    alignItems: "flex-start",
+    gap: "1.2rem",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      boxShadow: THEME.shadows.cardHover,
+      transform: "translateY(-2px)",
+    },
     "& i": {
       fontSize: "1.5rem",
-      color: "#a13d23",
+      color: THEME.colors.secondary,
+    },
+    "@media (max-width: 768px)": {
+      padding: "1.2rem",
+      gap: "1rem",
     }
   },
   infoContent: {
     "& h3": {
-      fontSize: "1.1rem",
-      color: "#333",
-      marginBottom: "0.25rem",
+      fontSize: "1.2rem",
+      color: THEME.colors.primary,
+      marginBottom: "0.5rem",
       fontWeight: 600,
     },
     "& p": {
-      color: "#666",
-      margin: 0,
+      color: THEME.colors.text.secondary,
+      margin: "0 0 0.3rem 0",
+      lineHeight: 1.6,
     }
   },
   socialLinks: {
     display: "flex",
-    gap: "1rem",
-    marginTop: "2rem",
+    gap: "1.2rem",
+    marginTop: "2.5rem",
     "& a": {
-      color: "#a13d23",
+      color: THEME.colors.secondary,
       fontSize: "1.5rem",
-      transition: "transform 0.2s ease",
+      transition: "all 0.3s ease",
+      padding: "0.5rem",
+      borderRadius: "50%",
+      background: THEME.colors.background.light,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       "&:hover": {
-        transform: "scale(1.1)",
+        transform: "translateY(-3px)",
+        color: THEME.colors.primary,
+        background: THEME.colors.text.light,
       }
+    }
+  },
+  submitButton: {
+    background: THEME.colors.secondary,
+    border: "none",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      background: `${THEME.colors.primary} !important`,
+      transform: "translateY(-2px)",
+    },
+    "&:focus": {
+      boxShadow: `0 0 0 2px ${THEME.colors.text.light}`,
     }
   }
 });
@@ -182,7 +271,7 @@ const ContactPage = () => {
               type="submit"
               label="ส่งข้อความ"
               icon="pi pi-send"
-              className="p-button-rounded"
+              className={`p-button-rounded ${classes.submitButton}`}
               style={{ width: "100%" }}
             />
           </form>

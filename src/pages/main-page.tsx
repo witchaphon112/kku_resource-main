@@ -176,6 +176,7 @@ const useStyles = createUseStyles({
     marginTop: "-80px",
     "@media (max-width: 768px)": {
       minHeight: "60vh",
+      marginTop: "-56px",
     }
   },
   
@@ -190,6 +191,7 @@ const useStyles = createUseStyles({
     "@media (max-width: 768px)": {
       height: "60vh",
       minHeight: "400px",
+      maxHeight: "600px",
     }
   },
   
@@ -212,12 +214,12 @@ const useStyles = createUseStyles({
     "@media (max-width: 768px)": {
       maxWidth: "calc(100% - 2rem)",
       fontSize: "0.9rem",
-      bottom: "1rem",
+      bottom: "1.5rem",
       left: "1rem",
       right: "1rem",
-      padding: "1rem 1.25rem",
+      padding: "1.25rem",
       textAlign: "center",
-    },
+    }
   },
   
   heroTitle: {
@@ -227,7 +229,8 @@ const useStyles = createUseStyles({
     fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
     lineHeight: 1.2,
     "@media (max-width: 768px)": {
-      fontSize: "1.8rem",
+      fontSize: "1.6rem",
+      marginBottom: "0.5rem",
     }
   },
 
@@ -236,6 +239,9 @@ const useStyles = createUseStyles({
     margin: "0 auto",
     padding: "0 50px",
     boxSizing: "content-box",
+    "@media (max-width: 768px)": {
+      padding: "0 35px",
+    }
   },
   
   scrollButton: {
@@ -256,6 +262,11 @@ const useStyles = createUseStyles({
     alignItems: "center",
     justifyContent: "center",
     transition: `all ${ANIMATION_DURATION.NORMAL}ms ease`,
+    "@media (max-width: 768px)": {
+      width: "36px",
+      height: "36px",
+      fontSize: "1.5rem",
+    },
     "&:hover:not(:disabled)": {
       backgroundColor: "#b71c1c",
       color: "#fff",
@@ -270,8 +281,18 @@ const useStyles = createUseStyles({
     }
   },
   
-  leftButton: { left: "0px" },
-  rightButton: { right: "0px" },
+  leftButton: { 
+    left: "0px",
+    "@media (max-width: 768px)": {
+      left: "5px",
+    }
+  },
+  rightButton: { 
+    right: "0px",
+    "@media (max-width: 768px)": {
+      right: "5px",
+    }
+  },
   
   scrollContainer: {
     display: "flex",
@@ -285,6 +306,10 @@ const useStyles = createUseStyles({
     "&::-webkit-scrollbar": { display: "none" },
     scrollbarWidth: "none",
     "-ms-overflow-style": "none",
+    "@media (max-width: 768px)": {
+      gap: "1rem",
+      padding: "0.75rem 0.25rem",
+    }
   },
 
   baseCard: {
@@ -302,6 +327,9 @@ const useStyles = createUseStyles({
       transform: "translateY(-5px)",
       boxShadow: "0 8px 18px rgba(0,0,0,0.12)",
     },
+    "@media (max-width: 768px)": {
+      borderRadius: "0.5rem",
+    }
   },
   
   resourceCard: {
@@ -321,6 +349,9 @@ const useStyles = createUseStyles({
       "& $cardImage img": {
         transform: "scale(1.05)",
       }
+    },
+    "@media (max-width: 768px)": {
+      borderRadius: THEME.borderRadius.md,
     }
   },
   
@@ -336,6 +367,7 @@ const useStyles = createUseStyles({
     '@media (max-width: 767px)': {
       flex: '0 0 calc(100% - 1rem)',
       maxWidth: 'calc(100% - 1rem)',
+      minWidth: "250px",
       scrollSnapAlign: 'center',
     },
   },
@@ -346,12 +378,18 @@ const useStyles = createUseStyles({
     objectFit: "cover",
     borderBottom: "1px solid #eee",
     transition: `transform ${ANIMATION_DURATION.SLOW}ms ease`,
+    "@media (max-width: 768px)": {
+      height: "180px",
+    }
   },
   
   recommendedImage: {
     width: "100%",
     height: "180px",
     objectFit: "cover",
+    "@media (max-width: 768px)": {
+      height: "160px",
+    }
   },
   tagList: {
     marginTop: "auto",
@@ -362,6 +400,10 @@ const useStyles = createUseStyles({
     justifyContent: "flex-start",
     maxHeight: "4.5em",
     overflow: "hidden",
+    "@media (max-width: 768px)": {
+      gap: "0.3rem",
+      paddingTop: "0.4rem",
+    }
   },
   tag: {
     background: THEME.colors.background.light,
@@ -373,6 +415,10 @@ const useStyles = createUseStyles({
     alignItems: "center",
     gap: "4px",
     transition: THEME.transitions.fast,
+    "@media (max-width: 768px)": {
+      padding: "6px 14px",
+      fontSize: "0.8rem",
+    },
     "&:hover": {
       background: THEME.colors.primaryLight,
       color: THEME.colors.text.light,
@@ -383,6 +429,9 @@ const useStyles = createUseStyles({
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
+    "@media (max-width: 768px)": {
+      padding: "0.75rem",
+    }
   },
   
   categoryText: {
@@ -393,6 +442,10 @@ const useStyles = createUseStyles({
     textTransform: "uppercase",
     fontFamily: THEME.typography.fontFamily,
     letterSpacing: "0.5px",
+    "@media (max-width: 768px)": {
+      fontSize: "0.65rem",
+      marginBottom: "0.25rem",
+    }
   },
   
   title: {
@@ -402,6 +455,10 @@ const useStyles = createUseStyles({
     fontFamily: THEME.typography.fontFamily,
     color: THEME.colors.text.primary,
     lineHeight: 1.3,
+    "@media (max-width: 768px)": {
+      fontSize: "1rem",
+      marginBottom: "0.4rem",
+    }
   },
 
   featuredCardRow: {
@@ -411,7 +468,10 @@ const useStyles = createUseStyles({
     alignItems: "stretch",
     flexWrap: "wrap",
     margin: "0 auto 1.8rem auto",
-    '@media (max-width: 900px)': { gap: 18 },
+    '@media (max-width: 900px)': { 
+      gap: 18,
+      margin: "0 auto 1.4rem auto",
+    }
   },
   
   featuredCard: {
@@ -426,6 +486,12 @@ const useStyles = createUseStyles({
     cursor: "pointer",
     background: THEME.colors.background.main,
     transition: `transform ${ANIMATION_DURATION.NORMAL}ms ease, box-shadow ${ANIMATION_DURATION.NORMAL}ms ease`,
+    "@media (max-width: 768px)": {
+      minWidth: 260,
+      width: "calc(100% - 2rem)",
+      aspectRatio: "1 / 1",
+      borderRadius: THEME.borderRadius.md,
+    },
     "&:hover": {
       transform: "translateY(-6px) scale(1.04)",
       boxShadow: THEME.shadows.cardHover
@@ -441,7 +507,8 @@ const useStyles = createUseStyles({
     position: "relative",
     outline: "none",
     "@media (max-width: 768px)": {
-      width: "95%"
+      width: "95%",
+      margin: "1rem auto",
     }
   },
   
@@ -453,7 +520,10 @@ const useStyles = createUseStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: THEME.spacing.md
+    padding: THEME.spacing.md,
+    "@media (max-width: 768px)": {
+      padding: THEME.spacing.sm,
+    }
   },
 
   carouselArrowCustom: {
@@ -474,6 +544,11 @@ const useStyles = createUseStyles({
     justifyContent: 'center',
     cursor: 'pointer',
     transition: `all ${ANIMATION_DURATION.NORMAL}ms ease`,
+    "@media (max-width: 768px)": {
+      width: 40,
+      height: 40,
+      fontSize: 22,
+    },
     '&:hover': {
       background: THEME.colors.secondary,
       color: '#fff',
@@ -481,8 +556,18 @@ const useStyles = createUseStyles({
     }
   },
   
-  carouselArrowLeft: { left: 36 },
-  carouselArrowRight: { right: 36 },
+  carouselArrowLeft: { 
+    left: 36,
+    "@media (max-width: 768px)": {
+      left: 16,
+    }
+  },
+  carouselArrowRight: { 
+    right: 36,
+    "@media (max-width: 768px)": {
+      right: 16,
+    }
+  },
   
   carouselIndicators: {
     position: 'absolute',
@@ -492,6 +577,10 @@ const useStyles = createUseStyles({
     display: 'flex',
     gap: 14,
     zIndex: 2,
+    "@media (max-width: 768px)": {
+      bottom: 120,
+      gap: 10,
+    }
   },
   
   carouselDot: {
@@ -503,6 +592,10 @@ const useStyles = createUseStyles({
     cursor: 'pointer',
     boxShadow: '0 2px 8px rgba(255,255,255,0.5)',
     border: 'none',
+    "@media (max-width: 768px)": {
+      width: 12,
+      height: 12,
+    },
     "&:hover": {
       background: '#9ca0ab',
     }
@@ -521,6 +614,7 @@ const useStyles = createUseStyles({
     padding: "24px",
     "@media (max-width: 768px)": {
       padding: "16px",
+      margin: "0 auto 40px auto",
       borderRadius: THEME.borderRadius.md,
     }
   },
@@ -543,6 +637,13 @@ const useStyles = createUseStyles({
     zIndex: 12345,
     cursor: "pointer",
     transition: `all ${ANIMATION_DURATION.FAST}ms ease`,
+    "@media (max-width: 768px)": {
+      bottom: 24,
+      right: 24,
+      width: 48,
+      height: 48,
+      fontSize: 24,
+    },
     "&:hover": {
       background: THEME.colors.secondaryDark,
       transform: "scale(1.1)",

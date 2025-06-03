@@ -57,6 +57,7 @@ const useStyles = createUseStyles({
     fontFamily: "var(--bs-font-primary, 'Sarabun', 'Prompt', Arial, sans-serif)",
     position: "relative",
     zIndex: 0,
+    overflowX: "hidden",
   },
   header: {
     position: "fixed",
@@ -76,6 +77,9 @@ const useStyles = createUseStyles({
     transition: "all 0.35s cubic-bezier(.4,.8,.4,1)",
     padding: 0,
     margin: 0,
+    "@media (max-width: 768px)": {
+      minHeight: 56,
+    }
   },
   headerScrolled: {
     background: THEME.colors.primary,
@@ -94,10 +98,10 @@ const useStyles = createUseStyles({
     padding: "0 2rem",
     minHeight: 52,
     "@media (max-width: 900px)": {
-      flexDirection: "column",
-      alignItems: "stretch",
-      gap: 7,
-      padding: "6px 1rem",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      padding: "0.5rem 1rem",
       minHeight: "auto",
     },
   },
@@ -115,9 +119,16 @@ const useStyles = createUseStyles({
       marginBottom: 10,
       filter: "drop-shadow(0 2px 7px rgba(63,114,175,0.3))",
       transition: "transform 0.3s ease",
+      "@media (max-width: 768px)": {
+        height: 38,
+        marginBottom: 6,
+      }
     },
     "&:hover img": {
       transform: "scale(1.05)",
+    },
+    "@media (max-width: 768px)": {
+      fontSize: 18,
     }
   },
   nav: {
@@ -168,9 +179,8 @@ const useStyles = createUseStyles({
     alignItems: "center",
     gap: 13,
     '@media (max-width: 900px)': {
-      marginTop: 5,
       gap: 8,
-      justifyContent: "center",
+      marginLeft: "auto",
     },
   },
   icon: {
@@ -182,6 +192,11 @@ const useStyles = createUseStyles({
     transition: "all 0.2s ease",
     background: "none",
     borderRadius: THEME.borderRadius.sm,
+    padding: "8px",
+    "@media (max-width: 768px)": {
+      fontSize: 24,
+      padding: "10px",
+    },
     "&:hover": {
       opacity: 1,
       transform: "scale(1.1)",
@@ -200,6 +215,10 @@ const useStyles = createUseStyles({
     boxShadow: "0 2px 8px rgba(63,114,175,0.2)",
     transition: "all 0.2s ease",
     border: "2px solid rgba(63,114,175,0.3)",
+    "@media (max-width: 768px)": {
+      width: 34,
+      height: 34,
+    },
     "&:hover": {
       transform: "scale(1.05)",
       borderColor: THEME.colors.text.light,
@@ -225,11 +244,8 @@ const useStyles = createUseStyles({
       borderColor: THEME.colors.secondary,
       transform: "translateY(-1px)",
     },
-    "@media (max-width: 700px)": {
-      minWidth: 120,
-      maxWidth: 180,
-      fontSize: 15,
-      padding: '0.1rem 0.5rem',
+    "@media (max-width: 900px)": {
+      display: "none",
     },
   },
   headerSearchInput: {
@@ -339,14 +355,14 @@ const useStyles = createUseStyles({
     flex: 1,
     width: "100%",
     "@media (max-width: 900px)": { 
-      padding: "105px 0 0 0" 
+      padding: "72px 0 0 0"
     }
   },
   footerRow: {
     width: "100%",
     background: THEME.colors.primary,
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     padding: "3.2rem 4vw 2.4rem 4vw",
     minHeight: 200,
@@ -354,62 +370,74 @@ const useStyles = createUseStyles({
     fontFamily: "inherit",
     boxShadow: "0 4px 32px rgba(17,45,78,0.13)",
     "@media (max-width: 900px)": {
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '2.4rem 1vw 1.6rem 1vw',
-      minHeight: 220,
-      gap: 18,
-    },
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "2.5rem 1.5rem",
+      gap: 32,
+      textAlign: "center"
+    }
   },
   footerLeft: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
-    gap: 10,
+    gap: 12,
     minWidth: 170,
     "& img": { 
-      width: 200, 
-      borderRadius: THEME.borderRadius.lg, 
+      width: 180,
+      borderRadius: THEME.borderRadius.lg,
       marginBottom: 5,
       filter: "drop-shadow(0 2px 8px rgba(63,114,175,0.2))",
+      "@media (max-width: 768px)": {
+        width: 150,
+      }
     },
     "@media (max-width: 900px)": {
-      alignItems: 'center',
+      alignItems: "center",
       minWidth: 0,
-    },
+      textAlign: "center",
+      marginBottom: 8
+    }
   },
   footerTagline: {
     color: THEME.colors.text.light,
     fontSize: 16,
     fontWeight: 500,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     opacity: 0.94,
     marginBottom: 6,
-    textAlign: "left"
+    textAlign: "left",
+    "@media (max-width: 900px)": {
+      textAlign: "center",
+      fontSize: 15
+    }
   },
   footerCenter: {
     display: "flex",
     gap: "2.5rem",
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 600,
     "@media (max-width: 900px)": {
-      margin: '18px 0',
-      gap: '1.4rem',
-      flexDirection: 'column',
-      alignItems: 'center',
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 20,
+      marginBottom: 32
     },
     "& a": {
       color: THEME.colors.text.light,
       textDecoration: "none",
+      padding: "8px 16px",
+      borderRadius: 8,
       transition: "all 0.2s ease",
-      padding: "4px 16px",
-      borderRadius: THEME.borderRadius.sm,
-      fontSize: 18,
-      fontWeight: 500,
+      opacity: 0.9,
+      "@media (max-width: 768px)": {
+        padding: "10px 20px",
+        fontSize: 15
+      },
       "&:hover": {
-        color: THEME.colors.primary,
-        background: THEME.colors.text.light,
-        transform: "translateY(-2px)",
+        opacity: 1,
+        background: "rgba(255,255,255,0.1)",
+        transform: "translateY(-2px)"
       }
     }
   },
@@ -418,33 +446,44 @@ const useStyles = createUseStyles({
     flexDirection: "column",
     alignItems: "flex-end",
     minWidth: 180,
-    gap: 8,
+    gap: 16,
     "@media (max-width: 900px)": {
-      alignItems: 'center',
+      alignItems: "center",
       minWidth: 0,
-    },
+      width: "100%",
+      gap: 20
+    }
   },
   footerSocial: {
     display: "flex",
     gap: "1.2rem",
     marginBottom: 4,
+    "@media (max-width: 900px)": {
+      gap: "1.5rem",
+      marginBottom: 8
+    },
     "& a": {
       color: THEME.colors.primary,
       background: THEME.colors.text.light,
       borderRadius: "50%",
       width: 44,
       height: 44,
-      fontSize: 24,
+      fontSize: 22,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       transition: "all 0.2s ease",
       boxShadow: "0 2px 8px rgba(63,114,175,0.2)",
+      "@media (max-width: 768px)": {
+        width: 48,
+        height: 48,
+        fontSize: 24
+      },
       "&:hover": {
         color: THEME.colors.text.light,
         background: THEME.colors.secondary,
         transform: "scale(1.12) rotate(5deg)",
-        boxShadow: "0 4px 12px rgba(63,114,175,0.3)",
+        boxShadow: "0 4px 12px rgba(63,114,175,0.3)"
       }
     }
   },
@@ -454,7 +493,11 @@ const useStyles = createUseStyles({
     opacity: 0.92,
     marginTop: 5,
     textAlign: "right",
-    "@media (max-width: 900px)": { textAlign: "center" }
+    "@media (max-width: 900px)": {
+      textAlign: "center",
+      fontSize: 13,
+      opacity: 0.85
+    }
   },
   hamburger: {
     display: 'none',
@@ -720,12 +763,18 @@ const MainLayout = () => {
         </div>
         <div className={classes.footerRight}>
           <div className={classes.footerSocial}>
-            <a href="https://www.facebook.com/LTICKKU" target="_blank" rel="noopener noreferrer"><i className="pi pi-facebook" /></a>
-            <a href="https://www.youtube.com/@kku_channel/videos" target="_blank" rel="noopener noreferrer"><i className="pi pi-youtube" /></a>
-            <a href="https://www.instagram.com/khonkaenuniversity/channel/" target="_blank" rel="noopener noreferrer"><i className="pi pi-instagram" /></a>
+            <a href="https://www.facebook.com/LTICKKU" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <i className="pi pi-facebook" />
+            </a>
+            <a href="https://www.youtube.com/@kku_channel/videos" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <i className="pi pi-youtube" />
+            </a>
+            <a href="https://www.instagram.com/khonkaenuniversity/channel/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <i className="pi pi-instagram" />
+            </a>
           </div>
           <div className={classes.footerCopyright}>
-            © {new Date().getFullYear()} Khon Kaen University. All rights reserved.
+            © {new Date().getFullYear()} Khon Kaen University.<br />All rights reserved.
           </div>
         </div>
       </footer>
