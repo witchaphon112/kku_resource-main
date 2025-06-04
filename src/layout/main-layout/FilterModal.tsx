@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createUseStyles } from 'react-jss';
-import { FaFilter, FaTimes, FaCheck } from 'react-icons/fa';
+import { FaFilter, FaTimes, FaCheck, FaSearch, FaSort } from 'react-icons/fa';
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -23,46 +23,40 @@ interface FilterModalProps {
 
 const useStyles = createUseStyles({
   filterModal: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    zIndex: 1000,
-    padding: '20px',
-    overflow: 'auto',
+    display: 'none',
+    '@media (max-width: 768px)': {
+      display: 'flex',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+      alignItems: 'stretch',
+      zIndex: 1000,
+    }
   },
   filterContent: {
     background: '#fff',
-    borderRadius: '16px',
-    width: '100%',
-    maxWidth: '600px',
-    maxHeight: '90vh',
+    width: '85%',
+    maxWidth: '360px',
+    height: '100%',
     overflow: 'hidden',
     position: 'relative',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-    animation: '$slideIn 0.3s ease-out',
-    '@media (max-width: 768px)': {
-      maxWidth: '90%',
-      margin: '0 auto',
-    },
+    boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
+    animation: '$slideRight 0.3s ease-out',
   },
-  '@keyframes slideIn': {
+  '@keyframes slideRight': {
     from: {
-      transform: 'translateY(-20px)',
-      opacity: 0,
+      transform: 'translateX(100%)',
     },
     to: {
-      transform: 'translateY(0)',
-      opacity: 1,
+      transform: 'translateX(0)',
     },
   },
   filterHeader: {
-    padding: '20px',
+    padding: '16px',
     borderBottom: '1px solid #DBE2EF',
     display: 'flex',
     justifyContent: 'space-between',
@@ -73,7 +67,7 @@ const useStyles = createUseStyles({
     zIndex: 1,
   },
   filterTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     fontWeight: 700,
     color: '#112D4E',
     margin: 0,
@@ -93,15 +87,17 @@ const useStyles = createUseStyles({
     justifyContent: 'center',
     cursor: 'pointer',
     transition: 'all 0.2s',
-    '&:hover': {
+    '&:active': {
       background: '#DBE2EF',
       color: '#112D4E',
+      transform: 'scale(0.95)',
     },
   },
   filterBody: {
-    padding: '20px',
+    padding: '16px',
+    height: 'calc(100% - 130px)',
     overflowY: 'auto',
-    maxHeight: 'calc(90vh - 160px)',
+    WebkitOverflowScrolling: 'touch',
   },
   filterSection: {
     marginBottom: '24px',
@@ -109,21 +105,31 @@ const useStyles = createUseStyles({
       marginBottom: 0,
     },
   },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '12px',
+  },
+  sectionIcon: {
+    color: '#3F72AF',
+    fontSize: '1rem',
+  },
   label: {
     fontWeight: 700,
     fontSize: '0.95rem',
     color: '#112D4E',
-    marginBottom: '8px',
   },
   searchBox: {
     width: '100%',
     padding: '12px 16px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: '1.5px solid #DBE2EF',
     fontSize: '0.95rem',
     color: '#112D4E',
     background: '#fff',
     transition: 'all 0.2s',
+    WebkitAppearance: 'none',
     '&:focus': {
       outline: 'none',
       borderColor: '#3F72AF',
@@ -133,12 +139,18 @@ const useStyles = createUseStyles({
   select: {
     width: '100%',
     padding: '12px 16px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: '1.5px solid #DBE2EF',
     fontSize: '0.95rem',
     color: '#112D4E',
     background: '#fff',
     cursor: 'pointer',
+    WebkitAppearance: 'none',
+    backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 12px center',
+    backgroundSize: '16px',
+    paddingRight: '40px',
     '&:focus': {
       outline: 'none',
       borderColor: '#3F72AF',
@@ -147,23 +159,23 @@ const useStyles = createUseStyles({
   },
   typeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '8px',
-    marginTop: '8px',
   },
   typeButton: {
     background: '#f8f9fa',
     border: '1.5px solid #DBE2EF',
-    borderRadius: '10px',
-    padding: '12px 16px',
-    fontSize: '0.95rem',
+    borderRadius: '12px',
+    padding: '12px',
+    fontSize: '0.9rem',
     color: '#3F72AF',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     transition: 'all 0.2s',
-    '&:hover': {
+    '&:active': {
+      transform: 'scale(0.98)',
       background: '#DBE2EF',
     },
   },
@@ -171,23 +183,20 @@ const useStyles = createUseStyles({
     background: '#3F72AF',
     color: '#fff',
     borderColor: '#3F72AF',
-    '&:hover': {
-      background: '#112D4E',
-    },
   },
   yearGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '8px',
-    marginTop: '8px',
-    maxHeight: '240px',
+    maxHeight: '200px',
     overflowY: 'auto',
-    padding: '4px',
+    WebkitOverflowScrolling: 'touch',
+    padding: '4px 0',
   },
   yearButton: {
     background: '#f8f9fa',
     border: '1.5px solid #DBE2EF',
-    borderRadius: '10px',
+    borderRadius: '12px',
     padding: '10px 12px',
     fontSize: '0.9rem',
     color: '#3F72AF',
@@ -196,7 +205,8 @@ const useStyles = createUseStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     transition: 'all 0.2s',
-    '&:hover': {
+    '&:active': {
+      transform: 'scale(0.98)',
       background: '#DBE2EF',
     },
   },
@@ -204,9 +214,6 @@ const useStyles = createUseStyles({
     background: '#3F72AF',
     color: '#fff',
     borderColor: '#3F72AF',
-    '&:hover': {
-      background: '#112D4E',
-    },
   },
   yearCount: {
     fontSize: '0.85rem',
@@ -217,8 +224,8 @@ const useStyles = createUseStyles({
   },
   filterActions: {
     display: 'flex',
-    gap: '12px',
-    padding: '20px',
+    gap: '8px',
+    padding: '16px',
     borderTop: '1px solid #DBE2EF',
     background: '#fff',
     position: 'sticky',
@@ -227,8 +234,8 @@ const useStyles = createUseStyles({
   },
   resetButton: {
     flex: 1,
-    padding: '12px',
-    borderRadius: '10px',
+    padding: '14px',
+    borderRadius: '12px',
     border: '1.5px solid #DBE2EF',
     background: '#fff',
     color: '#3F72AF',
@@ -236,14 +243,15 @@ const useStyles = createUseStyles({
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
-    '&:hover': {
+    '&:active': {
       background: '#DBE2EF',
+      transform: 'scale(0.98)',
     },
   },
   applyButton: {
     flex: 2,
-    padding: '12px',
-    borderRadius: '10px',
+    padding: '14px',
+    borderRadius: '12px',
     border: 'none',
     background: '#3F72AF',
     color: '#fff',
@@ -251,8 +259,14 @@ const useStyles = createUseStyles({
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
-    '&:hover': {
+    '&:active': {
       background: '#112D4E',
+      transform: 'scale(0.98)',
+    },
+  },
+  '@supports (padding-bottom: env(safe-area-inset-bottom))': {
+    filterContent: {
+      paddingBottom: 'env(safe-area-inset-bottom)',
     },
   },
 });
@@ -304,7 +318,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
         <div className={classes.filterBody}>
           <form onSubmit={handleSubmit}>
             <div className={classes.filterSection}>
-              <div className={classes.label}>คำสำคัญ</div>
+              <div className={classes.sectionHeader}>
+                <FaSearch className={classes.sectionIcon} />
+                <div className={classes.label}>คำสำคัญ</div>
+              </div>
               <input
                 className={classes.searchBox}
                 placeholder="หนังสือ, หัวข้อ, ผู้แต่ง ฯลฯ"
@@ -314,19 +331,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </div>
 
             <div className={classes.filterSection}>
-              <div className={classes.label}>ค้นหาจาก</div>
-              <select
-                className={classes.select}
-                value={searchBy}
-                onChange={e => setSearchBy(e.target.value)}
-              >
-                <option value="title">ชื่อเรื่อง</option>
-                <option value="category">หมวดหมู่</option>
-              </select>
-            </div>
-
-            <div className={classes.filterSection}>
-              <div className={classes.label}>เรียงลำดับจาก</div>
+              <div className={classes.sectionHeader}>
+                <FaSort className={classes.sectionIcon} />
+                <div className={classes.label}>การจัดเรียง</div>
+              </div>
               <select
                 className={classes.select}
                 value={sort}
@@ -341,7 +349,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </div>
 
             <div className={classes.filterSection}>
-              <div className={classes.label}>ประเภททรัพยากร</div>
+              <div className={classes.sectionHeader}>
+                <FaFilter className={classes.sectionIcon} />
+                <div className={classes.label}>ประเภททรัพยากร</div>
+              </div>
               <div className={classes.typeGrid}>
                 {resourceTypes.map(type => (
                   <button
@@ -360,7 +371,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </div>
 
             <div className={classes.filterSection}>
-              <div className={classes.label}>ปีที่เผยแพร่</div>
+              <div className={classes.sectionHeader}>
+                <div className={classes.label}>ปีที่เผยแพร่</div>
+              </div>
               <div className={classes.yearGrid}>
                 {uniqueYears.map(year => (
                   <button
