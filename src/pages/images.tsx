@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter, FaSpinner, FaTimes, FaUser, FaFileAlt } from "react-icons/fa";
@@ -6,6 +6,7 @@ import resourcesData from "../mock/resources.json";
 import { useBookmarks } from "../contexts/BookmarkContext";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 import { useAuth } from "../contexts/AuthContext";
+import FilterModal from '../components/FilterModal';
 
 const useStyles = createUseStyles({
   "@keyframes fadeIn": {
@@ -661,20 +662,184 @@ const useStyles = createUseStyles({
     gap: '0.5rem',
     marginTop: '1rem',
   },
+  searchBox: {
+    flex: 1,
+    maxWidth: 400,
+    position: "relative",
+    "@media (max-width: 600px)": {
+      width: "100%",
+      maxWidth: "none",
+    }
+  },
+  searchInput: {
+    width: "100%",
+    padding: "0.7rem 1.2rem",
+    borderRadius: "12px",
+    border: "1px solid #e0e0e0",
+    fontSize: "0.95rem",
+    color: "#333",
+    transition: "all 0.2s",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+    "&:focus": {
+      outline: "none",
+      borderColor: "#3F72AF",
+      boxShadow: "0 4px 8px rgba(63,114,175,0.12)",
+    },
+    "&:hover": {
+      borderColor: "#3F72AF",
+    }
+  },
+  subCategories: {
+    marginLeft: "2rem",
+    marginTop: "0.5rem",
+  },
+  tagFilters: {
+    maxHeight: "200px",
+    overflowY: "auto",
+    padding: "0.5rem",
+    border: "1px solid #eee",
+    borderRadius: "8px",
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-track": {
+      background: "#f1f1f1",
+      borderRadius: "3px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "#ccc",
+      borderRadius: "3px",
+      "&:hover": {
+        background: "#999",
+      }
+    }
+  },
+  dateFilters: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  dateInput: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+    "& label": {
+      fontSize: "0.9rem",
+      color: "#666",
+    },
+    "& input": {
+      padding: "0.5rem",
+      borderRadius: "8px",
+      border: "1px solid #e0e0e0",
+      fontSize: "0.95rem",
+      color: "#333",
+      "&:focus": {
+        outline: "none",
+        borderColor: "#3F72AF",
+      }
+    }
+  },
+  activeFilters: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+    padding: "1rem",
+    background: "#f8faff",
+    borderRadius: "12px",
+    marginBottom: "1rem",
+  },
+  activeFilter: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.4rem 0.8rem",
+    background: "#fff",
+    border: "1px solid #3F72AF",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    color: "#3F72AF",
+    "& button": {
+      background: "none",
+      border: "none",
+      padding: 0,
+      cursor: "pointer",
+      color: "inherit",
+      display: "flex",
+      alignItems: "center",
+      "&:hover": {
+        color: "#112D4E",
+      }
+    }
+  },
+  filterCount: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "20px",
+    height: "20px",
+    padding: "0 6px",
+    borderRadius: "10px",
+    background: "#3F72AF",
+    color: "#fff",
+    fontSize: "0.8rem",
+    fontWeight: 600,
+    marginLeft: "0.5rem",
+  },
 });
 
-const categories = [
+interface Category {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  children?: SubCategory[];
+}
+
+interface SubCategory {
+  label: string;
+  value: string;
+}
+
+const categories: Category[] = [
   { label: "ทั้งหมด", value: "all", icon: <FaThLarge /> },
-  { label: "การแพทย์", value: "medical", icon: <FaHeart />, children: [
-    { label: "โรงพยาบาล", value: "hospital" },
-    { label: "คลินิก", value: "clinic" },
-  ] },
-  { label: "การศึกษา", value: "education", icon: <FaBook />, children: [
-    { label: "คณะวิทยาศาสตร์", value: "science" },
-    { label: "คณะวิศวกรรมศาสตร์", value: "engineering" },
-  ] },
-  { label: "รอบรั้ว", value: "campus", icon: <FaUniversity /> }
+  { label: "การแพทย์", value: "medical", icon: <FaHeart /> },
+  { label: "การเรียนการสอน", value: "education", icon: <FaBook /> },
+  { label: "รอบรั้วมหาลัย", value: "campus", icon: <FaUniversity /> }
 ];
+
+interface Resource {
+  id: string;
+  title: string;
+  description?: string;
+  type: string;
+  category: string | string[];
+  thumbnailUrl: string;
+  fileUrl: string;
+  createdAt: string;
+  tags?: string[];
+  viewCount?: number;
+  downloadCount?: number;
+  uploader?: string;
+}
+
+interface FilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  keyword: string;
+  setKeyword: (value: string) => void;
+  searchBy: string;
+  setSearchBy: (value: string) => void;
+  sort: string;
+  setSort: (value: string) => void;
+  types: string[];
+  handleTypeChange: (type: string) => void;
+  selectedYears: number[];
+  setSelectedYears: (years: number[]) => void;
+  yearCounts: Record<number, number>;
+  uniqueYears: number[];
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  resourceTypes: string[];
+  showOnlyTypes: boolean;
+}
 
 const ImagesPage = () => {
   const classes = useStyles();
@@ -683,7 +848,8 @@ const ImagesPage = () => {
   const { addDownload } = useDownloadHistory();
   const { user } = useAuth();
 
-  const [category, setCategory] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
   const [openCats, setOpenCats] = useState<string[]>([]);
@@ -691,13 +857,31 @@ const ImagesPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [previewItem, setPreviewItem] = useState<any>(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const itemsPerPage = 12;
 
   const images = resourcesData.resources.filter((item) => item.type === "image");
-  const filteredItems = useMemo(() => (
-    category === "all" ? images : images.filter(item => item.category === category)
-  ), [category, images]);
+  
+  const filteredItems = useMemo(() => {
+    return images.filter(item => {
+      if (!selectedCategories.includes("all") && !selectedCategories.includes(item.category)) {
+        return false;
+
+      }
+
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const titleMatch = item.title.toLowerCase().includes(searchLower);
+        const descMatch = item.description?.toLowerCase().includes(searchLower);
+        if (!titleMatch && !descMatch) return false;
+      }
+
+      return true;
+    });
+  }, [images, selectedCategories, searchQuery]);
+
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       switch (sortBy) {
@@ -719,17 +903,16 @@ const ImagesPage = () => {
 
   const mainCategories = ["all", "medical", "education", "campus"];
   useEffect(() => {
-    if (!mainCategories.includes(category)) setSidebarCollapsed(true);
-  }, [category]);
+    if (!mainCategories.includes(selectedCategories[0])) setSidebarCollapsed(true);
+  }, [selectedCategories]);
 
   useEffect(() => {
-    // Simulate loading data
     setLoading(true);
     const timer = setTimeout(() => {
       setLoading(false);
     }, 800);
     return () => clearTimeout(timer);
-  }, [category, sortBy]);
+  }, [selectedCategories, sortBy]);
 
   const handleImageLoad = useCallback((imageId: string) => {
     setLoadedImages(prev => new Set(prev).add(imageId));
@@ -760,7 +943,6 @@ const ImagesPage = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      // Add to download history
       addDownload(user.id, {
         id: item.id,
         title: item.title,
@@ -793,16 +975,80 @@ const ImagesPage = () => {
     }
   };
 
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategories(prev => {
+      if (value === "all") {
+        return ["all"];
+      }
+      const newCategories = prev.filter(cat => cat !== "all");
+      if (prev.includes(value)) {
+        return newCategories.filter(cat => cat !== value);
+      }
+      return [...newCategories, value];
+    });
+    setPage(1);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories(["all"]);
+    setSearchQuery("");
+    setSortBy("popular");
+    setPage(1);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleFilterModalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsFilterModalOpen(false);
+  };
+
+  const handleTypeChange = (type: string) => {
+    if (type === "all") {
+      setSelectedCategories(["all"]);
+    } else {
+      setSelectedCategories(prev => {
+        if (prev.includes(type)) {
+          const newTypes = prev.filter(t => t !== type);
+          return newTypes.length ? newTypes : ["all"];
+        }
+        return prev.includes("all") ? [type] : [...prev.filter(t => t !== "all"), type];
+      });
+    }
+  };
+
   return (
     <div className={classes.pageWrap}>
       <div className={classes.topBar}>
-        <button 
-          className={classes.toggleFiltersBtn}
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          <FaFilter />
-          {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
-        </button>
+        {isMobile ? (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <FaFilter />
+            ตัวกรอง
+          </button>
+        ) : (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <FaFilter />
+            {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
+          </button>
+        )}
 
         <select 
           className={classes.sortSelect}
@@ -812,39 +1058,56 @@ const ImagesPage = () => {
           <option value="popular">เรียงตาม: ยอดนิยม</option>
           <option value="latest">เรียงตาม: ล่าสุด</option>
           <option value="oldest">เรียงตาม: เก่าสุด</option>
-          <option value="az">เรียงตาม: ก-ฮ</option>
-          <option value="za">เรียงตาม: ฮ-ก</option>
         </select>
       </div>
 
       <div className={classes.contentWrap}>
-        <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className={classes.filterHeader}>
-            <h3>ตัวกรอง</h3>
-        
-          </div>
-          
-          <div className={classes.filterSection}>
-            <h4 className={classes.filterTitle}>หมวดหมู่</h4>
-            {categories.map(cat => (
-              <label key={cat.value} className={classes.filterOption}>
-                <span>{cat.icon} {cat.label}</span>
-                <input
-                  type="checkbox"
-                  checked={category === cat.value}
-                  onChange={() => setCategory(cat.value)}
-                />
-              </label>
-            ))}
-          </div>
+        {!isMobile && (
+          <>
+            <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
+              <div className={classes.filterHeader}>
+                <h3>ตัวกรอง</h3>
 
-        </aside>
+              </div>
+              
+              <div className={classes.filterSection}>
+                <h4 className={classes.filterTitle}>หมวดหมู่</h4>
+                {categories.map(cat => (
+                  <div key={cat.value}>
+                    <label className={classes.filterOption}>
+                      <span>{cat.icon} {cat.label}</span>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(cat.value)}
+                        onChange={() => handleCategoryChange(cat.value)}
+                      />
+                    </label>
+                    {cat.children && openCats.includes(cat.value) && (
+                      <div className={classes.subCategories}>
+                        {cat.children.map(subCat => (
+                          <label key={subCat.value} className={classes.filterOption}>
+                            <span>{subCat.label}</span>
+                            <input
+                              type="checkbox"
+                              checked={selectedCategories.includes(subCat.value)}
+                              onChange={() => handleCategoryChange(subCat.value)}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </aside>
 
-        {!sidebarCollapsed && (
-          <div 
-            className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
-            onClick={() => setSidebarCollapsed(true)}
-          />
+            {!sidebarCollapsed && (
+              <div 
+                className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
+                onClick={() => setSidebarCollapsed(true)}
+              />
+            )}
+          </>
         )}
 
         <main className={`${classes.main}`}>
@@ -940,7 +1203,6 @@ const ImagesPage = () => {
               </button>
               
               {totalPages <= 7 ? (
-                // Show all pages if total pages are 7 or less
                 Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
                   <button
                     key={num}
@@ -951,7 +1213,6 @@ const ImagesPage = () => {
                   </button>
                 ))
               ) : (
-                // Show pagination with ellipsis
                 <>
                   <button
                     className={`${classes.pageBtn} ${page === 1 ? 'active' : ''}`}
@@ -1009,37 +1270,33 @@ const ImagesPage = () => {
         </main>
       </div>
 
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        keyword=""
+        setKeyword={() => {}}
+        searchBy=""
+        setSearchBy={() => {}}
+        sort={sortBy}
+        setSort={setSortBy}
+        types={selectedCategories}
+        handleTypeChange={handleTypeChange}
+        selectedYears={[]}
+        setSelectedYears={() => {}}
+        yearCounts={{}}
+        uniqueYears={[]}
+        handleSubmit={handleFilterModalSubmit}
+        resourceTypes={["medical", "education", "campus"]}
+        showOnlyTypes={true}
+      />
+
       {previewItem && (
         <div className={classes.previewModal} onClick={closePreview}>
           <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
             <div className={classes.modalHeader}>
               <h2 className={classes.modalTitle}>{previewItem.title}</h2>
-              <button 
-                className={classes.closeButton} 
-                onClick={closePreview}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  color: '#666',
-                  fontSize: '1.2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
-                  borderRadius: '50%'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#f0f0f0';
-                  e.currentTarget.style.color = '#333';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'none';
-                  e.currentTarget.style.color = '#666';
-                }}
-              >
-                <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>&times;</span>
+              <button className={classes.closeButton} onClick={closePreview}>
+                <FaTimes />
               </button>
             </div>
             <div className={classes.modalBody}>
@@ -1095,3 +1352,4 @@ const ImagesPage = () => {
 };
 
 export default ImagesPage;
+

@@ -6,6 +6,7 @@ import resourcesData from "../mock/resources.json";
 import { useBookmarks } from "../contexts/BookmarkContext";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 import { useAuth } from "../contexts/AuthContext";
+import FilterModal from '../components/FilterModal';
 
 type ViewType = 'grid' | 'list';
 type SortEvent = React.ChangeEvent<HTMLSelectElement>;
@@ -1011,8 +1012,8 @@ const useStyles = createUseStyles({
 const categories: Category[] = [
   { label: "ทั้งหมด", value: "all", icon: <FaThLarge /> },
   { label: "การแพทย์", value: "medical", icon: <FaHeart /> },
-  { label: "การศึกษา", value: "education", icon: <FaBook /> },
-  { label: "รอบรั้ว", value: "campus", icon: <FaUniversity /> },
+  { label: "การเรียนการสอน", value: "education", icon: <FaBook /> },
+  { label: "รอบรั้วมหาลัย", value: "campus", icon: <FaUniversity /> },
 ];
 
 const VideosPage = () => {
@@ -1022,7 +1023,8 @@ const VideosPage = () => {
   const { addDownload } = useDownloadHistory();
   const { user } = useAuth();
 
-  const [category, setCategory] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
   const [page, setPage] = useState(1);
   const [openCats, setOpenCats] = useState<string[]>([]);
@@ -1030,21 +1032,36 @@ const VideosPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadedVideos, setLoadedVideos] = useState<Set<string>>(new Set());
   const [previewItem, setPreviewItem] = useState<VideoItem | null>(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const itemsPerPage = 12;
 
   const videos = resourcesData.resources.filter((item): item is VideoItem => item.type === "video");
-  const filteredItems = useMemo(() => (
-    category === "all" ? videos : videos.filter(item => item.category === category)
-  ), [category, videos]);
+  
+  const filteredItems = useMemo(() => {
+    return videos.filter(item => {
+      if (!selectedCategories.includes("all") && !selectedCategories.includes(item.category)) {
+        return false;
+      }
+
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const titleMatch = item.title.toLowerCase().includes(searchLower);
+        const descMatch = item.description?.toLowerCase().includes(searchLower);
+        if (!titleMatch && !descMatch) return false;
+      }
+
+      return true;
+    });
+  }, [videos, selectedCategories, searchQuery]);
+
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       switch (sortBy) {
         case "latest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case "popular": return (b.downloadCount || 0) - (a.downloadCount || 0);
-        case "az": return a.title.localeCompare(b.title, "th");
-        case "za": return b.title.localeCompare(a.title, "th");
         default: return 0;
       }
     });
@@ -1058,8 +1075,8 @@ const VideosPage = () => {
 
   const mainCategories = ["all", "medical", "education", "campus"];
   useEffect(() => {
-    if (!mainCategories.includes(category)) setSidebarCollapsed(true);
-  }, [category]);
+    if (!mainCategories.includes(selectedCategories[0])) setSidebarCollapsed(true);
+  }, [selectedCategories]);
 
   useEffect(() => {
     setLoading(true);
@@ -1067,7 +1084,7 @@ const VideosPage = () => {
       setLoading(false);
     }, 800);
     return () => clearTimeout(timer);
-  }, [category, sortBy]);
+  }, [selectedCategories, sortBy]);
 
   const handleVideoLoad = useCallback((videoId: string) => {
     setLoadedVideos(prev => new Set(prev).add(videoId));
@@ -1135,16 +1152,54 @@ const VideosPage = () => {
     return id ? `https://www.youtube.com/embed/${id}` : url;
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleFilterModalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsFilterModalOpen(false);
+  };
+
+  const handleTypeChange = (type: string) => {
+    if (type === "all") {
+      setSelectedCategories(["all"]);
+    } else {
+      setSelectedCategories(prev => {
+        if (prev.includes(type)) {
+          const newTypes = prev.filter(t => t !== type);
+          return newTypes.length ? newTypes : ["all"];
+        }
+        return prev.includes("all") ? [type] : [...prev.filter(t => t !== "all"), type];
+      });
+    }
+  };
+
   return (
     <div className={classes.pageWrap}>
       <div className={classes.topBar}>
-        <button 
-          className={classes.toggleFiltersBtn}
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          <FaFilter />
-          {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
-        </button>
+        {isMobile ? (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <FaFilter />
+            ตัวกรอง
+          </button>
+        ) : (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <FaFilter />
+            {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
+          </button>
+        )}
 
         <select 
           className={classes.sortSelect}
@@ -1154,40 +1209,39 @@ const VideosPage = () => {
           <option value="popular">เรียงตาม: ยอดนิยม</option>
           <option value="latest">เรียงตาม: ล่าสุด</option>
           <option value="oldest">เรียงตาม: เก่าสุด</option>
-          <option value="az">เรียงตาม: ก-ฮ</option>
-          <option value="za">เรียงตาม: ฮ-ก</option>
         </select>
       </div>
 
       <div className={classes.contentWrap}>
-        <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className={classes.filterHeader}>
-            <h3>ตัวกรอง</h3>
-            <button className={classes.closeButton} onClick={() => setSidebarCollapsed(true)}>
-              <FaTimes />
-            </button>
-          </div>
-          
-          <div className={classes.filterSection}>
-            <h4 className={classes.filterTitle}>หมวดหมู่</h4>
-            {categories.map(cat => (
-              <label key={cat.value} className={classes.filterOption}>
-                <span>{cat.icon} {cat.label}</span>
-                <input
-                  type="checkbox"
-                  checked={category === cat.value}
-                  onChange={() => setCategory(cat.value)}
-                />
-              </label>
-            ))}
-          </div>
-        </aside>
+        {!isMobile && (
+          <>
+            <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
+              <div className={classes.filterHeader}>
+                <h3>ตัวกรอง</h3>
+              </div>
+              
+              <div className={classes.filterSection}>
+                <h4 className={classes.filterTitle}>หมวดหมู่</h4>
+                {categories.map(cat => (
+                  <label key={cat.value} className={classes.filterOption}>
+                    <span>{cat.icon} {cat.label}</span>
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat.value)}
+                      onChange={() => handleTypeChange(cat.value)}
+                    />
+                  </label>
+                ))}
+              </div>
+            </aside>
 
-        {!sidebarCollapsed && (
-          <div 
-            className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
-            onClick={() => setSidebarCollapsed(true)}
-          />
+            {!sidebarCollapsed && (
+              <div 
+                className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
+                onClick={() => setSidebarCollapsed(true)}
+              />
+            )}
+          </>
         )}
 
         <main className={`${classes.main}`}>
@@ -1361,6 +1415,26 @@ const VideosPage = () => {
           )}
         </main>
       </div>
+
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        keyword=""
+        setKeyword={() => {}}
+        searchBy=""
+        setSearchBy={() => {}}
+        sort={sortBy}
+        setSort={setSortBy}
+        types={selectedCategories}
+        handleTypeChange={handleTypeChange}
+        selectedYears={[]}
+        setSelectedYears={() => {}}
+        yearCounts={{}}
+        uniqueYears={[]}
+        handleSubmit={handleFilterModalSubmit}
+        resourceTypes={["medical", "education", "campus"]}
+        showOnlyTypes={true}
+      />
 
       {previewItem && (
         <div className={classes.previewModal} onClick={closePreview}>

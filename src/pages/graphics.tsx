@@ -7,9 +7,11 @@ import resourcesData from "../mock/resources.json";
 import { useBookmarks } from "../contexts/BookmarkContext";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 import { useAuth } from "../contexts/AuthContext";
+import FilterModal from '../components/FilterModal';
 
 type ViewType = 'grid' | 'list';
-type SortEvent = React.ChangeEvent<HTMLSelectElement>;
+type SortType = 'latest' | 'oldest' | 'popular' | 'az' | 'za';
+type CategoryType = 'all' | 'medical' | 'education' | 'campus';
 
 interface GraphicItem {
   id: string;
@@ -19,12 +21,18 @@ interface GraphicItem {
   fileUrl: string;
   category: string;
   tags: string[];
-  uploadedBy: string;
-  downloadCount: number;
+  uploadedBy?: string;
+  downloadCount?: number;
   viewCount?: number;
   createdAt: string;
   updatedAt: string;
   type: string;
+}
+
+interface Category {
+  label: string;
+  value: CategoryType;
+  icon: React.ReactNode;
 }
 
 const useStyles = createUseStyles({
@@ -827,15 +835,9 @@ const useStyles = createUseStyles({
 
 const categories = [
   { label: "ทั้งหมด", value: "all", icon: <FaThLarge /> },
-  { label: "การแพทย์", value: "medical", icon: <FaHeart />, children: [
-    { label: "โรงพยาบาล", value: "hospital" },
-    { label: "คลินิก", value: "clinic" },
-  ] },
-  { label: "การศึกษา", value: "education", icon: <FaBook />, children: [
-    { label: "คณะวิทยาศาสตร์", value: "science" },
-    { label: "คณะวิศวกรรมศาสตร์", value: "engineering" },
-  ] },
-  { label: "รอบรั้ว", value: "campus", icon: <FaUniversity /> }
+  { label: "การแพทย์", value: "medical", icon: <FaHeart />,},
+  { label: "การเรียนการสอน", value: "education", icon: <FaBook />,},
+  { label: "รอบรั้วมหาลัย", value: "campus", icon: <FaUniversity /> }
 ];
 
 const GraphicsPage = () => {
@@ -855,9 +857,11 @@ const GraphicsPage = () => {
   const [previewItem, setPreviewItem] = useState<GraphicItem | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [openCats, setOpenCats] = useState<string[]>([]);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const itemsPerPage = 12;
-  const graphics = resourcesData.resources.filter((item) => item.type === "graphic");
+  const graphics = resourcesData.resources.filter((item) => item.type === "graphic") as GraphicItem[];
 
   const filteredItems = useMemo(() => {
     return category === "all"
@@ -873,7 +877,7 @@ const GraphicsPage = () => {
         case "oldest":
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case "popular":
-          return (b.downloadCount || 0) - (a.downloadCount || 0);
+          return ((b.downloadCount || 0) - (a.downloadCount || 0));
         case "az":
           return a.title.localeCompare(b.title, "th");
         case "za":
@@ -890,7 +894,7 @@ const GraphicsPage = () => {
     page * itemsPerPage
   );
 
-  const handleSortChange = (e: SortEvent) => {
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value);
     setPage(1);
   };
@@ -976,6 +980,29 @@ const GraphicsPage = () => {
     }, 800);
     return () => clearTimeout(timer);
   }, [category, sortBy]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleFilterModalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsFilterModalOpen(false);
+  };
+
+  const handleTypeChange = (type: string) => {
+    if (type === "all") {
+      setCategory("all");
+    } else {
+      setCategory(type);
+    }
+    setPage(1);
+  };
 
   const renderGridView = () => (
     <div className={`${classes.gridContainer} ${sidebarCollapsed ? 'expanded' : ''}`}>
@@ -1126,68 +1153,86 @@ const GraphicsPage = () => {
   return (
     <div className={classes.pageWrap}>
       <div className={classes.topBar}>
-        <button 
-          className={classes.toggleFiltersBtn}
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          <FaFilter />
-          {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
-        </button>
+        {isMobile ? (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <FaFilter />
+            ตัวกรอง
+          </button>
+        ) : (
+          <button 
+            className={classes.toggleFiltersBtn}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <FaFilter />
+            {sidebarCollapsed ? 'แสดงตัวกรอง' : 'ซ่อนตัวกรอง'}
+          </button>
+        )}
 
         <select 
           className={classes.sortSelect}
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
+          onChange={handleSortChange}
         >
           <option value="popular">เรียงตาม: ยอดนิยม</option>
           <option value="latest">เรียงตาม: ล่าสุด</option>
           <option value="oldest">เรียงตาม: เก่าสุด</option>
-          <option value="az">เรียงตาม: ก-ฮ</option>
-          <option value="za">เรียงตาม: ฮ-ก</option>
         </select>
       </div>
 
       <div className={classes.contentWrap}>
-        <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className={classes.filterHeader}>
-            <h3>ตัวกรอง</h3>
-            <button className={classes.closeButton} onClick={() => setSidebarCollapsed(true)}>
-              <FaTimes />
-            </button>
-          </div>
-          
-          <div className={classes.filterSection}>
-            <h4 className={classes.filterTitle}>หมวดหมู่</h4>
-            {categories.map(cat => (
-              <label key={cat.value} className={classes.filterOption}>
-                <span>{cat.icon} {cat.label}</span>
-                <input
-                  type="checkbox"
-                  checked={category === cat.value}
-                  onChange={() => setCategory(cat.value)}
-                />
-              </label>
-            ))}
-          </div>
+        {!isMobile && (
+          <>
+            <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
+              <div className={classes.filterHeader}>
+                <h3>ตัวกรอง</h3>
+                <button className={classes.closeButton} onClick={() => setSidebarCollapsed(true)}>
+                  <FaTimes />
+                </button>
+              </div>
+              
+              <div className={classes.filterSection}>
+                <h4 className={classes.filterTitle}>หมวดหมู่</h4>
+                {categories.map(cat => (
+                  <label key={cat.value} className={classes.filterOption}>
+                    <span>{cat.icon} {cat.label}</span>
+                    <input
+                      type="checkbox"
+                      checked={category === cat.value}
+                      onChange={() => setCategory(cat.value)}
+                    />
+                  </label>
+                ))}
+              </div>
 
-          <div className={classes.filterActions}>
-            <button className="clear" onClick={() => {
-              setCategory("all");
-              setSidebarCollapsed(true);
-            }}>
-              ล้างตัวกรอง
-            </button>
-            <button className="apply" onClick={() => setSidebarCollapsed(true)}>
-              แสดงผล
-            </button>
-          </div>
-        </aside>
+              <div className={classes.filterActions}>
+                <button 
+                  className="clear"
+                  onClick={() => {
+                    setCategory("all");
+                    setSidebarCollapsed(true);
+                  }}
+                >
+                  ล้างตัวกรอง
+                </button>
+                <button 
+                  className="apply"
+                  onClick={() => setSidebarCollapsed(true)}
+                >
+                  แสดงผล
+                </button>
+              </div>
+            </aside>
 
-        {!sidebarCollapsed && (
-          <div 
-            className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
-            onClick={() => setSidebarCollapsed(true)}
-          />
+            {!sidebarCollapsed && (
+              <div 
+                className={`${classes.overlay} ${!sidebarCollapsed ? 'visible' : ''}`}
+                onClick={() => setSidebarCollapsed(true)}
+              />
+            )}
+          </>
         )}
 
         <main className={`${classes.main}`}>
@@ -1352,6 +1397,27 @@ const GraphicsPage = () => {
           )}
         </main>
       </div>
+
+      {/* Filter Modal for Mobile */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        keyword=""
+        setKeyword={() => {}}
+        searchBy=""
+        setSearchBy={() => {}}
+        sort={sortBy}
+        setSort={setSortBy}
+        types={[category]}
+        handleTypeChange={handleTypeChange}
+        selectedYears={[]}
+        setSelectedYears={() => {}}
+        yearCounts={{}}
+        uniqueYears={[]}
+        handleSubmit={handleFilterModalSubmit}
+        resourceTypes={["medical", "education", "campus"]}
+        showOnlyTypes={true}
+      />
 
       {previewItem && (
         <div className={classes.previewModal} onClick={closePreview}>
