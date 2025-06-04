@@ -821,9 +821,7 @@ const ImagesPage = () => {
         <aside className={`${classes.sidebar} ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className={classes.filterHeader}>
             <h3>ตัวกรอง</h3>
-            <button className={classes.closeButton} onClick={() => setSidebarCollapsed(true)}>
-              <FaTimes />
-            </button>
+        
           </div>
           
           <div className={classes.filterSection}>
@@ -840,17 +838,6 @@ const ImagesPage = () => {
             ))}
           </div>
 
-          <div className={classes.filterActions}>
-            <button className="clear" onClick={() => {
-              setCategory("all");
-              setSidebarCollapsed(true);
-            }}>
-              ล้างตัวกรอง
-            </button>
-            <button className="apply" onClick={() => setSidebarCollapsed(true)}>
-              แสดงผล
-            </button>
-          </div>
         </aside>
 
         {!sidebarCollapsed && (
@@ -863,7 +850,6 @@ const ImagesPage = () => {
         <main className={`${classes.main}`}>
           <div className={`${classes.grid} ${sidebarCollapsed ? 'expanded' : ''}`}>
             {loading ? (
-              // Loading skeleton
               Array.from({ length: itemsPerPage }).map((_, index) => (
                 <div key={`skeleton-${index}`} className={`${classes.card} ${classes.shimmer}`} style={{ height: "300px" }} />
               ))
@@ -1028,8 +1014,32 @@ const ImagesPage = () => {
           <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
             <div className={classes.modalHeader}>
               <h2 className={classes.modalTitle}>{previewItem.title}</h2>
-              <button className={classes.closeButton} onClick={closePreview}>
-                <FaTimes />
+              <button 
+                className={classes.closeButton} 
+                onClick={closePreview}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  color: '#666',
+                  fontSize: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  borderRadius: '50%'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f0f0f0';
+                  e.currentTarget.style.color = '#333';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'none';
+                  e.currentTarget.style.color = '#666';
+                }}
+              >
+                <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>&times;</span>
               </button>
             </div>
             <div className={classes.modalBody}>

@@ -784,7 +784,7 @@ const useStyles = createUseStyles({
   },
   searchIcon: {
     position: "absolute",
-    left: "2rem",
+    left: "1rem",
     top: "50%",
     transform: "translateY(-50%)",
     color: "#999",
@@ -1022,7 +1022,6 @@ const MainLayout = () => {
         </div>
       </header>
 
-      {/* Mobile Navigation Sidebar */}
       <Sidebar
         visible={sidebarVisible}
         onHide={() => setSidebarVisible(false)}

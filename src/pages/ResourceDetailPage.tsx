@@ -51,7 +51,7 @@ const useStyles = createUseStyles({
     position: "relative",
     overflow: "hidden",
     '@media (max-width: 768px)': {
-      paddingTop: "60px"
+      paddingTop: "1rem"
     }
   },
   heroSection: {
@@ -63,7 +63,7 @@ const useStyles = createUseStyles({
     padding: "2rem",
     background: "linear-gradient(180deg, rgba(63,114,175,0.05) 0%, rgba(255,255,255,0) 100%)",
     '@media (max-width: 768px)': {
-      padding: "1rem 0.5rem",
+      padding: "0.5rem",
     }
   },
   heroContent: {
@@ -79,9 +79,9 @@ const useStyles = createUseStyles({
       padding: "1rem",
     },
     '@media (max-width: 768px)': {
-      padding: "0.75rem",
+      padding: "0.5rem",
       gap: "1rem",
-      borderRadius: "16px",
+      borderRadius: "12px",
     }
   },
   heroMain: {
@@ -114,15 +114,7 @@ const useStyles = createUseStyles({
       borderRadius: "12px",
       boxShadow: "0 8px 16px rgba(63,114,175,0.1)",
       aspectRatio: "4/3",
-    },
-    '&:hover': {
-      '& $heroImage': {
-        transform: "scale(1.05)",
-      },
-      '& $playButton': {
-        transform: "translate(-50%, -50%) scale(1.1)",
-      },
-    },
+    }
   },
   heroImage: {
     width: "100%",
@@ -148,10 +140,15 @@ const useStyles = createUseStyles({
     border: "none",
     color: "#fff",
     fontSize: "1.8rem",
+    '@media (max-width: 768px)': {
+      width: 60,
+      height: 60,
+      fontSize: "1.4rem",
+    },
     '&:hover': {
       background: "rgba(63,114,175,1)",
       transform: "translate(-50%, -50%) scale(1.1)",
-    },
+    }
   },
   infoSection: {
     flex: "1 1 45%",
@@ -170,11 +167,9 @@ const useStyles = createUseStyles({
     marginBottom: "1rem",
     fontFamily: "'Sarabun', sans-serif",
     '@media (max-width: 768px)': {
-      fontSize: "1.75rem",
-      marginBottom: "0.75rem"
-    },
-    '@media (max-width: 480px)': {
-      fontSize: "1.5rem"
+      fontSize: "1.5rem",
+      marginBottom: "0.75rem",
+      lineHeight: 1.3,
     }
   },
   metaRow: {
@@ -216,7 +211,8 @@ const useStyles = createUseStyles({
     transition: "all 0.2s",
     '@media (max-width: 768px)': {
       padding: "0.375rem 0.75rem",
-      fontSize: "0.875rem",
+      fontSize: "0.85rem",
+      borderRadius: "8px",
     }
   },
   actionRow: {
@@ -226,7 +222,8 @@ const useStyles = createUseStyles({
     flexWrap: "wrap",
     '@media (max-width: 768px)': {
       gap: "0.5rem",
-      flexDirection: "column"
+      flexDirection: "column",
+      marginTop: "0.5rem",
     }
   },
   primaryButton: {
@@ -245,9 +242,11 @@ const useStyles = createUseStyles({
     transition: "all 0.3s",
     boxShadow: "0 4px 20px rgba(63,114,175,0.2)",
     '@media (max-width: 768px)': {
-      padding: "0.875rem 1.5rem",
+      padding: "0.75rem 1rem",
       fontSize: "1rem",
-      width: "100%"
+      width: "100%",
+      gap: "0.5rem",
+      borderRadius: "8px",
     }
   },
   secondaryButton: {
@@ -265,9 +264,11 @@ const useStyles = createUseStyles({
     cursor: "pointer",
     transition: "all 0.3s",
     '@media (max-width: 768px)': {
-      padding: "0.75rem 1.5rem",
+      padding: "0.75rem 1rem",
       fontSize: "1rem",
-      width: "100%"
+      width: "100%",
+      gap: "0.5rem",
+      borderRadius: "8px",
     }
   },
   contentSection: {
@@ -317,17 +318,21 @@ const useStyles = createUseStyles({
       background: "#3F72AF",
       borderRadius: 2,
     },
+    '@media (max-width: 768px)': {
+      fontSize: "1.25rem",
+      marginBottom: "1rem",
+      '&::before': {
+        height: 20,
+      }
+    }
   },
   description: {
     fontSize: "1.1rem",
     lineHeight: 1.7,
     color: "#666",
     '@media (max-width: 768px)': {
-      fontSize: "1rem",
+      fontSize: "0.95rem",
       lineHeight: 1.6,
-    },
-    '& p': {
-      marginBottom: "1rem",
     }
   },
   detailsGrid: {
@@ -338,14 +343,10 @@ const useStyles = createUseStyles({
     padding: "1.5rem",
     borderRadius: 16,
     '@media (max-width: 768px)': {
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1rem",
-      padding: "1rem",
-    },
-    '@media (max-width: 480px)': {
       gridTemplateColumns: "1fr",
-      gap: "0.75rem",
-      padding: "0.5rem",
+      gap: "1rem",
+      padding: "0.75rem",
+      marginTop: "1rem",
     }
   },
   detailItem: {
@@ -356,20 +357,29 @@ const useStyles = createUseStyles({
     transition: "all 0.2s",
     '@media (max-width: 768px)': {
       padding: "1rem",
-    },
-    '@media (max-width: 480px)': {
-      padding: "0.875rem",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: "1rem",
     }
   },
   detailLabel: {
     fontSize: "0.9rem",
     color: "#666",
     marginBottom: "0.5rem",
+    '@media (max-width: 768px)': {
+      marginBottom: 0,
+      fontSize: "0.85rem",
+    }
   },
   detailValue: {
     fontSize: "1.1rem",
     color: "#112D4E",
     fontWeight: 600,
+    '@media (max-width: 768px)': {
+      fontSize: "0.95rem",
+      textAlign: "right",
+    }
   },
   sidebar: {
     position: "sticky",
@@ -395,13 +405,10 @@ const useStyles = createUseStyles({
     marginTop: "1.5rem",
     padding: "0 3rem",
     '@media (max-width: 768px)': {
-      gridTemplateColumns: "repeat(2, 1fr)",
+      gridTemplateColumns: "repeat(1, 1fr)",
       gap: "1rem",
       padding: "0 1rem",
-    },
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: "1fr",
-      padding: "0 0.75rem",
+      marginTop: "1rem",
     }
   },
   relatedHeader: {
@@ -417,22 +424,38 @@ const useStyles = createUseStyles({
     boxShadow: "0 4px 12px rgba(63,114,175,0.08)",
     transition: "all 0.3s",
     cursor: "pointer",
+    '@media (max-width: 768px)': {
+      display: "flex",
+      borderRadius: 12,
+      height: "120px",
+    },
     '&:hover': {
       transform: "translateY(-5px)",
       boxShadow: "0 12px 32px rgba(63,114,175,0.12)",
       '& $relatedImage': {
         transform: "scale(1.05)",
       },
-    },
+    }
   },
   relatedImage: {
     width: "100%",
     height: 180,
     objectFit: "cover",
     transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+    '@media (max-width: 768px)': {
+      width: "120px",
+      height: "120px",
+      flexShrink: 0,
+    }
   },
   relatedInfo: {
     padding: "1.2rem",
+    '@media (max-width: 768px)': {
+      padding: "0.75rem",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }
   },
   relatedTitle: {
     fontSize: "1.1rem",
@@ -443,6 +466,11 @@ const useStyles = createUseStyles({
     "-webkit-line-clamp": 2,
     "-webkit-box-orient": "vertical",
     overflow: "hidden",
+    '@media (max-width: 768px)': {
+      fontSize: "0.95rem",
+      marginBottom: "0.4rem",
+      "-webkit-line-clamp": 1,
+    }
   },
   relatedMeta: {
     display: "flex",
@@ -450,6 +478,9 @@ const useStyles = createUseStyles({
     alignItems: "center",
     color: "#666",
     fontSize: "0.9rem",
+    '@media (max-width: 768px)': {
+      fontSize: "0.8rem",
+    }
   },
   videoModal: {
     position: "fixed",
@@ -464,7 +495,7 @@ const useStyles = createUseStyles({
     zIndex: 1000,
     padding: "2rem",
     '@media (max-width: 768px)': {
-      padding: "1rem",
+      padding: "0.5rem",
     }
   },
   videoContainer: {
@@ -477,6 +508,7 @@ const useStyles = createUseStyles({
     overflow: "hidden",
     '@media (max-width: 768px)': {
       borderRadius: 8,
+      aspectRatio: "16/9",
     }
   },
   closeButton: {
@@ -495,10 +527,17 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     cursor: "pointer",
     transition: "all 0.2s",
+    '@media (max-width: 768px)': {
+      top: 10,
+      right: 10,
+      width: 32,
+      height: 32,
+      fontSize: "1.2rem",
+    },
     '&:hover': {
       background: "rgba(255,255,255,0.2)",
       transform: "scale(1.1)",
-    },
+    }
   },
   "@keyframes slideUp": {
     from: { transform: "translateY(20px)", opacity: 0 },

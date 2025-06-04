@@ -13,8 +13,10 @@ import {
   FaTimes,
   FaThLarge,
   FaEye,
-  FaDownload
+  FaDownload,
+  FaCheck
 } from "react-icons/fa";
+import FilterModal from './FilterModal.tsx';
 
 type ViewMode = 'list' | 'grid';
 
@@ -23,7 +25,7 @@ interface StyleProps {
   viewMode: ViewMode;
 }
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles<string, StyleProps>({
   container: {
     display: "flex",
     margin: "0",
@@ -38,31 +40,24 @@ const useStyles = createUseStyles({
     }
   },
   sidebar: {
-    width: 280,
+    width: "100%",
+    height: "100%",
     background: "#fffdfa",
     borderRadius: 14,
     padding: "1.2rem",
     boxShadow: "0 6px 24px rgba(63,114,175,0.1)",
     fontFamily: "var(--bs-font-primary)",
     fontSize: "0.95rem",
-    minHeight: 540,
-    position: "sticky",
-    top: 32,
     border: "1.5px solid #DBE2EF",
-    marginRight: 36,
+    overflow: "auto",
+    marginTop: "3rem",
     '@media (max-width: 900px)': {
-      width: "100%",
-      marginRight: 0,
-      marginBottom: 24,
+      maxWidth: "90%",
+      maxHeight: "calc(100vh - 40px)",
+      margin: "20px auto",
+      borderRadius: 16,
       position: "relative",
-      top: 0,
-      minHeight: "auto",
-      padding: "1rem",
-    },
-    '@media (max-width: 480px)': {
-      padding: "0.75rem",
-      marginBottom: 16,
-      fontSize: "0.9rem",
+      zIndex: 1001,
     }
   },
   main: {
@@ -73,6 +68,7 @@ const useStyles = createUseStyles({
     padding: "2.2rem 1.7rem",
     minHeight: 400,
     fontFamily: "var(--bs-font-primary)",
+    marginTop: "3rem",
     '@media (max-width: 900px)': { 
       padding: "1.2rem 1rem" 
     },
@@ -128,15 +124,7 @@ const useStyles = createUseStyles({
     marginRight: 36,
     zIndex: 100,
     '@media (max-width: 900px)': {
-      width: "100%",
-      position: "fixed",
-      top: 0,
-      left: 0,
-      height: "100vh",
-      background: "rgba(0,0,0,0.5)",
-      padding: "20px",
-      transform: "translateX(0)",
-      marginRight: 0,
+      display: 'none'
     }
   },
   sidebarCollapsed: {
@@ -150,31 +138,32 @@ const useStyles = createUseStyles({
     }
   },
   toggleButton: {
-    position: 'absolute',
-    right: -42,
-    top: 20,
-    width: 34,
-    height: 34,
-    borderRadius: '50%',
-    background: '#3F72AF',
-    border: 'none',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    zIndex: 10,
-    boxShadow: '0 2px 8px rgba(63,114,175,0.2)',
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      background: '#112D4E',
-      transform: 'scale(1.1)',
-    },
+    display: 'none',
     '@media (max-width: 900px)': {
-      right: 20,
-      top: 20,
+      display: 'flex',
       position: 'fixed',
+      right: 20,
+      bottom: 20,
+      width: 56,
+      height: 56,
+      borderRadius: '50%',
       background: '#3F72AF',
+      border: 'none',
+      color: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      zIndex: 99,
+      boxShadow: '0 4px 12px rgba(63,114,175,0.3)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      fontSize: '1.3rem',
+      '&:hover': {
+        background: '#112D4E',
+        transform: 'scale(1.05)',
+      },
+      '&:active': {
+        transform: 'scale(0.95)',
+      }
     }
   },
   sidebarContent: {
@@ -203,7 +192,7 @@ const useStyles = createUseStyles({
   },
   mobileOverlay: {
     display: 'none',
-    '@media (max-width: 900px)': {
+    '@media (max-width: 900px)': props => ({
       display: 'block',
       position: 'fixed',
       top: 0,
@@ -211,11 +200,11 @@ const useStyles = createUseStyles({
       right: 0,
       bottom: 0,
       background: 'rgba(0,0,0,0.5)',
-      opacity: isCollapsed => isCollapsed ? 0 : 1,
-      visibility: isCollapsed => isCollapsed ? 'hidden' : 'visible',
+      opacity: props.isCollapsed ? 0 : 1,
+      visibility: props.isCollapsed ? 'hidden' : 'visible',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       zIndex: 90,
-    }
+    })
   },
   label: {
     fontWeight: 800,
@@ -364,11 +353,22 @@ const useStyles = createUseStyles({
     letterSpacing: 0.1,
     display: "flex",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 10,
     padding: "13px 16px",
     background: "#F9F7F7",
     borderRadius: 12,
     boxShadow: "0 1.5px 8px rgba(63,114,175,0.08)",
+    '@media (max-width: 768px)': {
+      fontSize: 18,
+      padding: "12px 14px",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    '@media (max-width: 480px)': {
+      fontSize: 16,
+      padding: "10px 12px",
+    }
   },
   list: {
     margin: 0,
@@ -387,6 +387,16 @@ const useStyles = createUseStyles({
     transition: "box-shadow 0.18s, background 0.18s, transform 0.15s",
     cursor: "pointer",
     border: "none",
+    '@media (max-width: 768px)': {
+      flexDirection: "column",
+      gap: 12,
+      padding: "1rem",
+    },
+    '@media (max-width: 480px)': {
+      padding: "0.8rem",
+      gap: 10,
+      marginBottom: 12,
+    },
     "&:hover": {
       background: "#F9F7F7",
       boxShadow: "0 6px 18px rgba(63,114,175,0.15)",
@@ -409,14 +419,24 @@ const useStyles = createUseStyles({
     borderRadius: 10,
     background: "#f8f8f8",
     border: "1.2px solid #DBE2EF",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    '@media (max-width: 768px)': {
+      width: "100%",
+      height: 200,
+    },
+    '@media (max-width: 480px)': {
+      height: 180,
+    }
   },
   info: {
     flex: 1,
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
-    gap: 2
+    gap: 2,
+    '@media (max-width: 768px)': {
+      width: "100%",
+    }
   },
   title: {
     fontWeight: 900,
@@ -432,7 +452,11 @@ const useStyles = createUseStyles({
     overflow: "hidden",
     textOverflow: "ellipsis",
     maxWidth: 450,
-    letterSpacing: 0.1
+    letterSpacing: 0.1,
+    '@media (max-width: 768px)': {
+      fontSize: "1rem",
+      maxWidth: "100%",
+    }
   },
   desc: {
     fontSize: "0.97rem",
@@ -504,8 +528,18 @@ const useStyles = createUseStyles({
     gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
     gap: "1.8rem",
     margin: "20px 0",
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gap: "1.2rem",
+    },
+    '@media (max-width: 480px)': {
+      gridTemplateColumns: "1fr",
+      gap: "1rem",
+    }
   },
   gridItem: {
+    width: '100%',
+    margin: '0 auto',
     background: "#fff",
     borderRadius: "16px",
     overflow: "hidden",
@@ -513,16 +547,12 @@ const useStyles = createUseStyles({
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
     border: "1px solid rgba(0,0,0,0.05)",
+    '@media (max-width: 768px)': {
+      maxWidth: '100%'
+    },
     "&:hover": {
       transform: "translateY(-6px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.12)",
-      "& $gridThumb img": {
-        transform: "scale(1.05)",
-      },
-      "& $cardActionBar": {
-        opacity: 1,
-        transform: "translateY(0)",
-      }
+      boxShadow: "0 12px 24px rgba(0,0,0,0.12)"
     }
   },
   gridThumb: {
@@ -553,6 +583,16 @@ const useStyles = createUseStyles({
     transform: "translateY(-10px)",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    '@media (max-width: 768px)': {
+      opacity: 1,
+      transform: 'none',
+      position: 'static',
+      marginTop: '10px',
+      background: 'transparent',
+      padding: 0,
+      boxShadow: 'none',
+      justifyContent: 'flex-end'
+    }
   },
   cardActionBtn: {
     background: "none",
@@ -565,6 +605,12 @@ const useStyles = createUseStyles({
     padding: "0.5rem",
     borderRadius: "8px",
     transition: "all 0.2s",
+    '@media (max-width: 768px)': {
+      background: '#f0f7ff',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      fontSize: '0.9rem'
+    },
     "&:hover": {
       color: "#3F72AF",
       background: "#f0f5ff",
@@ -576,6 +622,9 @@ const useStyles = createUseStyles({
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
+    '@media (max-width: 768px)': {
+      padding: '1rem'
+    }
   },
   gridTitle: {
     fontSize: "1.2rem",
@@ -586,6 +635,10 @@ const useStyles = createUseStyles({
     "-webkit-line-clamp": 2,
     "-webkit-box-orient": "vertical",
     overflow: "hidden",
+    '@media (max-width: 768px)': {
+      fontSize: '1rem',
+      marginBottom: '0.5rem'
+    }
   },
   gridMeta: {
     fontSize: "0.95rem",
@@ -594,14 +647,29 @@ const useStyles = createUseStyles({
     justifyContent: "space-between",
     alignItems: "center",
     gap: "1rem",
-    "& span": {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-    },
-    "& i, & svg": {
-      fontSize: "1.1rem",
-      color: "#3F72AF",
+    '@media (max-width: 768px)': {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: '0.5rem'
+    }
+  },
+  metaCategory: {
+    backgroundColor: '#f0f7ff',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    color: '#3F72AF',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    '@media (max-width: 768px)': {
+      width: 'fit-content'
+    }
+  },
+  metaInfo: {
+    display: 'flex',
+    gap: '1rem',
+    '@media (max-width: 768px)': {
+      width: '100%',
+      justifyContent: 'space-between'
     }
   },
   tagBar: {
@@ -609,6 +677,9 @@ const useStyles = createUseStyles({
     flexWrap: "wrap",
     gap: "0.5rem",
     marginTop: "0.5rem",
+    '@media (max-width: 768px)': {
+      marginTop: '1rem'
+    }
   },
   tag: {
     background: "rgba(63,114,175,0.08)",
@@ -618,6 +689,9 @@ const useStyles = createUseStyles({
     fontSize: "0.9rem",
     fontWeight: 500,
     transition: "all 0.2s",
+    '@media (max-width: 768px)': {
+      fontSize: '0.75rem'
+    },
     "&:hover": {
       background: "rgba(63,114,175,0.12)",
       transform: "translateY(-1px)",
@@ -635,6 +709,10 @@ const useStyles = createUseStyles({
     alignItems: 'center',
     zIndex: 1000,
     padding: '20px',
+    '@media (max-width: 768px)': {
+      padding: '0',
+      alignItems: 'flex-end'
+    }
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -645,6 +723,21 @@ const useStyles = createUseStyles({
     overflow: 'hidden',
     position: 'relative',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    margin: '20px',
+    '@media (max-width: 768px)': {
+      margin: '0',
+      maxHeight: '85vh',
+      borderRadius: '16px 16px 0 0',
+      animation: '$slideUp 0.3s ease-out'
+    }
+  },
+  '@keyframes slideUp': {
+    from: {
+      transform: 'translateY(100%)'
+    },
+    to: {
+      transform: 'translateY(0)'
+    }
   },
   modalHeader: {
     padding: '20px 24px',
@@ -652,29 +745,66 @@ const useStyles = createUseStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    position: 'sticky',
+    top: 0,
+    background: '#fff',
+    zIndex: 2,
+    '@media (max-width: 768px)': {
+      padding: '16px',
+    }
   },
   modalTitle: {
     fontSize: '1.25rem',
     fontWeight: 700,
     color: '#112D4E',
+    '@media (max-width: 768px)': {
+      fontSize: '1.1rem',
+    },
+    '@media (max-width: 480px)': {
+      fontSize: '1rem',
+    }
   },
   closeButton: {
-    background: 'none',
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    background: '#f8f9fa',
     border: 'none',
-    fontSize: '1.5rem',
     color: '#666',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '8px',
-    '&:hover': {
-      backgroundColor: '#f0f0f0',
-      color: '#112D4E',
+    zIndex: 1002,
+    transition: 'all 0.2s',
+    '@media (max-width: 768px)': {
+      top: 8,
+      right: 8,
+      width: 28,
+      height: 28,
+      background: 'rgba(0,0,0,0.1)',
+      color: '#fff'
     },
+    '&:hover': {
+      background: '#e9ecef',
+      color: '#333',
+      '@media (max-width: 768px)': {
+        background: 'rgba(0,0,0,0.2)',
+        color: '#fff'
+      }
+    }
   },
   modalBody: {
     padding: '24px',
     overflowY: 'auto',
     maxHeight: 'calc(90vh - 140px)',
+    '@media (max-width: 768px)': {
+      padding: '16px',
+      maxHeight: 'calc(85vh - 70px)',
+    }
   },
   previewImage: {
     width: '100%',
@@ -682,6 +812,10 @@ const useStyles = createUseStyles({
     maxHeight: '70vh',
     objectFit: 'contain',
     borderRadius: '8px',
+    '@media (max-width: 768px)': {
+      maxHeight: '50vh',
+      borderRadius: '4px'
+    }
   },
   previewInfo: {
     marginTop: '20px',
@@ -704,6 +838,13 @@ const useStyles = createUseStyles({
       color: '#666',
       fontSize: '0.95rem',
     },
+    '@media (max-width: 480px)': {
+      gap: '12px',
+      '& span': {
+        width: '100%',
+        fontSize: '0.9rem',
+      }
+    }
   },
   searchResults: {
     display: "grid",
@@ -717,7 +858,68 @@ const useStyles = createUseStyles({
       gap: "0.75rem",
       gridTemplateColumns: "1fr",
     }
-  }
+  },
+  filterSection: {
+    marginBottom: 20,
+  },
+  typeGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  typeButton: {
+    background: "transparent",
+    border: "none",
+    padding: "8px 16px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: "background 0.15s",
+    "&:hover": {
+      background: "rgba(63,114,175,0.08)",
+    }
+  },
+  typeButtonActive: {
+    background: "rgba(63,114,175,0.08)",
+  },
+  checkIcon: {
+    marginLeft: 8,
+  },
+  yearGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  yearButton: {
+    background: "transparent",
+    border: "none",
+    padding: "8px 16px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: "background 0.15s",
+    "&:hover": {
+      background: "rgba(63,114,175,0.08)",
+    }
+  },
+  yearButtonActive: {
+    background: "rgba(63,114,175,0.08)",
+  },
+  yearCount: {
+    marginLeft: 8,
+  },
+  resetButton: {
+    background: "#112D4E",
+    color: "#fff",
+    borderRadius: 8,
+    padding: "10px 20px",
+    border: "none",
+    cursor: "pointer",
+    transition: "background 0.18s",
+    "&:hover": {
+      background: "#3F72AF",
+    }
+  },
 });
 
 function useQuery() {
@@ -748,13 +950,12 @@ const getUniqueYears = (resources: { createdAt: string }[]) => {
 };
 
 const SearchResult = () => {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const classes = useStyles();
+  const classes = useStyles({ isCollapsed, viewMode });
   const query = useQuery();
   const navigate = useNavigate();
 
-  // ตัวแปรของ sidebar
   const [keyword, setKeyword] = useState(query.get("q") || "");
   const [logic, setLogic] = useState("AND");
   const [searchBy, setSearchBy] = useState("title");
@@ -855,63 +1056,94 @@ const SearchResult = () => {
 
   const renderGridView = () => (
     <div className={classes.gridView}>
-      {pagedResults.map((item) => (
-        <div className={classes.gridItem} key={item.id} onClick={() => navigate(`/resource/${item.id}`)}>
-          <div className={classes.gridThumb}>
-            <img
-              src={item.thumbnailUrl || "/no-image.png"}
-              alt={item.title}
-              loading="lazy"
-            />
-            <div className={classes.cardActionBar}>
-              <button 
-                className={classes.cardActionBtn} 
-                title="ดูตัวอย่าง"
-                onClick={(e) => handlePreview(e, item.id)}
-              >
-                <FaEye />
-              </button>
-              <button 
-                className={classes.cardActionBtn} 
-                title="ดาวน์โหลด"
-                onClick={(e) => handleDownload(e, item)}
-              >
-                <FaDownload />
-              </button>
+      {pagedResults.map((item) => {
+        const categoryMap: Record<string, string> = {
+          medical: "การแพทย์",
+          education: "การศึกษา",
+          clinic: "คลินิก",
+          campus: "รอบรั้วมหาวิทยาลัย"
+        };
+
+        const formattedDate = item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+          calendar: 'buddhist'
+        });
+
+        return (
+          <div 
+            className={classes.gridItem} 
+            key={item.id} 
+            onClick={() => navigate(`/resource/${item.id}`)}
+          >
+            <div className={classes.gridThumb}>
+              <img
+                src={item.thumbnailUrl || "/no-image.png"}
+                alt={item.title}
+                loading="lazy"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+              <div className={classes.cardActionBar}>
+                <button 
+                  className={classes.cardActionBtn} 
+                  title="ดูตัวอย่าง"
+                  onClick={(e) => handlePreview(e, item.id)}
+                >
+                  <FaEye style={{ marginRight: 6 }} /> 
+                  <span>ดูตัวอย่าง</span>
+                </button>
+                <button 
+                  className={classes.cardActionBtn} 
+                  title="ดาวน์โหลด"
+                  onClick={(e) => handleDownload(e, item)}
+                >
+                  <FaDownload style={{ marginRight: 6 }} />
+                  <span>ดาวน์โหลด</span>
+                </button>
+              </div>
+            </div>
+            <div className={classes.gridContent}>
+              <div className={classes.gridTitle}>{item.title}</div>
+              <div className={classes.gridMeta}>
+                <span className={classes.metaCategory}>
+                  {categoryMap[item.category] || item.category}
+                </span>
+                <div className={classes.metaInfo}>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>{formattedDate}</span>
+                  <span style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px',
+                    fontSize: '0.85rem',
+                    color: '#666'
+                  }}>
+                    <FaDownload size={12} />
+                    {item.downloadCount || 0}
+                  </span>
+                </div>
+              </div>
+              <div className={classes.tagBar}>
+                {item.tags?.slice(0, 3).map(tag => (
+                  <span 
+                    className={classes.tag} 
+                    key={tag}
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {item.tags?.length > 3 && (
+                  <span className={classes.tag}>+{item.tags.length - 3}</span>
+                )}
+              </div>
             </div>
           </div>
-          <div className={classes.gridContent}>
-            <div className={classes.gridTitle}>{item.title}</div>
-            <div className={classes.gridMeta}>
-              <span>
-                {item.category === "medical" && "การแพทย์"}
-                {item.category === "education" && "การศึกษา"}
-                {item.category === "clinic" && "คลินิก"}
-                {item.category === "campus" && "รอบรั้วมหาวิทยาลัย"}
-              </span>
-              <span>
-                {item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
-                  day: 'numeric',
-                  month: 'numeric',
-                  year: 'numeric',
-                  calendar: 'buddhist'
-                })}
-              </span>
-              <span>
-                ดาวน์โหลด: {item.downloadCount || 0}
-              </span>
-            </div>
-            <div className={classes.tagBar}>
-              {item.tags?.slice(0,3).map(tag => (
-                <span className={classes.tag} key={tag}>{tag}</span>
-              ))}
-              {item.tags?.length > 3 && (
-                <span className={classes.tag}>+{item.tags.length - 3}</span>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -922,85 +1154,234 @@ const SearchResult = () => {
           ไม่พบรายการที่เกี่ยวข้อง
         </li>
       )}
-      {pagedResults.map((item, idx) => (
-        <li className={classes.listItem} key={item.id} onClick={() => navigate(`/resource/${item.id}`)}>
-          <img
-            src={item.thumbnailUrl || "/no-image.png"}
-            alt={item.title}
-            className={classes.thumb}
-          />
-          <div className={classes.info}>
-            <div className={classes.title} title={item.title}>
-              {item.title}
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 12,
-              marginTop: 8,
-              color: '#666',
-              fontSize: '0.9rem'
+      {pagedResults.map((item, index) => {
+        const categoryMap: Record<string, string> = {
+          medical: "การแพทย์",
+          education: "การศึกษา",
+          clinic: "คลินิก",
+          campus: "รอบรั้วมหาวิทยาลัย"
+        };
+
+        const formattedDate = item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+          calendar: 'buddhist'
+        });
+
+        return (
+          <li 
+            className={classes.listItem} 
+            key={item.id} 
+            onClick={() => navigate(`/resource/${item.id}`)}
+            style={{
+              transform: `translateX(${index % 2 === 0 ? '-10px' : '10px'})`,
+              opacity: 0,
+              animation: `slideIn 0.5s ease-out ${index * 0.1}s forwards`
+            }}
+          >
+            <div style={{
+              position: 'relative',
+              width: '200px',
+              height: '150px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {item.category === "medical" && "การแพทย์"}
-                {item.category === "education" && "การศึกษา"}
-                {item.category === "clinic" && "คลินิก"}
-                {item.category === "campus" && "รอบรั้วมหาวิทยาลัย"}
-              </span>
-              <span>
-                {item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
-                  day: 'numeric',
-                  month: 'numeric',
-                  year: 'numeric',
-                  calendar: 'buddhist'
-                })}
-              </span>
-              <span>
-                ดาวน์โหลด: {item.downloadCount || 0}
-              </span>
+              <img
+                src={item.thumbnailUrl || "/no-image.png"}
+                alt={item.title}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.3s ease'
+                }}
+              />
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-              {item.tags?.slice(0, 3).map((tag: string) => (
-                <span key={tag} className={classes.catTag}>{tag}</span>
-              ))}
-              {item.tags && item.tags.length > 3 && (
-                <span className={classes.catTag}>+{item.tags.length - 3}</span>
-              )}
+            <div className={classes.info}>
+              <div className={classes.title} title={item.title}>
+                {item.title}
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 12,
+                marginTop: 12,
+                flexWrap: 'wrap'
+              }}>
+                <span style={{ 
+                  backgroundColor: '#f0f7ff',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  color: '#3F72AF',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <FaFileAlt size={12} />
+                  {categoryMap[item.category] || item.category}
+                </span>
+                <span style={{
+                  color: '#666',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <FaUser size={12} />
+                  {formattedDate}
+                </span>
+                <span style={{
+                  color: '#666',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <FaDownload size={12} />
+                  {item.downloadCount || 0} ครั้ง
+                </span>
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                gap: 8, 
+                flexWrap: 'wrap', 
+                marginTop: 12 
+              }}>
+                {item.tags?.slice(0, 3).map((tag: string) => (
+                  <span 
+                    key={tag} 
+                    style={{
+                      backgroundColor: 'rgba(63,114,175,0.06)',
+                      border: '1px solid rgba(63,114,175,0.1)',
+                      borderRadius: '6px',
+                      padding: '4px 10px',
+                      fontSize: '0.85rem',
+                      color: '#3F72AF'
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {item.tags && item.tags.length > 3 && (
+                  <span style={{
+                    backgroundColor: 'rgba(63,114,175,0.06)',
+                    border: '1px solid rgba(63,114,175,0.1)',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '0.85rem',
+                    color: '#3F72AF'
+                  }}>
+                    +{item.tags.length - 3}
+                  </span>
+                )}
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                gap: 8, 
+                marginTop: 16,
+                justifyContent: 'flex-end'
+              }}>
+                <button 
+                  className={classes.cardActionBtn} 
+                  title="ดูตัวอย่าง"
+                  onClick={(e) => handlePreview(e, item.id)}
+                  style={{
+                    backgroundColor: '#f0f7ff',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  <FaEye style={{ marginRight: 6 }} /> ดูตัวอย่าง
+                </button>
+                <button 
+                  className={classes.cardActionBtn} 
+                  title="ดาวน์โหลด"
+                  onClick={(e) => handleDownload(e, item)}
+                  style={{
+                    backgroundColor: '#f0f7ff',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  <FaDownload style={{ marginRight: 6 }} /> ดาวน์โหลด
+                </button>
+              </div>
             </div>
-            <div style={{ 
-              display: 'flex', 
-              gap: 8, 
-              marginTop: 12,
-              justifyContent: 'flex-end'
-            }}>
-              <button 
-                className={classes.cardActionBtn} 
-                title="ดูตัวอย่าง"
-                onClick={(e) => handlePreview(e, item.id)}
-              >
-                <FaEye /> ดูตัวอย่าง
-              </button>
-              <button 
-                className={classes.cardActionBtn} 
-                title="ดาวน์โหลด"
-                onClick={(e) => handleDownload(e, item)}
-              >
-                <FaDownload /> ดาวน์โหลด
-              </button>
-            </div>
-          </div>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 
+  // Add keyframe animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(${Math.random() > 0.5 ? '-20px' : '20px'});
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Add cleanup effect for body scroll
+  useEffect(() => {
+    if (!isCollapsed) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isCollapsed]);
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   return (
     <div className={classes.container}>
-      <div className={`${classes.sidebarContainer} ${isCollapsed ? classes.sidebarCollapsed : ''}`}>
-        
-        <aside className={classes.sidebar}>
-          <div className={`${classes.sidebarContent} ${isCollapsed ? classes.sidebarContentCollapsed : ''}`}>
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <button 
+        className={classes.toggleButton} 
+        onClick={() => setIsFilterOpen(true)}
+        aria-label="เปิดตัวกรอง"
+      >
+        <FaFilter />
+      </button>
+
+      <FilterModal 
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        keyword={keyword}
+        setKeyword={setKeyword}
+        searchBy={searchBy}
+        setSearchBy={setSearchBy}
+        sort={sort}
+        setSort={setSort}
+        types={types}
+        handleTypeChange={handleTypeChange}
+        selectedYears={selectedYears}
+        setSelectedYears={setSelectedYears}
+        yearCounts={yearCounts}
+        uniqueYears={uniqueYears}
+        handleSubmit={handleSubmit}
+        resourceTypes={resourceTypes}
+      />
+
+      <div className={classes.sidebarContainer}>
+        <div className={classes.sidebar}>
+          <form onSubmit={handleSubmit}>
+            <div className={classes.filterSection}>
               <div className={classes.label}>คำสำคัญ</div>
               <input
                 className={classes.searchBox}
@@ -1008,22 +1389,21 @@ const SearchResult = () => {
                 value={keyword}
                 onChange={e => setKeyword(e.target.value)}
               />
+            </div>
 
+            <div className={classes.filterSection}>
               <div className={classes.label}>ค้นหาจาก</div>
-              <div className={classes.radioGroup}>
-                <label className={classes.radioLabel}>
-                  <input
-                    type="radio"
-                    name="searchBy"
-                    value="title"
-                    checked={searchBy === "title"}
-                    onChange={() => setSearchBy("title")}
-                    className={classes.radioInput}
-                  />
-                  ชื่อเรื่อง
-                </label>
-              </div>
+              <select
+                className={classes.select}
+                value={searchBy}
+                onChange={e => setSearchBy(e.target.value)}
+              >
+                <option value="title">ชื่อเรื่อง</option>
+                <option value="category">หมวดหมู่</option>
+              </select>
+            </div>
 
+            <div className={classes.filterSection}>
               <div className={classes.label}>เรียงลำดับจาก</div>
               <select
                 className={classes.select}
@@ -1036,57 +1416,66 @@ const SearchResult = () => {
                 <option value="za">เรียงตาม: ฮ-ก</option>
                 <option value="popular">เรียงตาม: ยอดนิยม</option>
               </select>
+            </div>
 
+            <div className={classes.filterSection}>
               <div className={classes.label}>ประเภททรัพยากร</div>
-              <div className={classes.checkboxGroup}>
+              <div className={classes.typeGrid}>
                 {resourceTypes.map(type => (
-                  <label key={type} className={classes.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={types.includes(type)}
-                      onChange={() => handleTypeChange(type)}
-                      className={classes.checkboxInput}
-                    />
+                  <button
+                    key={type}
+                    type="button"
+                    className={`${classes.typeButton} ${types.includes(type) ? classes.typeButtonActive : ''}`}
+                    onClick={() => handleTypeChange(type)}
+                  >
+                    {types.includes(type) && <FaCheck className={classes.checkIcon} />}
                     {type === "image" ? "รูปภาพ" : 
                      type === "video" ? "วิดีโอ" : 
                      type === "graphic" ? "กราฟิก" : type}
-                  </label>
+                  </button>
                 ))}
               </div>
+            </div>
 
+            <div className={classes.filterSection}>
               <div className={classes.label}>ปีที่เผยแพร่</div>
-              <div className={classes.checkboxGroup} style={{ maxHeight: 260, overflowY: 'auto' }}>
+              <div className={classes.yearGrid}>
                 {uniqueYears.map(year => (
-                  <label key={year} className={classes.checkboxLabel} style={{ justifyContent: 'space-between' }}>
-                    <span>
-                      <input
-                        type="checkbox"
-                        checked={selectedYears.includes(year)}
-                        onChange={() => setSelectedYears(selectedYears.includes(year)
-                          ? selectedYears.filter(y => y !== year)
-                          : [...selectedYears, year])}
-                        className={classes.checkboxInput}
-                      />
-                      {year}
-                    </span>
-                    <span style={{ color: '#222', fontWeight: 500, fontSize: 15, marginLeft: 8 }}>
-                      ({yearCounts[year] || 0})
-                    </span>
-                  </label>
+                  <button
+                    key={year}
+                    type="button"
+                    className={`${classes.yearButton} ${selectedYears.includes(year) ? classes.yearButtonActive : ''}`}
+                    onClick={() => setSelectedYears(
+                      selectedYears.includes(year)
+                        ? selectedYears.filter(y => y !== year)
+                        : [...selectedYears, year]
+                    )}
+                  >
+                    {year}
+                    <span className={classes.yearCount}>({yearCounts[year] || 0})</span>
+                    {selectedYears.includes(year) && <FaCheck className={classes.checkIcon} />}
+                  </button>
                 ))}
               </div>
+            </div>
 
-              <button type="submit" className={classes.button}>
-                ค้นหาขั้นสูง
-              </button>
-            </form>
-          </div>
-          <div className={classes.collapsedIcon}>
-            <FaFilter />
-          </div>
-        </aside>
+            <button 
+              type="button" 
+              className={classes.resetButton}
+              onClick={() => {
+                setKeyword("");
+                setSearchBy("title");
+                setSort("newest");
+                handleTypeChange("ทั้งหมด");
+                setSelectedYears([]);
+              }}
+            >
+              รีเซ็ตตัวกรอง
+            </button>
+          </form>
+        </div>
       </div>
-      <div className={classes.mobileOverlay} onClick={toggleSidebar} />
+
       <main className={classes.main}>
         <div className={classes.resultHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
