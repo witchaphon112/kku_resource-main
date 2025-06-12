@@ -26,7 +26,6 @@ export const BookmarkProvider = ({ children }: { children: ReactNode }) => {
   const [bookmarks, setBookmarks] = useState<BookmarkedItem[]>([]);
   const { user } = useAuth();
 
-  // Load bookmarks from localStorage when user changes
   useEffect(() => {
     if (user) {
       const savedBookmarks = localStorage.getItem(`bookmarks_${user.id}`);
@@ -38,7 +37,6 @@ export const BookmarkProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  // Save bookmarks to localStorage whenever they change
   useEffect(() => {
     if (user) {
       localStorage.setItem(`bookmarks_${user.id}`, JSON.stringify(bookmarks));

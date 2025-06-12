@@ -114,7 +114,7 @@ const useStyles = createUseStyles({
     height: "fit-content",
     alignSelf: "flex-start",
     position: "sticky",
-    top: 90,
+    top: 20,
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     background: "#fff",
     padding: "1.8rem",

@@ -59,22 +59,13 @@ export const ResourceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setLoading(true);
         setError(null);
         
-        // ใช้ข้อมูล mock ชั่วคราว
         setResources(mockResources.resources);
         
-        /* TODO: เมื่อมี API จริง ให้ใช้โค้ดนี้แทน
-        const response = await fetch('/api/resources');
-        if (!response.ok) {
-          throw new Error('Failed to load resources');
-        }
-        const data = await response.json();
-        setResources(data.resources);
-        */
         
       } catch (err) {
         console.error('Error loading resources:', err);
         setError(err instanceof Error ? err.message : 'Failed to load resources');
-        setResources(mockResources.resources); // Fallback to mock data on error
+        setResources(mockResources.resources);
       } finally {
         setLoading(false);
       }

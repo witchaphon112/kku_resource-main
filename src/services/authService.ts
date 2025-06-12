@@ -1,14 +1,29 @@
-import users from '../mock/db.json';
+import { User } from '../contexts/AuthContext';
 
-export const login = (username: string, password: string) => {
-  return new Promise((resolve, reject) => {
+export const login = async (username: string, password: string): Promise<User> => {
+  // Mock login - in real app this would call an API
+  return new Promise((resolve) => {
     setTimeout(() => {
-      const user = users.find(u => u.username === username && u.password === password);
-      if (user) {
-        resolve(user);
-      } else {
-        reject(new Error('Invalid username or password'));
-      }
-    }, 800);
+      resolve({
+        id: '1',
+        username: username,
+        fullName: 'Test User',
+        role: 'user',
+        department: 'Test Department',
+        createdAt: new Date().toISOString(),
+        stats: {
+          uploadCount: 0,
+          downloadCount: 0,
+          savedCount: 0
+        }
+      });
+    }, 1000);
+  });
+};
+
+export const logout = async (): Promise<void> => {
+  // Mock logout - in real app this would call an API
+  return new Promise((resolve) => {
+    setTimeout(resolve, 1000);
   });
 };

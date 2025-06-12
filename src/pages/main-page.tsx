@@ -1,15 +1,19 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import { PhotoProvider, PhotoView } from "react-photo-view";
-import Modal from "react-modal";
+import Modal from "../components/Modal";
+import { Dropdown } from 'primereact/dropdown';
+import { IoEye, IoHeart, IoBookmarkOutline, IoBookmark, IoShareSocialSharp, IoEllipsisVerticalCircle, IoCopy, IoOpenOutline } from "react-icons/io5";
+import { FaDownload, FaHeart, FaRegHeart, FaTimes } from "react-icons/fa";
+import { IoHeartOutline, IoHeartSharp} from "react-icons/io5";
+
 
 import resourcesData from "../mock/resources.json";
 import "react-photo-view/dist/react-photo-view.css";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import hero1 from '../assets/hero-1.jpg';
 
 const THEME = {
   colors: {
@@ -51,29 +55,34 @@ const THEME = {
     button: "0 2px 8px rgba(17,45,78,0.15)"
   },
   typography: {
-    fontFamily: "var(--bs-font-primary, 'Sarabun', sans-serif)",
+    fontFamily: "var(--bs-font-primary)",
     h1: {
       fontSize: "2.5rem",
       fontWeight: 700,
-      lineHeight: 1.2
+      lineHeight: 1.2,
+      fontFamily: "var(--bs-font-primary)",
     },
     h2: {
       fontSize: "2rem",
       fontWeight: 700,
-      lineHeight: 1.3
+      lineHeight: 1.3,
+      fontFamily: "var(--bs-font-primary)",
     },
     h3: {
       fontSize: "1.1rem",
       fontWeight: 600,
-      lineHeight: 1.4
+      lineHeight: 1.4,
+      fontFamily: "var(--bs-font-primary)",
     },
     body1: {
       fontSize: "1rem",
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      fontFamily: "var(--bs-font-primary)",
     },
     body2: {
       fontSize: "0.9rem",
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      fontFamily: "var(--bs-font-primary)",
     },
     caption: {
       fontSize: "0.85rem",
@@ -98,34 +107,256 @@ const THEME = {
   }
 };
 
-const HERO_DATA = [
-  {
-    id: "h1",
-    titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
-    subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
-    imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
-  },
-  {
-    id: "h2",
-    titlemain: "งานวิจัยเปลี่ยนโลก",
-    subtitle: "สำรวจงานวิจัยสุดล้ำจากมหาวิทยาลัยขอนแก่น",
-    imageUrl: `${import.meta.env.BASE_URL}mock/hero-2.jpg`,
-  },
-];
-
-const CATEGORY_OPTIONS = [
-  { label: "รูปภาพ", value: "image" },
-  { label: "วิดีโอ", value: "video" },
-  { label: "กราฟิก", value: "graphic" },
-];
-
 const ANIMATION_DURATION = {
   FAST: 150,
   NORMAL: 250,
   SLOW: 350,
 };
 
+const HERO_DATA = [
+  {
+    id: "h1",
+    titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
+    subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
+    imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
+  }
+];
+
+const TRENDING_KEYWORDS = [
+  { text: "การแพทย์", bgColor: "#fff" },
+  { text: "วอลเปเปอร์", bgColor: "#fff" },
+  { text: "การเรียนการสอน", bgColor: "#fff" },
+  { text: "รอบรั้วมหาวิทยาลัย", bgColor: "#fff" },
+  { text: "ดนตรี", bgColor: "#fff" },
+  { text: "วิดีโอ", bgColor: "#fff" },
+  { text: "กราฟฟิก", bgColor: "#fff" },
+  { text: "ธรรมชาติ", bgColor: "#fff" },
+];
+
+interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  category: string;
+  tags: string[];
+  fileUrl: string;
+  thumbnailUrl: string;
+  uploadedBy: string;
+  downloadCount: number;
+  viewCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  gallery?: string[];
+  videoUrl?: string;
+  likeCount?: number;
+}
+
+interface Photo {
+  id: string;
+  src: string;
+  key: string;
+  title: string;
+  width: number;
+  height: number;
+  category?: string;
+  tags?: string[];
+  videoUrl?: string;
+  fileUrl?: string;
+  thumbnailUrl?: string;
+}
+
+const cardStyles = {
+  card: {
+    position: "relative",
+    cursor: "pointer",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    background: "#fff",
+    borderRadius: "24px",
+    overflow: "hidden",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+    "&:hover": {
+      transform: "translateY(-8px)",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+      "& $cardImageBox img": {
+        transform: "scale(1.1)",
+      },
+      "& $cardOverlay": {
+        opacity: 1,
+      },
+      "& $cardActionBar": {
+        opacity: 1,
+        transform: "translateY(0)",
+      }
+    }
+  },
+  cardImageBox: {
+    position: "relative",
+    width: "100%",
+    paddingBottom: "75%", // 4:3 aspect ratio
+    overflow: "hidden",
+    background: "#f0f4f8",
+    "& img": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+    }
+  },
+  cardOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8))",
+    opacity: 0,
+    transition: "opacity 0.4s ease",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    padding: "24px",
+  },
+  cardTitle: {
+    color: "#fff",
+    fontSize: "1.25rem",
+    fontWeight: 600,
+    marginBottom: "12px",
+    lineHeight: 1.4,
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+    display: "-webkit-box",
+  },
+  cardInfo: {
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  cardMeta: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  cardCategory: {
+    fontSize: "0.9rem",
+    color: "#64748b",
+    fontWeight: 500,
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    "& svg": {
+      fontSize: "1rem",
+      color: "#3F72AF",
+    }
+  },
+  cardStats: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    "& .stat": {
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      color: "#94a3b8",
+      fontSize: "0.85rem",
+      fontWeight: 500,
+      "& svg": {
+        fontSize: "1rem",
+      }
+    }
+  },
+  cardActionBar: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    display: "flex",
+    gap: "12px",
+    opacity: 0,
+    transform: "translateY(-10px)",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  actionButton: {
+    width: "44px",
+    height: "44px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255,255,255,0.95)",
+    backdropFilter: "blur(10px)",
+    border: "none",
+    borderRadius: "12px",
+    color: "#1e293b",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      background: "#fff",
+      transform: "translateY(-2px) scale(1.05)",
+      boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+      color: "#3F72AF",
+    },
+    "& svg": {
+      fontSize: "1.2rem",
+    }
+  },
+  cardTags: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    marginTop: "12px",
+  },
+  tag: {
+    padding: "6px 12px",
+    background: "#f1f5f9",
+    borderRadius: "100px",
+    color: "#475569",
+    fontSize: "0.85rem",
+    fontWeight: 500,
+    transition: "all 0.2s ease",
+    "&:hover": {
+      background: "#e2e8f0",
+      transform: "translateY(-1px)",
+    }
+  },
+};
+
 const useStyles = createUseStyles({
+  "@keyframes fadeIn": {
+    from: { 
+      opacity: 0,
+      transform: "translateY(20px)"
+    },
+    to: { 
+      opacity: 1,
+      transform: "translateY(0)"
+    }
+  },
+  pageWrap: {
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "100vh",
+    background: "linear-gradient(to bottom, #f8faff, #fff)",
+    maxWidth: "100%",
+    margin: "0 auto",
+    padding: "2rem",
+    gap: "2rem",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gap: "32px",
+    padding: "24px",
+    "@media (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "24px",
+      padding: "16px",
+    }
+  },
+  ...cardStyles,
   sectionTitle: {
     ...THEME.typography.h2,
     color: THEME.colors.text.primary,
@@ -346,7 +577,7 @@ const useStyles = createUseStyles({
     height: "200px",
     objectFit: "cover",
     borderBottom: "1px solid #eee",
-    transition: `transform ${ANIMATION_DURATION.SLOW}ms ease`,
+    transition: `transform ${ANIMATION_DURATION.SLOW}ms ease`
   },
   
   recommendedImage: {
@@ -563,7 +794,7 @@ const useStyles = createUseStyles({
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      transition: "transform 0.5s ease"
+      transition: `transform ${ANIMATION_DURATION.SLOW}ms ease`
     }
   },
 
@@ -799,74 +1030,123 @@ const useStyles = createUseStyles({
       padding: '0.5rem 0.5rem',
     }
   },
+  searchContainer: {
+    width: "100%",
+    maxWidth: "1200px",
+    padding: "2rem",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "0.5rem",
+    zIndex: 1,
+    marginTop: "10rem",
+  },
+
+  searchBox: {
+    width: "100%",
+    maxWidth: "800px",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  },
+
   searchInput: {
     width: "100%",
-    maxWidth: 560,
-    minWidth: 140,
-    fontSize: 20,
-    padding: "0.9rem 1.2rem",
+    padding: "1.2rem 1rem 1.2rem 3.5rem",
+    fontSize: "1.1rem",
+    fontFamily: "var(--bs-font-primary)",
     border: "none",
-    borderRadius: "1.7rem 0 0 1.7rem",
+    borderRadius: "100px",
     outline: "none",
-    background: "#fafbfc",
-    color: THEME.colors.text.primary,
-    fontFamily: "inherit",
-    boxShadow: "none",
-    transition: "box-shadow 0.18s, border 0.18s",
-    height: 52,
-    fontWeight: 500,
-    '&:focus': {
-      boxShadow: `0 0 0 2px ${THEME.colors.secondary}33`,
+    transition: "all 0.3s ease",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    "&:focus": {
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
     },
-    '@media (max-width: 600px)': {
-      fontSize: 15,
-      padding: '0.7rem 0.8rem',
-      height: 40,
-    }
+    "&::placeholder": {
+      color: "rgba(0, 0, 0, 0.5)",
+      fontFamily: "var(--bs-font-primary)",
+    },
   },
-  searchButton: {
-    fontSize: 22,
-    padding: "0 2.1rem",
+
+  trendingTags: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.8rem",
+    justifyContent: "center",
+    marginTop: "1rem",
+    width: "100%",
+    maxWidth: "800px",
+  },
+
+  trendingTag: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    background: "#fff",
     border: "none",
-    borderRadius: "0 1.7rem 1.7rem 0",
-    background: THEME.colors.secondary,
-    color: "#fff",
-    fontWeight: 700,
+    borderRadius: "100px",
+    color: "#666",
+    fontFamily: "var(--bs-font-primary)",
+    fontSize: "0.85rem",
+    fontWeight: "500",
     cursor: "pointer",
-    height: 52,
-    transition: "background 0.2s, box-shadow 0.18s",
-    marginLeft: -2,
-    boxShadow: `0 2px 10px ${THEME.colors.secondary}33`,
-    outline: "none",
-    '&:hover': {
-      background: THEME.colors.secondaryDark,
-      boxShadow: `0 4px 15px ${THEME.colors.secondary}40`,
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    "&:hover": {
+      transform: "translateY(-1px)",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
+      background: "#f8f9fa",
     },
-    '@media (max-width: 600px)': {
-      fontSize: 16,
-      padding: '0 1.1rem',
-      height: 40,
-    }
+    "& i": {
+      fontSize: "1rem",
+      color: "#4a90e2",
+      transition: "color 0.2s ease",
+    },
   },
+
+  searchIcon: {
+    position: "absolute",
+    left: "1.2rem",
+    color: "rgba(0, 0, 0, 0.5)",
+    fontSize: "1.3rem",
+    pointerEvents: "none",
+    transition: "all 0.2s ease",
+  },
+
+  heroWrapper: {
+    position: "relative",
+    width: "100vw",
+    height: "600px",
+    backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.3))",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: "-80px",
+  },
+
+  heroBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    zIndex: -1,
+  },
+
   gallerySection: {
-    padding: "5rem 0",
     position: "relative",
     overflow: "hidden",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"%23f0f4f8\" opacity=\"0.3\"/></svg>') repeat",
-      backgroundSize: "50px 50px",
-      opacity: 0.5,
-      pointerEvents: "none"
-    }
+    background: THEME.colors.background.light,
   },
+
   galleryContainer: {
-    maxWidth: 1400,
+    maxWidth: THEME.layout.maxWidth,
     margin: "0 auto",
     padding: "0 2rem",
     position: "relative",
@@ -875,271 +1155,124 @@ const useStyles = createUseStyles({
       padding: "0 1rem"
     }
   },
-  galleryHeader: {
-    textAlign: "center",
-    marginBottom: "4rem",
-    position: "relative",
-  },
-  galleryTitle: {
-    fontSize: "3rem",
-    fontWeight: 800,
-    background: `linear-gradient(135deg, ${THEME.colors.primary} 0%, ${THEME.colors.secondary} 100%)`,
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    backgroundClip: "text",
-    margin: "0 0 1rem 0",
-    fontFamily: THEME.typography.fontFamily,
-    lineHeight: 1.2,
-    position: "relative",
-    "@media (max-width: 768px)": {
-      fontSize: "2.2rem"
-    },
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      bottom: "-15px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: "80px",
-      height: "5px",
-      background: `linear-gradient(90deg, ${THEME.colors.secondary}, ${THEME.colors.primary})`,
-      borderRadius: "10px",
-      boxShadow: `0 2px 10px ${THEME.colors.secondary}33`,
-    }
-  },
-  gallerySubtitle: {
-    fontSize: "1.2rem",
-    color: THEME.colors.text.secondary,
-    maxWidth: "700px",
-    margin: "2rem auto 0 auto",
-    lineHeight: 1.7,
-    fontWeight: 400,
-    "@media (max-width: 768px)": {
-      fontSize: "1rem"
-    }
-  },
-  galleryFilters: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "1.5rem",
-    marginBottom: "3rem",
-    flexWrap: "wrap",
-    padding: "2rem",
-    background: "rgba(255,255,255,0.7)",
-    borderRadius: "25px",
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-    border: "1px solid rgba(255,255,255,0.2)",
-    "@media (max-width: 768px)": {
-      padding: "1.5rem 1rem",
-      gap: "1rem"
-    }
-  },
-  filterButton: {
-    padding: "1rem 2rem",
-    borderRadius: "20px",
-    border: "2px solid transparent",
-    background: THEME.colors.background.main,
-    color: THEME.colors.text.primary,
-    fontSize: "1rem",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    position: "relative",
-    overflow: "hidden",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: "-100%",
-      width: "100%",
-      height: "100%",
-      background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)`,
-      transition: "left 0.5s",
-    },
-    "&:hover": {
-      background: `linear-gradient(135deg, ${THEME.colors.secondary} 0%, ${THEME.colors.secondaryDark} 100%)`,
-      color: "#fff",
-      transform: "translateY(-3px) scale(1.05)",
-      boxShadow: "0 8px 25px rgba(63,114,175,0.3)",
-      borderColor: THEME.colors.secondary,
-      "&::before": {
-        left: "100%"
-      }
-    },
-    "&.active": {
-      background: `linear-gradient(135deg, ${THEME.colors.secondary} 0%, ${THEME.colors.secondaryDark} 100%)`,
-      color: "#fff",
-      borderColor: THEME.colors.secondary,
-      boxShadow: "0 6px 20px rgba(63,114,175,0.25)",
-      transform: "translateY(-2px)",
-    },
-    "@media (max-width: 768px)": {
-      padding: "0.8rem 1.5rem",
-      fontSize: "0.9rem"
-    }
-  },
-  sortSelect: {
-    padding: "1rem 1.5rem",
-    borderRadius: "20px",
-    border: "2px solid rgba(0,0,0,0.1)",
-    fontSize: "1rem",
-    background: THEME.colors.background.main,
-    color: THEME.colors.text.primary,
-    cursor: "pointer",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    fontWeight: 500,
-    minWidth: "180px",
-    "&:hover": {
-      borderColor: THEME.colors.secondary,
-      transform: "translateY(-2px)",
-      boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-    },
-    "&:focus": {
-      outline: "none",
-      borderColor: THEME.colors.secondary,
-      boxShadow: `0 0 0 3px ${THEME.colors.secondary}33`,
-    },
-    "@media (max-width: 768px)": {
-      minWidth: "150px",
-      padding: "0.8rem 1.2rem"
-    }
-  },
+
   galleryGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-    gap: "2.5rem",
-    "@media (max-width: 1024px)": {
-      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-      gap: "2rem"
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gap: "1.5rem",
+    "@media (min-width: 1024px)": {
+      gridTemplateColumns: "repeat(4, 1fr)",
+      "& > div:nth-child(8n+1), & > div:nth-child(8n+4)": {
+        gridRow: "span 2",
+      }
+    },
+    "@media (max-width: 1023px)": {
+      gridTemplateColumns: "repeat(3, 1fr)",
     },
     "@media (max-width: 768px)": {
-      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-      gap: "1.5rem"
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "1rem",
+    },
+    "@media (max-width: 480px)": {
+      gridTemplateColumns: "repeat(1, 1fr)",
     }
   },
+
   galleryItem: {
     position: "relative",
-    borderRadius: "24px",
+    borderRadius: "12px",
     overflow: "hidden",
-    aspectRatio: "4/3",
-    cursor: "pointer",
-    background: THEME.colors.background.main,
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-    boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
-    border: "1px solid rgba(255,255,255,0.2)",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "linear-gradient(45deg, rgba(63,114,175,0.1) 0%, rgba(17,45,78,0.1) 100%)",
-      opacity: 0,
-      transition: "opacity 0.3s ease",
-      zIndex: 1,
-    },
+    backgroundColor: THEME.colors.background.main,
+    boxShadow: THEME.shadows.card,
+    transition: "all 0.3s ease",
     "&:hover": {
-      transform: "translateY(-12px) scale(1.02)",
-      boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-      "&::before": {
-        opacity: 1,
-      },
+      transform: "translateY(-4px)",
+      boxShadow: THEME.shadows.cardHover,
       "& $galleryImage": {
-        transform: "scale(1.15) rotate(2deg)",
+        transform: "scale(1.05)",
       },
       "& $galleryOverlay": {
         opacity: 1,
-        transform: "translateY(0)",
-      },
-      "& $galleryPlayButton": {
-        transform: "translate(-50%, -50%) scale(1.2)",
-        boxShadow: "0 8px 30px rgba(183,28,28,0.4)",
       }
     },
+    "&::before": {
+      content: '""',
+      display: "block",
+      paddingTop: "100%",
+      "@media (min-width: 1024px)": {
+        "&:nth-child(8n+1), &:nth-child(8n+4)": {
+          paddingTop: "150%", 
+        }
+      }
+    }
   },
+
   galleryImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-    filter: "brightness(0.95) contrast(1.05)",
+    transition: `transform ${ANIMATION_DURATION.SLOW}ms ease`
   },
+
   galleryOverlay: {
     position: "absolute",
     inset: 0,
-    background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0) 100%)",
-    opacity: 0,
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-    padding: "2rem",
+    background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%)",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-end",
-    color: "#fff",
-    zIndex: 2,
-    transform: "translateY(20px)",
+    padding: "1.5rem",
+    opacity: 0,
+    transition: "opacity 0.3s ease",
+    color: THEME.colors.text.light,
   },
+
   galleryItemTitle: {
-    fontSize: "1.4rem",
-    fontWeight: 700,
-    marginBottom: "0.8rem",
-    textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+    fontSize: "1.1rem",
+    fontWeight: 600,
+    marginBottom: "0.5rem",
     lineHeight: 1.3,
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
+    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
   },
+
   galleryItemMeta: {
     display: "flex",
     alignItems: "center",
-    gap: "1.5rem",
-    fontSize: "1rem",
-    opacity: 0.95,
-    marginBottom: "1rem",
+    gap: "1rem",
+    fontSize: "0.9rem",
+    opacity: 0.9,
     "& span": {
       display: "flex",
       alignItems: "center",
-      gap: "0.5rem",
-      background: "rgba(255,255,255,0.15)",
-      padding: "0.4rem 0.8rem",
-      borderRadius: "12px",
-      backdropFilter: "blur(4px)",
-      fontWeight: 500,
+      gap: "0.4rem",
     },
     "& i": {
-      fontSize: "1.1rem",
-    },
+      fontSize: "0.85rem",
+    }
   },
+
   galleryTags: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "0.6rem",
-    marginTop: "0.5rem",
-  },
-  galleryTag: {
-    background: "rgba(255,255,255,0.2)",
-    padding: "0.4rem 1rem",
-    borderRadius: "15px",
-    fontSize: "0.9rem",
-    display: "flex",
-    alignItems: "center",
     gap: "0.5rem",
-    backdropFilter: "blur(8px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    fontWeight: 500,
-    transition: "all 0.2s ease",
-    "&:hover": {
-      background: "rgba(255,255,255,0.3)",
-      transform: "translateY(-2px)",
-    },
+    marginTop: "0.8rem",
+  },
+
+  galleryTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.3rem",
+    fontSize: "0.8rem",
+    padding: "0.2rem 0.6rem",
+    borderRadius: "12px",
+    background: "rgba(255,255,255,0.15)",
+    backdropFilter: "blur(4px)",
     "& i": {
-      fontSize: "0.8rem",
-    },
+      fontSize: "0.75rem",
+    }
   },
   galleryPlayButton: {
     position: "absolute",
@@ -1174,40 +1307,33 @@ const useStyles = createUseStyles({
   galleryLoadMore: {
     display: "flex",
     justifyContent: "center",
-    marginTop: "4rem",
+    marginTop: "3rem",
+    marginBottom: "2rem",
   },
   loadMoreButton: {
-    padding: "1.2rem 3rem",
-    borderRadius: "25px",
+    marginTop: "5rem",
+    padding: "1rem 2rem",
+    borderRadius: "30px",
     border: "none",
     background: `linear-gradient(135deg, ${THEME.colors.secondary} 0%, ${THEME.colors.secondaryDark} 100%)`,
     color: "#fff",
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     fontWeight: 600,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     cursor: "pointer",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    boxShadow: `0 8px 25px ${THEME.colors.secondary}33`,
-    position: "relative",
-    overflow: "hidden",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: "-100%",
-      width: "100%",
-      height: "100%",
-      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-      transition: "left 0.5s",
-    },
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
     "&:hover": {
-      transform: "translateY(-3px) scale(1.05)",
-      boxShadow: `0 12px 35px ${THEME.colors.secondary}40`,
-      "&::before": {
-        left: "100%"
-      }
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
     },
     "&:active": {
-      transform: "translateY(-1px) scale(1.02)",
+      transform: "translateY(0)",
+    },
+    "& i": {
+      fontSize: "1.1rem",
     }
   },
   newBadge: {
@@ -1264,6 +1390,984 @@ const useStyles = createUseStyles({
     color: "#fff",
     marginLeft: 4
   },
+  galleryHeader: {
+    textAlign: "center",
+    marginBottom: "4rem",
+    position: "relative",
+  },
+
+  galleryTitle: {
+    fontSize: "2.5rem",
+    fontWeight: 800,
+    fontFamily: "var(--bs-font-primary)",
+    background: `linear-gradient(135deg, ${THEME.colors.primary} 0%, ${THEME.colors.secondary} 100%)`,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+    margin: "0 0 1rem 0",
+    lineHeight: 1.2,
+    position: "relative",
+    "@media (max-width: 768px)": {
+      fontSize: "2rem"
+    }
+  },
+
+  gallerySubtitle: {
+    fontSize: "1.2rem",
+    color: THEME.colors.text.secondary,
+    maxWidth: "700px",
+    margin: "2rem auto 0 auto",
+    lineHeight: 1.7,
+    fontWeight: 400,
+    fontFamily: "var(--bs-font-primary)",
+    "@media (max-width: 768px)": {
+      fontSize: "1rem"
+    }
+  },
+
+  galleryFilters: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "1rem",
+    flexWrap: "wrap",
+    padding: "0.5rem",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+    "@media (max-width: 768px)": {
+      padding: "1rem",
+      gap: "0.8rem"
+    }
+  },
+
+  filterButton: {
+    padding: "0.8rem 1.5rem",
+    borderRadius: "100px",
+    border: "none",
+    background: "transparent",
+    color: "rgba(255, 255, 255, 0.79)",
+    fontSize: "0.95rem",
+    fontFamily: "var(--bs-font-primary)",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    boxShadow: THEME.shadows.button,
+    "&:hover": {
+      background: "rgba(255,255,255,0.1)",
+      transform: "translateY(-2px)",
+    },
+    "&.active": {
+      background: "rgba(255, 255, 255, 0.94)",
+      color: "#000",
+    }
+  },
+
+  sortButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.8rem 1.5rem",
+    background: "transparent",
+    border: "none",
+    borderRadius: "100px",
+    color: "rgba(255, 255, 255, 0.79)",
+    fontSize: "0.95rem",
+    fontFamily: "var(--bs-font-primary)",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.1)",
+    }
+  },
+
+  sortSelect: {
+    appearance: "none",
+    background: "transparent",
+    border: "none",
+    color: "rgba(255, 255, 255, 0.79)",
+    fontSize: "0.95rem",
+    fontFamily: "var(--bs-font-primary)",
+    fontWeight: 500,
+    cursor: "pointer",
+    padding: "0.8rem 1.5rem",
+    paddingRight: "2.5rem",
+    borderRadius: "100px",
+    transition: "all 0.2s ease",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.79)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 1rem center",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.1)",
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.79)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "right 1rem center",
+    },
+    "& option": {
+      background: "#fff",
+      color: "#333",
+    }
+  },
+
+  cardActionBar: {
+    position: "absolute",
+    top: "1rem",
+    left: "1rem",
+    display: "flex",
+    gap: "0.5rem",
+    zIndex: 5,
+  },
+
+  cardActionBtn: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    border: "none",
+    background: "rgba(255, 255, 255, 0.9)",
+    color: "#666",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+    },
+    "& i": {
+      fontSize: "1rem"
+    },
+    "&.active": {
+      color: THEME.colors.secondary,
+      background: "#f0f5ff"
+    }
+  },
+
+  previewModal: {
+    position: 'fixed',
+    top: '50px', 
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'stretch', // เปลี่ยนเป็น stretch เพื่อให้ content ยืดเต็มความสูง
+    zIndex: 1000,
+    backdropFilter: 'blur(8px)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: '24px 24px 0 0',
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.2)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  actionButtonsFixed: {
+    position: 'fixed',
+    right: '24px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 1000,
+  },
+  shareButton: {
+    position: 'relative',
+    backgroundColor: '#000',
+    color: '#fff',
+    border: 'none',
+    padding: '12px 24px 12px 28px',
+    borderRadius: '100px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: 500,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      right: '-6px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      width: '0',
+      height: '0',
+      borderTop: '6px solid transparent',
+      borderBottom: '6px solid transparent',
+      borderLeft: '6px solid #000',
+    },
+    '& svg': {
+      width: '20px',
+      height: '20px',
+    },
+  },
+  circleButton: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    backgroundColor: '#fff',
+    color: '#666',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    '&:hover': {
+      transform: 'scale(1.1)',
+    },
+    '& svg': {
+      width: '24px',
+      height: '24px',
+    },
+  },
+  tooltip: {
+    position: 'absolute',
+    right: 'calc(100% + 8px)',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    color: '#fff',
+    padding: '6px 12px',
+    borderRadius: '6px',
+    fontSize: '14px',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
+    opacity: 0,
+    visibility: 'hidden',
+    transition: 'opacity 0.2s ease, visibility 0.2s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    pointerEvents: 'none',
+    zIndex: 1001,
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      right: '-4px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      width: '0',
+      height: '0',
+      borderTop: '4px solid transparent',
+      borderBottom: '4px solid transparent',
+      borderLeft: '4px solid rgba(0, 0, 0, 0.75)',
+    },
+  },
+  buttonWithTooltip: {
+    position: 'relative',
+    '&:hover .tooltip': {
+      opacity: 1,
+      visibility: 'visible',
+    },
+  },
+  modalHeader: {
+    padding: '20px 24px',
+    borderBottom: '1px solid #DBE2EF',
+    display: 'grid',
+    gridTemplateColumns: 'auto 1fr auto',
+    alignItems: 'center',
+    background: '#fff',
+    gap: '16px',
+  },
+  modalTitle: {
+    fontSize: '1.25rem',
+    fontWeight: 700,
+    color: '#112D4E',
+    fontFamily: "'Sarabun', 'Inter', sans-serif",
+  },
+  modalActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    justifyContent: 'flex-end',
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '16px',
+    alignItems: 'center',
+  },
+  headerActionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    background: '#f8f9fa',
+    color: '#666',
+    '&:hover': {
+      transform: 'scale(1.05)',
+      background: '#f1f5f9',
+    },
+    '&.liked': {
+      background: '#fce7f3',
+      color: '#ec4899',
+      '&:hover': {
+        background: '#fbcfe8',
+      },
+    },
+    '&.bookmarked': {
+      background: '#fce7f3',
+      color: '#ec4899',
+      '&:hover': {
+        background: '#fbcfe8',
+      },
+    },
+    '&.download': {
+      background: 'rgba(255, 0, 0, 0.8)',
+      color: '#fff',
+      fontSize: '1.2rem',
+      padding: '12px 24px',
+      width: 'auto',
+      borderRadius: '24px',
+      fontWeight: 600,
+      display: 'flex',
+      gap: '8px',
+      '&:hover': {
+        background: '#3F72AF',
+        transform: 'translateY(-2px)',
+      },
+    },
+  },
+  actionCount: {
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    background: '#3F72AF',
+    color: '#fff',
+    fontSize: '0.75rem',
+    padding: '2px 6px',
+    borderRadius: '10px',
+    fontWeight: 600,
+  },
+  closeButtonContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: '#666',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    '&:hover': {
+      backgroundColor: '#f0f0f0',
+      color: '#112D4E',
+      transform: 'scale(1.1)',
+    },
+  },
+  modalBody: {
+    flex: 1, 
+    overflowY: 'auto',
+    padding: '1rem 7rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  previewImage: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '60vh',
+    objectFit: 'contain',
+    borderRadius: '16px',
+  },
+  previewInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '1rem',
+    gap: '20px',
+    '& h3': {
+      fontSize: '1.5rem',
+      fontWeight: 700,
+      color: '#112D4E',
+      fontFamily: "'Sarabun', 'Inter', sans-serif",
+    },
+  },
+  previewMeta: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '16px',
+    '& span': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      color: '#64748b',
+      fontSize: '0.95rem',
+      '& svg': {
+        color: '#3F72AF',
+        fontSize: '1.1rem',
+      },
+    },
+  },
+
+  mainContent: {
+    display: "block",
+    gridTemplateColumns: '65% 35%',
+    gap: '2rem',
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+    }
+  },
+
+  contentMain: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+    '& img': {
+      width: '100%',
+      height: 'auto',
+      maxHeight: '80vh',
+      objectFit: 'contain',
+      borderRadius: '8px'
+    },
+    '& iframe, & video': {
+      width: '100%',
+      height: '80vh',
+      borderRadius: '8px'
+    }
+  },
+
+  sideContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2rem',
+    '@media (max-width: 1024px)': {
+      borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+      paddingTop: '1.5rem'
+    }
+  },
+
+  previewDescription: {
+    fontSize: '1rem',
+    lineHeight: 1.7,
+    color: '#444',
+    margin: '0rem 6rem',
+    padding: '1rem',
+    background: '#fff',
+    borderRadius: '12px',
+    boxShadowbottom: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  },
+
+  previewTags: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '0.75rem',
+  },
+
+  previewTag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 1rem',
+    background: '#fff',
+    color: THEME.colors.secondary,
+    borderRadius: '100px',
+    fontSize: '0.9rem',
+    fontWeight: 500,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    }
+  },
+
+  relatedSection: {
+    padding: '1.5rem',
+    borderRadius: '16px',
+    marginTop: '2rem',
+    borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+    '& h4': {
+      fontSize: '1.2rem',
+      fontWeight: 600,
+      color: '#1a1a1a',
+      marginBottom: '1.25rem',
+    }
+  },
+
+  relatedGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "24px",
+    padding: "24px",
+    "@media (max-width: 1400px)": {
+      gridTemplateColumns: "repeat(3, 1fr)",
+    },
+    "@media (max-width: 1100px)": {
+      gridTemplateColumns: "repeat(2, 1fr)",
+    },
+    "@media (max-width: 767px)": {
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+      padding: "16px",
+    }
+  },
+  relatedCard: {
+    position: "relative",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      "& $relatedImage": {
+        transform: "translateY(-4px)",
+        boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+      },
+      "& $relatedTitle": {
+        opacity: 1,
+        transform: "translateY(0)",
+      },
+      "& $relatedActionBar": {
+        opacity: 1,
+        transform: "translateY(0)",
+      }
+    }
+  },
+  relatedImageBox: {
+    width: "100%",
+    aspectRatio: "1/0.9",
+    position: "relative",
+    overflow: "hidden",
+    background: "#f8f9fa",
+    borderRadius: "20px",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
+  },
+  relatedImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  relatedTitle: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: "32px 16px 16px",
+    background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))",
+    color: "#fff",
+    fontSize: "1rem",
+    fontWeight: 600,
+    opacity: 0,
+    transform: "translateY(10px)",
+    transition: "all 0.3s ease",
+    zIndex: 2,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    lineHeight: 1.4,
+  },
+  relatedActionBar: {
+    position: "absolute",
+    top: "16px",
+    right: "16px",
+    display: "flex",
+    gap: "8px",
+    opacity: 0,
+    transform: "translateY(-8px)",
+    transition: "all 0.3s ease",
+    zIndex: 3,
+  },
+  relatedActionBtn: {
+    width: "40px",
+    height: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255, 255, 255, 0.95)",
+    backdropFilter: "blur(8px)",
+    border: "none",
+    borderRadius: "48px",
+    color: "#555",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      background: "white",
+      transform: "translateY(-2px) scale(1.05)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      color: "#3F72AF",
+    },
+    "& svg": {
+      fontSize: "1.2rem",
+    }
+  },
+  relatedInfo: {
+    padding: "7px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: "12px",
+  },
+  relatedStats: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    "& .stat": {
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      color: "#94a3b8",
+      fontSize: "0.92rem",
+      fontWeight: 400,
+      "& svg": {
+        color: "#94a3b8",
+        fontSize: "1.05rem",
+      }
+    }
+  },
+
+  '@keyframes modalFadeIn': {
+    from: {
+      opacity: 0,
+      transform: 'translateY(20px)',
+    },
+    to: {
+      opacity: 1,
+      transform: 'translateY(0)',
+    }
+  },
+
+  filterGroup: {
+    display: "flex",
+    gap: "1rem",
+    marginBottom: "2rem",
+    background: "rgba(215, 210, 210, 0.24)",
+    borderRadius: "120px",
+    backdropFilter: "blur(10px)",
+    justifyContent: "flex-end",
+    width: "fit-content",      
+    marginLeft: "auto"          
+  },  
+
+  filterTab: {
+    padding: "0.8rem 1.8rem",
+    background: "rgba(255, 255, 255, 0.1)",
+    border: "none",
+    borderRadius: "100px",
+    color: "rgba(111, 111, 111, 0.69)",
+    fontSize: "0.95rem",
+    fontFamily: "var(--bs-font-primary)",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    position: "relative",
+    overflow: "hidden",
+    "&:before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(255, 255, 255, 0.1)",
+      borderRadius: "100px",
+      opacity: 0,
+      transition: "opacity 0.3s ease",
+    },
+    "&:hover": {
+      color: "rgba(0, 0, 0, 0.98)",
+      "&:before": {
+        opacity: 1,
+      }
+    },
+    "&.active": {
+      background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85))",
+      color: "#000",
+      fontWeight: 600,
+      boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+      transform: "translateY(-1px)",
+    }
+  },
+
+  categoryShowcase: {
+    padding: "4rem 0",
+    background: "#fff",
+    borderTop: "1px solid rgba(0,0,0,0.1)",
+  },
+  
+  categoryShowcaseGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
+    gap: "1rem",
+    maxWidth: "1400px",
+    margin: "0 auto",
+    padding: "0 2rem",
+    "@media (max-width: 1200px)": {
+      gridTemplateColumns: "repeat(3, 1fr)",
+    },
+    "@media (max-width: 768px)": {
+      gridTemplateColumns: "repeat(2, 1fr)",
+      padding: "0 1rem",
+    },
+    "@media (max-width: 480px)": {
+      gridTemplateColumns: "1fr",
+    }
+  },
+  
+  categoryCard: {
+    position: "relative",
+    borderRadius: "12px",
+    overflow: "hidden",
+    aspectRatio: "1",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    "&:hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+      "& $categoryImage": {
+        transform: "scale(1.1)",
+      },
+      "& $categoryOverlay": {
+        background: "rgba(0,0,0,0.7)",
+      },
+      "& $categoryTitle": {
+        transform: "translateY(-10px)",
+      },
+      "& $categoryDescription": {
+        opacity: 1,
+        transform: "translateY(0)",
+      }
+    }
+  },
+  
+  categoryImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.5s ease",
+  },
+  
+  categoryOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "rgba(0,0,0,0.5)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "1.5rem",
+    textAlign: "center",
+    transition: "background 0.3s ease",
+  },
+  
+  categoryTitle: {
+    color: "#fff",
+    fontSize: "1.25rem",
+    fontWeight: 600,
+    margin: 0,
+    transition: "transform 0.3s ease",
+    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+  },
+  
+  categoryDescription: {
+    color: "#fff",
+    fontSize: "0.9rem",
+    marginTop: "0.5rem",
+    opacity: 0,
+    transform: "translateY(10px)",
+    transition: "all 0.3s ease",
+    textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+  },
+
+  showcaseTitle: {
+    fontSize: "2rem",
+    fontWeight: 700,
+    textAlign: "center",
+    marginBottom: "3rem",
+    color: "#112D4E",
+    "& span": {
+      display: "block",
+      fontSize: "1.1rem",
+      fontWeight: 400,
+      color: "#666666",
+      marginTop: "0.5rem",
+    }
+  },
+
+  buttonContainer: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '16px',
+    
+  },
+
+  categoryCount: {
+    fontSize: '0.85rem',
+    color: '#666',
+    marginLeft: '0.5rem',
+  },
+  buttonLabel: {
+    fontSize: '14px',
+    color: '#666',
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    fontWeight: '500',
+    '&.visible': {
+      opacity: 1,
+    },
+  },
+  shareMenu: {
+    position: 'absolute',
+    right: 'calc(100% + 16px)',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    padding: '8px 0',
+    minWidth: '200px',
+    zIndex: 1001,
+    display: 'none',
+    '&.visible': {
+      display: 'block',
+    },
+  },
+  shareMenuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '12px 16px',
+    cursor: 'pointer',
+    color: '#666',
+    transition: 'background-color 0.2s ease',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+    },
+    '& svg': {
+      width: '20px',
+      height: '20px',
+    },
+  },
+     detailsPopup: {
+     position: 'fixed',
+     top: '50%',
+     left: '50%',
+     transform: 'translate(-50%, -50%)',
+     backgroundColor: '#fff',
+     borderRadius: '12px',
+     boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
+     width: '90%',
+     maxWidth: '500px',
+     zIndex: 10001,
+   },
+  popupHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '16px 24px',
+    borderBottom: '1px solid #eee',
+    '& h2': {
+      margin: 0,
+      fontSize: '20px',
+      fontWeight: '600',
+    },
+  },
+  popupContent: {
+    padding: '24px',
+  },
+  statsRow: {
+    display: 'flex',
+    gap: '32px',
+    marginBottom: '24px',
+  },
+  statItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    '& .label': {
+      fontSize: '14px',
+      color: '#666',
+    },
+    '& .value': {
+      fontSize: '24px',
+      fontWeight: '600',
+    },
+  },
+  dateInfo: {
+    fontSize: '14px',
+    color: '#666',
+    marginBottom: '24px',
+  },
+  tagsSection: {
+    '& h3': {
+      fontSize: '16px',
+      fontWeight: '500',
+      marginBottom: '12px',
+    },
+  },
+  detailsTagsList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  detailsTag: {
+    padding: '6px 12px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '100px',
+    fontSize: '14px',
+    color: '#666',
+  },
+  modalBackdrop: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 10000,
+  },
+  popupCloseButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px',
+    color: '#666',
+    '&:hover': {
+      color: '#000',
+    },
+    '& svg': {
+      width: '20px',
+      height: '20px',
+    },
+  },
+  readMoreButton: {
+    background: 'none',
+    border: 'none',
+    color: '#3F72AF',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '8px 16px',
+    margin: '8px auto',
+    display: 'block',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      textDecoration: 'underline',
+      transform: 'translateY(-2px)'
+    }
+  },
 });
 
 const embedYouTube = (url: string): string => {
@@ -1274,145 +2378,42 @@ const embedYouTube = (url: string): string => {
     : url;
 };
 
-interface Photo {
-  id: string;
+interface VideoPlayerProps {
   src: string;
-  key: string;
   title: string;
-  width: number;
-  height: number;
-  category?: string;
-  tags?: string[];
-  videoUrl?: string;
-  fileUrl?: string;
-  thumbnailUrl?: string;
 }
 
-interface PhotoGalleryProps {
-  photos: Photo[];
-  navigate: (path: string) => void;
-}
-
-const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos, navigate }) => {
-  const classes = useStyles();
-  const displayPhotos = photos.slice(0, 8);
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title }) => {
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
+  
+  if (isYouTube) {
+    const videoId = src.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/)?.[1];
+    const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : src;
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+        <iframe
+          width="100%"
+          height="600"
+          src={embedUrl}
+          title={title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ maxWidth: '100%', maxHeight: '70vh' }}
+        />
+      </div>
+    );
+  }
 
   return (
-    <section className={classes.gallerySection}>
-      <div className={classes.galleryContainer}>
-        <div className={classes.galleryHeader}>
-          <h2 className={classes.galleryTitle}>คลังภาพแนะนำ</h2>
-          <p className={classes.gallerySubtitle}>
-            รวบรวมภาพและวิดีโอคุณภาพสูง จากมหาวิทยาลัยขอนแก่น เพื่อการเรียนรู้และแรงบันดาลใจ
-          </p>
-        </div>
-
-        <div className={classes.galleryFilters}>
-          <button className={`${classes.filterButton} active`}>
-            <i className="pi pi-images" style={{ marginRight: "0.5rem" }} />
-            ทั้งหมด
-          </button>
-          <button className={classes.filterButton}>
-            <i className="pi pi-image" style={{ marginRight: "0.5rem" }} />
-            รูปภาพ
-          </button>
-          <button className={classes.filterButton}>
-            <i className="pi pi-video" style={{ marginRight: "0.5rem" }} />
-            วิดีโอ
-          </button>
-          <select className={classes.sortSelect}>
-            <option value="latest">🕒 ล่าสุด</option>
-            <option value="popular">🔥 ยอดนิยม</option>
-            <option value="downloads">📥 ดาวน์โหลดมาก</option>
-          </select>
-        </div>
-
-        <div className={classes.galleryGrid}>
-          <PhotoProvider
-            maskOpacity={0.8}
-            maskClassName="custom-photo-mask"
-            photoClosable={true}
-            bannerVisible={false}
-          >
-            {displayPhotos.map((photo, index) => (
-              <div
-                key={photo.id}
-                className={classes.galleryItem}
-                style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animation: "fadeInUp 0.6s ease forwards",
-                }}
-              >
-                <PhotoView src={photo.src}>
-                  <img
-                    src={photo.thumbnailUrl ? `${import.meta.env.BASE_URL}${photo.thumbnailUrl.replace(/^\//, '')}` : photo.src}
-                    alt={photo.title}
-                    className={classes.galleryImage}
-                    loading="lazy"
-                  />
-                </PhotoView>
-
-                {photo.videoUrl && (
-                  <div className={classes.galleryPlayButton}>
-                    <i className="pi pi-play" />
-                  </div>
-                )}
-
-                {photo.category && (
-                  <div className={classes.categoryBadge}>
-                    {Array.isArray(photo.category) ? photo.category[0] : photo.category}
-                  </div>
-                )}
-
-                <div className={classes.galleryOverlay}>
-                  <div className={classes.galleryItemTitle}>{photo.title}</div>
-                  <div className={classes.galleryItemMeta}>
-                    <span>
-                      <i className="pi pi-eye" /> {Math.floor(Math.random() * 1000) + 100}
-                    </span>
-                    <span>
-                      <i className="pi pi-download" /> {Math.floor(Math.random() * 100) + 20}
-                    </span>
-                  </div>
-                  {photo.tags && photo.tags.length > 0 && (
-                    <div className={classes.galleryTags}>
-                      {photo.tags.slice(0, 3).map((tag, idx) => (
-                        <span key={idx} className={classes.galleryTag}>
-                          <i className="pi pi-tag" />
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  onClick={() => navigate(`/resource/${photo.id}`)}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    zIndex: 4,
-                    cursor: "pointer",
-                    background: "transparent",
-                  }}
-                />
-              </div>
-            ))}
-          </PhotoProvider>
-        </div>
-
-        <div className={classes.galleryLoadMore}>
-          <button
-            className={classes.loadMoreButton}
-            onClick={() => navigate('/gallery')}
-          >
-            <i className="pi pi-arrow-right" style={{ marginRight: "0.8rem" }} />
-            ดูทั้งหมด
-            <i className="pi pi-external-link" style={{ marginLeft: "0.8rem", fontSize: "0.9rem" }} />
-          </button>
-        </div>
-      </div>
-    </section>
+    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+      <video
+        src={src}
+        controls
+        autoPlay
+        style={{ maxWidth: '100%', maxHeight: '70vh' }}
+      />
+    </div>
   );
 };
 
@@ -1426,28 +2427,24 @@ const MainPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [galleryFilter, setGalleryFilter] = useState("all");
   const [gallerySortBy, setGallerySortBy] = useState("latest");
-
-  const recommended = useMemo(
-    () => [...resourcesData.resources]
-      .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-      .slice(0, 10),
-    []
-  );
-
-  const filteredNewItems = useMemo(() => {
-    return resourcesData.resources
-      .filter(resource =>
-        resource && resource.type &&
-        resource.type.toLowerCase() === selectedCategory.toLowerCase()
-      )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 6);
-  }, [selectedCategory, resourcesData.resources]);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [visibleItems, setVisibleItems] = useState(13);
+  const itemsPerLoad = 13;
+  const [isLoading, setIsLoading] = useState(false);
+  const loadingRef = useRef(null);
+  const [likes, setLikes] = useState<{ [key: string]: boolean }>(() => {
+    const savedLikes = localStorage.getItem('likes');
+    return savedLikes ? JSON.parse(savedLikes) : {};
+  });
+  const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const filteredGalleryItems = useMemo(() => {
-    let items = resourcesData.resources.filter(item => 
-      item.type === "image" || item.type === "video"
-    );
+    let items = resourcesData.resources;
 
     if (galleryFilter !== "all") {
       items = items.filter(item => {
@@ -1472,16 +2469,8 @@ const MainPage = () => {
         default:
           return 0;
       }
-    }).slice(0, 12);
+    });
   }, [galleryFilter, gallerySortBy]);
-
-  const handleHeroNavigation = useCallback((direction: number) => {
-    setHeroIndex((prevIndex) =>
-      direction === 1
-        ? (prevIndex + 1) % HERO_DATA.length
-        : (prevIndex - 1 + HERO_DATA.length) % HERO_DATA.length
-    );
-  }, []);
 
   const handleSearch = useCallback(() => {
     const term = searchTerm.trim();
@@ -1489,24 +2478,69 @@ const MainPage = () => {
     navigate(`/search?q=${encodeURIComponent(term)}`);
   }, [searchTerm, navigate]);
 
-  const renderHeroTemplate = (item: { imageUrl: string; titlemain: string; subtitle?: string }) => (
+  const handlePreview = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+    setIsPreviewOpen(true);
+  };
+
+  const handleBookmark = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setBookmarks(prev => {
+      const isBookmarked = prev.some(b => b.id === item.id);
+      if (isBookmarked) {
+        return prev.filter(b => b.id !== item.id);
+      }
+      return [...prev, item];
+    });
+  };
+
+  const handleDownload = async (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    const url = item.fileUrl ? `${import.meta.env.BASE_URL}${item.fileUrl.replace(/^\//, '')}` : item.thumbnailUrl;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${item.title}.${blob.type.split('/')[1]}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
+
+  const handleLoadMore = () => {
+    setVisibleItems(prev => prev + itemsPerLoad);
+  };
+
+  const handleLike = (item: any) => {
+    const newLikes = { ...likes };
+    const newLikeCounts = { ...likeCounts };
+
+    if (newLikes[item.id]) {
+      delete newLikes[item.id];
+      newLikeCounts[item.id] = (newLikeCounts[item.id] || 0) - 1;
+    } else {
+      newLikes[item.id] = true;
+      newLikeCounts[item.id] = (newLikeCounts[item.id] || 0) + 1;
+    }
+
+    setLikes(newLikes);
+    setLikeCounts(newLikeCounts);
+    localStorage.setItem('likes', JSON.stringify(newLikes));
+  };
+
+  const renderHeroTemplate = (item: { imageUrl: string;}) => (
     <div style={{ position: "relative", minHeight: 420 }}>
       <img
         src={item.imageUrl}
-        alt={item.titlemain}
         className={classes.heroImage}
       />
-      <div className={classes.captionMain}>
-        <div className={classes.heroTitle}>{item.titlemain}</div>
-        <div style={{ 
-          fontSize: '1.1rem', 
-          fontWeight: 400,
-          color: THEME.colors.text.light,
-          textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-        }}>
-          {item.subtitle}
-        </div>
-      </div>
     </div>
   );
 
@@ -1539,6 +2573,36 @@ const MainPage = () => {
     WebkitBoxOrient: "vertical" as const,
     overflow: "hidden"
   });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && !isLoading && visibleItems < filteredGalleryItems.length) {
+          setIsLoading(true);
+          setTimeout(() => {
+            setVisibleItems(prev => prev + itemsPerLoad);
+            setIsLoading(false);
+          }, 500); // Add a small delay to prevent rapid loading
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1
+      }
+    );
+
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    return () => {
+      if (loadingRef.current) {
+        observer.unobserve(loadingRef.current);
+      }
+    };
+  }, [visibleItems, filteredGalleryItems.length, isLoading]);
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -1588,7 +2652,7 @@ const MainPage = () => {
 
   useEffect(() => {
     const images = resourcesData.resources
-      .filter((resource) => resource.type === "image" || resource.type === "graphic")
+      .filter((resource) => resource.type === "image" || resource.type === "graphic" || resource.type === "video")
       .slice(0, 15);
 
     const loadImages = async () => {
@@ -1628,609 +2692,592 @@ const MainPage = () => {
     loadImages();
   }, []);
 
+  const handleShare = async (item: any) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.title,
+          text: item.description || '',
+          url: window.location.href
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      // Fallback to copy link
+      navigator.clipboard.writeText(window.location.href);
+      // TODO: Show notification that link was copied
+    }
+  };
+
   return (
     <>
-      <div className={classes.fullWidthHero}>
-        {renderHeroTemplate(HERO_DATA[heroIndex])}
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 32,
-          marginBottom: 16,
-          width: "100%",
-          flexDirection: "column"
-        }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            maxWidth: 560,
-            boxShadow: `0 4px 18px ${THEME.colors.secondary}15`,
-            borderRadius: 28,
-            background: THEME.colors.background.light,
-            position: "relative"
-          }}>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") handleSearch(); }}
-              placeholder="ค้นหารูปภาพ วิดีโอ กราฟฟิก..."
-              className={classes.searchInput}
-              aria-label="ค้นหา"
-            />
-            <button
-              onClick={handleSearch}
-              className={classes.searchButton}
-              aria-label="ค้นหา"
+      <div className={classes.heroWrapper}>
+        <img 
+          src={HERO_DATA[heroIndex].imageUrl}
+          alt="hero background"
+          className={classes.heroBackground}
+        />
+        <div className={classes.searchContainer}>
+        <div className={classes.galleryFilters}>
+            <button 
+              className={`${classes.filterButton} ${galleryFilter === "all" ? "active" : ""}`}
+              onClick={() => setGalleryFilter("all")}
             >
-              Search
+              <i className="pi pi-images" style={{ marginRight: "0.5rem" }} />
+              ทั้งหมด
             </button>
-          </div>
-        </div>
-        
-        <button
-          className={`${classes.carouselArrowCustom} ${classes.carouselArrowLeft}`}
-          onClick={() => handleHeroNavigation(-1)}
-          aria-label="เลื่อนไปก่อนหน้า"
-        >
-          <i className="pi pi-chevron-left" />
-        </button>
-        
-        <button
-          className={`${classes.carouselArrowCustom} ${classes.carouselArrowRight}`}
-          onClick={() => handleHeroNavigation(1)}
-          aria-label="เลื่อนไปถัดไป"
-        >
-          <i className="pi pi-chevron-right" />
-        </button>
-        
-        <div className={classes.carouselIndicators}>
-          {HERO_DATA.map((_, index) => (
-            <button
-              key={index}
-              className={`${classes.carouselDot} ${index === heroIndex ? classes.carouselDotActive : ""}`}
-              onClick={() => setHeroIndex(index)}
-              aria-label={`ไปยังสไลด์ ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {recommended.length > 0 && (
-        <section style={{ 
-          padding: "4rem 0", 
-          borderBottom: `1px solid ${THEME.colors.border}` 
-        }}>
-          <div style={{maxWidth: 1400, margin: "0 auto", padding: "0 1.5rem" }}>
-            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-              <h2 className={classes.sectionTitle}>รายการแนะนำ</h2>
-              <p style={{
-                fontSize: "1.1rem",
-                color: THEME.colors.text.secondary,
-                maxWidth: "600px",
-                margin: "1rem auto",
-                lineHeight: 1.6
-              }}>
-                รวบรวมเนื้อหาที่น่าสนใจและเป็นที่นิยม เพื่อการเรียนรู้ที่หลากหลาย
-              </p>
-            </div>
-
-            <div style={{
-              position: "relative",
-              width: "100%",
-              overflow: "hidden",
-              margin: "0 auto 2rem auto"
-            }}>
-              <button
-                onClick={() => {
-                  const el = document.getElementById("recommended-scroll");
-                  if (el) el.scrollBy({ left: -380, behavior: "smooth" });
-                }}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  zIndex: 2,
-                  background: "rgba(255,255,255,0.95)",
-                  border: "1px solid #ddd",
-                  borderRadius: "50%",
-                  width: 40,
-                  height: 40,
-                  fontSize: 22,
-                  color: "#b71c1c",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                  transition: "all 0.18s",
-                  opacity: 0.85
-                }}
-                aria-label="เลื่อนไปก่อนหน้า"
-              >
-                <i className="pi pi-chevron-left" />
-              </button>
-              <div
-                id="recommended-scroll"
-                className={classes.recommendedScroll}
-              >
-                {recommended.slice(0, 10).map((item) => (
-                  <article
-                    key={item.id}
-                    className={classes.recommendedCard}
-                    onClick={() => navigate(`/resource/${item.id}`)}
-                  >
-                    <div style={{
-                      position: "relative",
-                      paddingTop: "66%",
-                      overflow: "hidden"
-                    }}>
-                      <img
-                        src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-                        alt={item.title}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        loading="lazy"
-                      />
-                      <div style={{
-                        position: "absolute",
-                        inset: 0,
-                        background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%)",
-                      }} />
-                      {item.type && (
-                        <div style={{
-                          position: "absolute",
-                          top: "1rem",
-                          right: "1rem",
-                          background: "rgba(183,28,28,0.9)",
-                          color: "#fff",
-                          padding: "0.4rem 0.8rem",
-                          borderRadius: "20px",
-                          fontSize: "0.8rem",
-                          fontWeight: 500,
-                          backdropFilter: "blur(4px)",
-                          textTransform: "capitalize"
-                        }}>
-                          {CATEGORY_OPTIONS.find(c => c.value === item.type)?.label || item.type}
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{
-                      padding: "1.25rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.75rem",
-                      flexGrow: 1,
-                    }}>
-                      <h3 style={{
-                        fontSize: "1.1rem",
-                        fontWeight: 600,
-                        margin: 0,
-                        lineHeight: 1.4,
-                        color: "#1a237e",
-                        ...clampStyle(2),
-                      }}>
-                        {item.title}
-                      </h3>
-
-                      {item.description && (
-                        <p style={{
-                          fontSize: "0.9rem",
-                          color: "#666",
-                          margin: 0,
-                          ...clampStyle(3),
-                          lineHeight: 1.5
-                        }}>
-                          {item.description}
-                        </p>
-                      )}
-
-                      <div style={{
-                        marginTop: "auto",
-                        paddingTop: "1rem",
-                        borderTop: "1px solid #eee",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: "0.85rem",
-                        color: "#666",
-                      }}>
-                        <div style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}>
-                          <i className="pi pi-eye" style={{ fontSize: "0.9rem" }} />
-                          {item.viewCount || 0} ครั้ง
-                        </div>
-                        <div style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}>
-                          <i className="pi pi-download" style={{ fontSize: "0.9rem" }} />
-                          {item.downloadCount || 0} ดาวน์โหลด
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-              <button
-                onClick={() => {
-                  const el = document.getElementById("recommended-scroll");
-                  if (el) el.scrollBy({ left: 380, behavior: "smooth" });
-                }}
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  zIndex: 2,
-                  background: "rgba(255,255,255,0.95)",
-                  border: "1px solid #ddd",
-                  borderRadius: "50%",
-                  width: 40,
-                  height: 40,
-                  fontSize: 22,
-                  color: "#b71c1c",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                  transition: "all 0.18s",
-                  opacity: 0.85
-                }}
-                aria-label="เลื่อนไปถัดไป"
-              >
-                <i className="pi pi-chevron-right" />
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {filteredNewItems.length > 0 && (
-        <section style={{ 
-          padding: "2rem 1rem 3rem 1rem", 
-          marginBottom: "2rem" 
-        }}>
-          <h2 className={classes.sectionTitle}>
-            รายการใหม่ ({CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label})
-          </h2>
-          
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "center", 
-            gap: "1rem", 
-            marginBottom: "2.5rem", 
-            flexWrap: "wrap" 
-          }}>
-            {CATEGORY_OPTIONS.map(renderCategoryButton)}
-          </div>
-          
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: "2rem",
-            maxWidth: 1200,
-            margin: "0 auto",
-          }}>
-            {filteredNewItems.map((item, index) => (
-              <article
-                key={item.id}
-                className={classes.resourceCard}
-                onClick={() => navigate(`/resource/${item.id}`)}
-                style={{ width: "100%" }}
-                title={item.title}
-              >
-                <img
-                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-                  alt={item.title}
-                  className={classes.image}
-                  loading="lazy"
-                />
-                <div className={classes.content}>
-                  <div className={classes.categoryText}>
-                    {index === 0 && (
-                      <span style={{
-                        background: "linear-gradient(45deg, #f44336, #d32f2f)",
-                        color: "#fff",
-                        padding: "0.3rem 0.8rem",
-                        borderRadius: "1rem",
-                        fontSize: "0.85rem",
-                        fontWeight: 600,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                        boxShadow: "0 2px 8px rgba(244,67,54,0.3)",
-                        marginRight: "0.8rem",
-                      }}>
-                        <i className="pi pi-clock" style={{ fontSize: "0.9rem" }} />
-                        ใหม่
-                      </span>
-                    )}
-                    {Array.isArray(item.category)
-                      ? item.category.join(", ")
-                      : (item.category?.toUpperCase?.() || "ทั่วไป")}
-                    {" • "}
-                    {CATEGORY_OPTIONS.find((c) => c.value === item.type)?.label || item.type?.toUpperCase()}
-                  </div>
-                  <h3 className={classes.title}>{item.title}</h3>
-                  
-                  <div style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    justifyContent: "space-between", 
-                    marginBottom: "0.75rem" 
-                  }}>
-                    <div style={{ 
-                      color: THEME.colors.text.secondary, 
-                      fontSize: "0.8rem", 
-                      fontWeight: 500 
-                    }}>
-                      <i className="pi pi-calendar" style={{ 
-                        marginRight: "0.4rem", 
-                        fontSize: "0.9em", 
-                        color: THEME.colors.secondary 
-                      }} />
-                      {new Date(item.createdAt).toLocaleDateString("th-TH", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </div>
-                    <div style={{ 
-                      color: THEME.colors.text.secondary, 
-                      fontSize: "0.8rem", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "0.3rem" 
-                    }}>
-                      <i className="pi pi-eye" style={{ 
-                        fontSize: "0.9em", 
-                        color: THEME.colors.secondary 
-                      }} />
-                      {item.viewCount || 0} ครั้ง
-                    </div>
-                  </div>
-                  
-                  {item.tags && item.tags.length > 0 && (
-                    <div className={classes.tagList}>
-                      {item.tags.slice(0, 4).map((tag, idx) => (
-                        <span key={idx} className={classes.tagItem}>
-                          <i
-                            className="pi pi-tag"
-                            style={{
-                              marginRight: 4,
-                              fontSize: "0.8em",
-                              verticalAlign: "middle",
-                              color: THEME.colors.secondary
-                            }}
-                          />
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className={classes.gallerySection}>
-        <div className={classes.galleryContainer}>
-          <div className={classes.galleryHeader}>
-            <h2 className={classes.galleryTitle}>คลังสื่อแนะนำ</h2>
-            <div className={classes.gallerySubtitle}>
-              รวบรวมรูปภาพและวิดีโอที่น่าสนใจ เพื่อการเรียนรู้ที่หลากหลาย
-            </div>
-          </div>
-
-          <div className={classes.galleryFilters}>
             <button 
               className={`${classes.filterButton} ${galleryFilter === "image" ? "active" : ""}`}
               onClick={() => setGalleryFilter("image")}
             >
+              <i className="pi pi-image" style={{ marginRight: "0.5rem" }} />
               รูปภาพ
             </button>
             <button 
               className={`${classes.filterButton} ${galleryFilter === "video" ? "active" : ""}`}
               onClick={() => setGalleryFilter("video")}
             >
+              <i className="pi pi-video" style={{ marginRight: "0.5rem" }} />
               วิดีโอ
             </button>
             <button 
               className={`${classes.filterButton} ${galleryFilter === "graphic" ? "active" : ""}`}
               onClick={() => setGalleryFilter("graphic")}
             >
+              <i className="pi pi-palette" style={{ marginRight: "0.5rem" }} />
               กราฟฟิก
             </button>
-            <select
-              className={classes.sortSelect}
-              value={gallerySortBy}
-              onChange={(e) => setGallerySortBy(e.target.value)}
-              style={{ minWidth: 150 }}
-            >
-              <option value="latest">ล่าสุด</option>
-              <option value="popular">ยอดนิยม</option>
-              <option value="downloads">ดาวน์โหลดมาก</option>
-            </select>
+            
           </div>
+          <div className={classes.searchBox}>
+            <i className={`pi pi-search ${classes.searchIcon}`} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+              placeholder="ค้นหารูปภาพ วิดีโอ เพลง และอื่นๆ..."
+              className={classes.searchInput}
+              aria-label="ค้นหา"
+            />
+          </div>
+            <div className={classes.trendingTags}>
+              {TRENDING_KEYWORDS.map((keyword, index) => (
+                <button
+                  key={index}
+                  className={classes.trendingTag}
+                  onClick={() => {
+                    setSearchTerm(keyword.text);
+                    handleSearch();
+                  }}
+                >
+                  {keyword.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+      <section className={classes.gallerySection}>
+        <div className={classes.galleryContainer}>
+          <div className={classes.galleryHeader}>
+            <div className={classes.gallerySubtitle}>
+            </div>
+          </div>
+          
+          <div className={classes.filterGroup}>
+          
+            <button 
+              className={`${classes.filterTab} ${gallerySortBy === "latest" ? "active" : ""}`}
+              onClick={() => setGallerySortBy("latest")}
+            >
+              ล่าสุด
+            </button>
+            <button 
+              className={`${classes.filterTab} ${gallerySortBy === "popular" ? "active" : ""}`}
+              onClick={() => setGallerySortBy("popular")}
+            >
+              ยอดนิยม
+            </button>
+            <button 
+              className={`${classes.filterTab} ${gallerySortBy === "downloads" ? "active" : ""}`}
+              onClick={() => setGallerySortBy("downloads")}
+            >
+              ยอดดาวน์โหลดมาก
+            </button>
+      </div>
 
           <div className={classes.galleryGrid}>
-            {filteredGalleryItems.map((item) => (
-              <div 
-                key={item.id}
-                className={classes.galleryItem}
-                onClick={() => navigate(`/resource/${item.id}`)}
-              >
-                <img
-                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-                  alt={item.title}
-                  className={classes.galleryImage}
-                  loading="lazy"
-                />
-                {item.type === "video" && (
-                  <div className={classes.videoPlayButton}>
-                    <i className={`pi pi-play ${classes.playIcon}`} />
+            <PhotoProvider
+              maskOpacity={0.8}
+              maskClassName="custom-photo-mask"
+              photoClosable={true}
+              bannerVisible={false}
+            >
+              {filteredGalleryItems.slice(0, visibleItems).map((item, index) => (
+                <div
+                  key={item.id}
+                  className={classes.galleryItem}
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    animation: "fadeInUp 0.6s ease forwards",
+                  }}
+                >
+                  <PhotoView src={item.thumbnailUrl ? `${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}` : item.fileUrl}>
+                    <img
+                      src={item.thumbnailUrl ? `${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}` : item.fileUrl}
+                      alt={item.title}
+                      className={classes.galleryImage}
+                      loading="lazy"
+                    />
+                  </PhotoView>
+
+                  <div className={classes.cardActionBar} onClick={e => e.stopPropagation()}>
+                    <button 
+                      className={`${classes.cardActionBtn} ${likes[item.id] ? 'active' : ''}`}
+                      title={likes[item.id] ? "ยกเลิกถูกใจ" : "ถูกใจ"}
+                      aria-label={likes[item.id] ? "ยกเลิกถูกใจ" : "ถูกใจ"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(item);
+                      }}
+                    >
+                      <i className={`pi ${likes[item.id] ? 'pi-heart-fill' : 'pi-heart'}`} />
+                    </button>
+                    <button 
+                      className={`${classes.cardActionBtn} ${bookmarks.some(b => b.id === item.id) ? 'active' : ''}`}
+                      title={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
+                      aria-label={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
+                      onClick={(e) => handleBookmark(e, item)}
+                    >
+                      <i className="pi pi-bookmark" />
+                    </button>
+                    <button 
+                      className={classes.cardActionBtn}
+                      title="ดาวน์โหลด"
+                      aria-label="ดาวน์โหลด"
+                      onClick={(e) => handleDownload(e, item)}
+                    >
+                      <i className="pi pi-download" />
+                    </button>
                   </div>
-                )}
-                {(Array.isArray(item.category) ? item.category[0] : item.category) && (
-                  <div className={classes.categoryBadge}>
-                    {Array.isArray(item.category) ? item.category[0] : item.category}
+                  <div 
+                    className={`likeButton ${likes[item.id] ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLike(item);
+                    }}
+                  >
+                    {likeCounts[item.id] !== undefined ? likeCounts[item.id] : 0} ครั้ง
+                    <i className={`pi ${likes[item.id] ? 'pi-heart-fill' : 'pi-heart'}`} style={{ color: likes[item.id] ? '#dc3545' : 'inherit' }} />
                   </div>
-                )}
-                <div className={classes.galleryOverlay}>
-                  <div className={classes.galleryItemTitle}>{item.title}</div>
-                  <div className={classes.galleryItemMeta}>
-                    <span>
-                      <i className="pi pi-eye" /> {item.viewCount || 0}
-                    </span>
-                    <span>
-                      <i className="pi pi-download" /> {item.downloadCount || 0}
-                    </span>
-                  </div>
-                  {item.tags && item.tags.length > 0 && (
-                    <div className={classes.galleryTags}>
-                      {item.tags.slice(0, 3).map((tag, idx) => (
-                        <span key={idx} className={classes.galleryTag}>
-                          <i className="pi pi-tag" />
-                          {tag}
-                        </span>
-                      ))}
+
+                  {item.type === "video" && (
+                    <div className={classes.videoPlayButton}>
+                      <i className={`pi pi-play ${classes.playIcon}`} />
                     </div>
                   )}
+
+                  {(Array.isArray(item.category) ? item.category[0] : item.category) && (
+                    <div className={classes.categoryBadge}>
+                      {Array.isArray(item.category) ? item.category[0] : item.category}
+                    </div>
+                  )}
+
+                  <div className={classes.galleryOverlay}>
+                    <div className={classes.galleryItemTitle}>{item.title}</div>
+                    <div className={classes.galleryItemMeta}>
+                      <span>
+                        <i className="pi pi-eye" /> {item.viewCount || 0}
+                      </span>
+                      <span>
+                        <i className="pi pi-download" /> {item.downloadCount || 0}
+                      </span>
+                    </div>
+                    {item.tags && item.tags.length > 0 && (
+                      <div className={classes.galleryTags}>
+                        {item.tags.slice(0, 3).map((tag, idx) => (
+                          <span key={idx} className={classes.galleryTag}>
+                            <i className="pi pi-tag" />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsPreviewOpen(true);
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      zIndex: 4,
+                      cursor: "pointer",
+                      background: "transparent",
+                    }}
+                  />
                 </div>
-              </div>
-            ))}
+              ))}
+            </PhotoProvider>
           </div>
         </div>
       </section>
 
-      <section className={classes.statsSection}>
-        <h3 className={classes.statsTitle}>
-          สถิติแยกตามหมวดหมู่
-        </h3>
-        <div className={classes.statsGrid}>
-          {[
-            {
-              key: 'image',
-              label: 'รูปภาพ',
-              icon: 'pi pi-image',
-              bg: '#F8FAFC',
-              color: '#475569',
-            },
-            {
-              key: 'video',
-              label: 'วิดีโอ',
-              icon: 'pi pi-video',
-              bg: '#F9FAFB',
-              color: '#4B5563',
-            },
-            {
-              key: 'graphic',
-              label: 'กราฟฟิก',
-              icon: 'pi pi-images',
-              bg: '#F8FAFC',
-              color: '#475569',
-            },
-            {
-              key: 'medical',
-              label: 'การแพทย์',
-              icon: 'pi pi-heart',
-              bg: '#F9FAFB',
-              color: '#4B5563',
-            },
-            {
-              key: 'education',
-              label: 'การศึกษา',
-              icon: 'pi pi-book',
-              bg: '#F8FAFC',
-              color: '#475569',
-            },
-            {
-              key: 'campus',
-              label: 'รอบรั้ว',
-              icon: 'pi pi-building',
-              bg: '#F9FAFB',
-              color: '#4B5563',
-            },
-          ].map(cat => {
-            const count = resourcesData.resources.filter(r => {
-              if (cat.key === 'image' || cat.key === 'video' || cat.key === 'graphic') {
-                return r.type === cat.key;
-              }
-              if (Array.isArray(r.category)) {
-                return r.category.includes(cat.key);
-              }
-              return r.category === cat.key;
-            }).length;
-            return (
-              <div
-                key={cat.key}
-                className={classes.statsCard}
-                style={{ 
-                  background: cat.bg, 
-                  borderColor: '#E2E8F0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                }}
-              >
-                <i 
-                  className={`${cat.icon} ${classes.statsIcon}`} 
-                  style={{ 
-                    color: cat.color,
-                    background: '#F1F5F9',
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '1rem',
-                    fontSize: '1.5rem'
-                  }} 
-                />
-                <div 
-                  className={classes.statsNumber} 
-                  style={{ 
-                    color: cat.color,
-                    fontSize: '2rem',
-                    fontWeight: 700,
-                    lineHeight: 1.2
-                  }}
-                >
-                  {count}
+      {visibleItems < filteredGalleryItems.length && (
+        <div className={classes.buttonContainer}>
+          <button 
+            className={classes.loadMoreButton}
+            onClick={() => setVisibleItems(prev => Math.min(prev + itemsPerLoad, filteredGalleryItems.length))}
+          >
+            โหลดเพิ่มเติม
+          </button>
+        </div>
+      )}
+
+      {isPreviewOpen && selectedItem && (
+        <Modal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          title={selectedItem?.title || ""}
+        >
+          {selectedItem && (
+            <div className={classes.previewModal} onClick={() => setIsPreviewOpen(false)}>
+              <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
+                <div className={classes.modalHeader}>
+                  <h2 className={classes.modalTitle}>{selectedItem.title}</h2>
+                  <div className={classes.modalActions}>
+                    <div className={classes.headerActions}>
+                      <button
+                        className={`${classes.headerActionBtn} ${likes[selectedItem.id] ? 'liked' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLike(selectedItem);
+                        }}
+                        title={likes[selectedItem.id] ? 'เลิกถูกใจ' : 'ถูกใจ'}
+                      >
+                        {likes[selectedItem.id] ? <IoHeartSharp /> : <IoHeartOutline />}
+                        {likeCounts[selectedItem.id] > 0 && (
+                          <span className={classes.actionCount}>{likeCounts[selectedItem.id]}</span>
+                        )}
+                      </button>
+                      <button
+                        className={`${classes.headerActionBtn} ${bookmarks.some(bookmark => bookmark.id === selectedItem.id) ? 'bookmarked' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookmark(e, selectedItem);
+                        }}
+                        title={bookmarks.some(bookmark => bookmark.id === selectedItem.id) ? 'นำออกจากบุ๊กมาร์ก' : 'เพิ่มในบุ๊กมาร์ก'}
+                      >
+                        {bookmarks.some(bookmark => bookmark.id === selectedItem.id) ? <IoBookmark /> : <IoBookmarkOutline />}
+                      </button>
+                      <button 
+                        className={`${classes.headerActionBtn} download`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(e, selectedItem);
+                        }}
+                      >
+                        <FaDownload />
+                        <span>ดาวน์โหลด</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className={classes.closeButtonContainer}>
+                    <button className={classes.closeButton} onClick={() => setIsPreviewOpen(false)}>
+                      <FaTimes />
+                    </button>
+                  </div>
                 </div>
-                <div 
-                  className={classes.statsLabel}
-                  style={{
-                    color: '#64748B',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    marginTop: '0.4rem'
-                  }}
-                >
-                  {cat.label}
+                <div className={classes.modalBody}>
+                  <div className={classes.mainContent}>
+                    <div className={classes.contentMain}>
+                      {selectedItem.type === 'video' && selectedItem.videoUrl ? (
+                        <VideoPlayer
+                          src={selectedItem.videoUrl}
+                          title={selectedItem.title}
+                        />
+                      ) : (
+                        <img
+                          src={selectedItem.thumbnailUrl ? `${import.meta.env.BASE_URL}${selectedItem.thumbnailUrl.replace(/^\//, '')}` : selectedItem.fileUrl}
+                          alt={selectedItem.title}
+                          style={{ maxWidth: '100%', maxHeight: '70vh' }}
+                        />
+                      )}
+                    </div>
+                    <div className={classes.previewInfo}>
+                      <div className={classes.actionButtonsFixed}>
+                        <div 
+                          className={classes.buttonContainer}
+                          onMouseEnter={(e) => {
+                            const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                            if (label) {
+                              label.classList.add('visible');
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                            if (label) {
+                              label.classList.remove('visible');
+                            }
+                          }}
+                        >
+                          <button 
+                            className={classes.circleButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(selectedItem);
+                            }}
+                          >
+                            <IoShareSocialSharp />
+                          </button>
+                          <div className={classes.buttonLabel}>Share</div>
+                        </div>
+                        <div 
+                          className={classes.buttonContainer}
+                          onMouseEnter={(e) => {
+                            const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                            if (label) {
+                              label.classList.add('visible');
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                            if (label) {
+                              label.classList.remove('visible');
+                            }
+                          }}
+                        >
+                          <button 
+                            className={classes.circleButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDetailsPopup(true);
+                            }}
+                          >
+                            <IoEllipsisVerticalCircle />
+                          </button>
+                          <div className={classes.buttonLabel}>More</div>
+                        </div>
+                      </div>
+                      <p className={classes.previewDescription}>
+                        {selectedItem.description && selectedItem.description.length > 200 
+                          ? (showFullDescription 
+                              ? selectedItem.description 
+                              : selectedItem.description.substring(0, 200) + '...')
+                          : selectedItem.description}
+                      </p>
+                      {selectedItem.description && selectedItem.description.length > 200 && (
+                        <button 
+                          onClick={() => setShowFullDescription(!showFullDescription)}
+                          className={classes.readMoreButton}
+                        >
+                          {showFullDescription ? 'แสดงน้อยลง' : 'อ่านเพิ่มเติม'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className={classes.relatedSection}>
+                    <h4>รายการที่เกี่ยวข้อง</h4>
+                    <div className={classes.relatedGrid}>
+                      {filteredGalleryItems
+                        .filter(item => 
+                          item.id !== selectedItem.id && 
+                          (item.category === selectedItem.category || 
+                           (Array.isArray(item.tags) && Array.isArray(selectedItem.tags) &&
+                            item.tags.some(tag => selectedItem.tags.includes(tag))))
+                        )
+                        .slice(0, 6)
+                        .map(item => (
+                          <div
+                            key={item.id}
+                            className={classes.relatedCard}
+                            onClick={() => {
+                              setSelectedItem(item);
+                            }}
+                          >
+                            <div className={classes.relatedImageBox}>
+                              <img
+                                src={item.thumbnailUrl ? `${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}` : item.fileUrl}
+                                alt={item.title}
+                                className={classes.relatedImage}
+                              />
+                              <div className={classes.relatedTitle}>{item.title}</div>
+                              <div className={classes.relatedActionBar}>
+                                <button 
+                                  className={classes.relatedActionBtn}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePreview(e, item);
+                                  }}
+                                  title="Preview"
+                                >
+                                  <IoEye />
+                                </button>
+                                <button 
+                                  className={classes.relatedActionBtn}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownload(e, item);
+                                  }}
+                                  title="Download"
+                                >
+                                  <FaDownload />
+                                </button>
+                                <button 
+                                  className={classes.relatedActionBtn}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBookmark(e, item);
+                                  }}
+                                  title="Bookmark"
+                                >
+                                  {bookmarks.some(bookmark => bookmark.id === item.id) ? <FaHeart /> : <FaRegHeart />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className={classes.relatedInfo}>
+                              <span style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400}}>
+                                {item.category}
+                              </span>
+                              <div className={classes.relatedStats}>
+                                <span className="stat">
+                                  <IoHeart />
+                                  {likeCounts[item.id] || 0}
+                                </span>
+                                <span className="stat">
+                                  <IoEye />
+                                  {item.viewCount || 0}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          )}
+        </Modal>
+      )}
+
+      <section className={classes.categoryShowcase}>
+        <h2 className={classes.showcaseTitle}>
+          หมวดหมู่ทรัพยากร
+          <span>ค้นพบทรัพยากรที่หลากหลายในแต่ละหมวดหมู่</span>
+        </h2>
+        <div className={classes.categoryShowcaseGrid}>
+          {Object.entries(
+            resourcesData.resources.reduce((acc, item) => {
+              const categories = Array.isArray(item.category) ? item.category : [item.category];
+              categories.forEach(cat => {
+                if (!cat) return;
+                if (!acc[cat]) {
+                  acc[cat] = {
+                    count: 1,
+                    image: item.thumbnailUrl || item.fileUrl,
+                    description: `ทรัพยากรในหมวดหมู่ ${cat}`
+                  };
+                } else {
+                  acc[cat].count++;
+                }
+              });
+              return acc;
+            }, {} as Record<string, { count: number; image: string; description: string }>)
+          ).map(([category, data]) => (
+            <div 
+              key={category} 
+              className={classes.categoryCard}
+              onClick={() => {
+                setGalleryFilter(category.toLowerCase());
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <img 
+                src={data.image} 
+                alt={category} 
+                className={classes.categoryImage}
+                loading="lazy"
+              />
+              <div className={classes.categoryOverlay}>
+                <h3 className={classes.categoryTitle}>{category}</h3>
+                <p className={classes.categoryDescription}>
+                  {data.description}
+                  <br />
+                  <span className={classes.categoryCount}>{data.count} รายการ</span>
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
+
+      <div 
+        className={classes.buttonContainer}
+        style={{ position: 'relative' }}
+        onMouseEnter={(e) => {
+          const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+          if (label) {
+            label.classList.add('visible');
+          }
+        }}
+        onMouseLeave={(e) => {
+          const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+          if (label) {
+            label.classList.remove('visible');
+          }
+        }}
+      >
+      </div>
+
+      {showDetailsPopup && (
+        <>
+          <div className={classes.modalBackdrop} onClick={() => setShowDetailsPopup(false)} />
+           <div className={classes.detailsPopup}>
+              <div className={classes.popupHeader}>
+                <h2>Shot details</h2>
+                <button className={classes.popupCloseButton} onClick={() => setShowDetailsPopup(false)}>
+                  <FaTimes />
+                </button>
+              </div>
+            <div className={classes.popupContent}>
+              <div className={classes.statsRow}>
+                <div className={classes.statItem}>
+                  <span className="label">ยอดดู</span>
+                  <span className="value">{selectedItem?.viewCount || 0}</span>
+                </div>
+                <div className={classes.statItem}>
+                  <span className="label">ยอดดาวน์โหลด</span>
+                  <span className="value">{selectedItem?.downloadCount || 0}</span>
+                </div>
+                <div className={classes.statItem}>
+                  <span className="label">ยอดถูกใจ</span>
+                  <span className="value">{likeCounts[selectedItem?.id] || 0}</span>
+                </div>                
+              </div>
+              <div className={classes.dateInfo}>
+                โพสต์เมื่อ: {new Date(selectedItem?.createdAt).toLocaleDateString('th-TH', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </div>
+              <div className={classes.tagsSection}>
+                <h3>Tags</h3>
+                <div className={classes.detailsTagsList}>
+                  {selectedItem?.tags?.map((tag: string, index: number) => (
+                    <span key={index} className={classes.detailsTag}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

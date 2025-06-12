@@ -148,12 +148,12 @@ const useStyles = createUseStyles({
     right: 0,
     width: "100%",
     zIndex: 1000,
-    background: "linear-gradient(to top, rgba(17,45,78,0.35) 30%, rgba(249,247,247,0.31) 80%)",
+    background: "transparent",
     color: THEME.colors.text.light,
     minHeight: 62,
     display: "flex",
     alignItems: "center",
-    boxShadow: "0 8px 32px 0 rgba(17,45,78,0.10)",
+    boxShadow: "none",
     borderBottom: "1px solid rgba(63,114,175,0.10)",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
@@ -933,7 +933,6 @@ const MainLayout = () => {
             <img src={logo} alt="KKU Logo" />
           </Link>
           
-          {/* Desktop Navigation */}
           <nav className={classes.nav}>
             <Link to="/" className={`${classes.navLink}${isActive(location.pathname, "/") ? " active" : ""}`}>หน้าหลัก</Link>
             <Link to="/images" className={`${classes.navLink}${isActive(location.pathname, "/images") ? " active" : ""}`}>รูปภาพ</Link>
@@ -1010,7 +1009,6 @@ const MainLayout = () => {
               )}
             </span>
 
-            {/* Mobile Menu Button */}
             <button
               className={`${classes.mobileMenuButton} ${sidebarVisible ? 'open' : ''}`}
               onClick={() => setSidebarVisible(!sidebarVisible)}
@@ -1115,12 +1113,10 @@ const MainLayout = () => {
         </div>
       </Sidebar>
 
-      {/* Main Content */}
       <main className={classes.mainContent}>
         <Outlet />
       </main>
 
-      {/* ---------- FOOTER ---------- */}
       <footer className={classes.footerRow}>
         <div className={classes.footerLeft}>
           <img src={logo} alt="KKU Resource" />
