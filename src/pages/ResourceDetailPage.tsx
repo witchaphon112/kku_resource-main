@@ -1,12 +1,15 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 import { useAuth } from "../contexts/AuthContext";
 import resourcesData from "../mock/resources.json";
-import { useState, useCallback, useRef, useEffect } from "react";
-import Modal from "react-modal";
-import { FaDownload, FaEye, FaHeart, FaBookmark, FaShare, FaPlay, FaTimes, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { FaDownload, FaEye, FaHeart, FaBookmark, FaShare, FaPlay, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { IoHeartOutline, IoHeartSharp, IoBookmark, IoBookmarkOutline, IoShareSocialSharp, IoEllipsisVerticalCircle, IoEye, IoHeart } from "react-icons/io5";
 import { useBookmarks } from "../contexts/BookmarkContext";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 
 const THEME = {
   colors: {
@@ -748,296 +751,883 @@ const useStyles = createUseStyles({
     objectFit: "contain",
     borderRadius: 8,
   },
+  // New styles from MainPage
+  previewModal: {
+    position: 'fixed',
+    top: '50px',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    zIndex: 1000,
+    backdropFilter: 'blur(8px)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: '24px 24px 0 0',
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.2)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  actionButtonsFixed: {
+    position: 'fixed',
+    right: '24px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 1000,
+  },
+  buttonContainer: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '16px',
+  },
+  circleButton: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    backgroundColor: '#fff',
+    color: '#666',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    '&:hover': {
+      transform: 'scale(1.1)',
+    },
+    '& svg': {
+      width: '24px',
+      height: '24px',
+    },
+  },
+  buttonLabel: {
+    fontSize: '14px',
+    color: '#666',
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    fontWeight: '500',
+    '&.visible': {
+      opacity: 1,
+    },
+  },
+  modalHeader: {
+    padding: '20px 24px',
+    borderBottom: '1px solid #DBE2EF',
+    display: 'grid',
+    gridTemplateColumns: 'auto 1fr auto',
+    alignItems: 'center',
+    background: '#fff',
+    gap: '16px',
+  },
+  modalTitle: {
+    fontSize: '1.25rem',
+    fontWeight: 700,
+    color: '#112D4E',
+    fontFamily: "'Sarabun', 'Inter', sans-serif",
+  },
+  modalActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    justifyContent: 'flex-end',
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '16px',
+    alignItems: 'center',
+  },
+  headerActionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    background: '#f8f9fa',
+    color: '#666',
+    '&:hover': {
+      transform: 'scale(1.05)',
+      background: '#f1f5f9',
+    },
+    '&.liked': {
+      background: '#fce7f3',
+      color: '#ec4899',
+      '&:hover': {
+        background: '#fbcfe8',
+      },
+    },
+    '&.bookmarked': {
+      background: '#fce7f3',
+      color: '#ec4899',
+      '&:hover': {
+        background: '#fbcfe8',
+      },
+    },
+    '&.download': {
+      background: 'rgba(255, 0, 0, 0.8)',
+      color: '#fff',
+      fontSize: '1.2rem',
+      padding: '12px 24px',
+      width: 'auto',
+      borderRadius: '24px',
+      fontWeight: 600,
+      display: 'flex',
+      gap: '8px',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+      },
+    },
+  },
+  actionCount: {
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    background: '#3F72AF',
+    color: '#fff',
+    fontSize: '0.75rem',
+    padding: '2px 6px',
+    borderRadius: '10px',
+    fontWeight: 600,
+  },
+  closeButtonContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  modalBody: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '1rem 7rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  mainContent: {
+    display: "block",
+    gridTemplateColumns: '65% 35%',
+    gap: '2rem',
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+    }
+  },
+  contentMain: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+    '& img': {
+      width: '100%',
+      height: 'auto',
+      maxHeight: '80vh',
+      objectFit: 'contain',
+      borderRadius: '8px'
+    },
+    '& iframe, & video': {
+      width: '100%',
+      height: '80vh',
+      borderRadius: '8px'
+    }
+  },
+  previewInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '1rem',
+    gap: '20px',
+    '& h3': {
+      fontSize: '1.5rem',
+      fontWeight: 700,
+      color: '#112D4E',
+      fontFamily: "'Sarabun', 'Inter', sans-serif",
+    },
+  },
+  previewDescription: {
+    fontSize: '1rem',
+    lineHeight: 1.7,
+    color: '#444',
+    margin: '0rem 6rem',
+    padding: '1rem',
+    background: '#fff',
+    borderRadius: '12px',
+    boxShadowbottom: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  },
+  relatedSection: {
+    padding: '1.5rem',
+    borderRadius: '16px',
+    marginTop: '2rem',
+    borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+    '& h4': {
+      fontSize: '1.2rem',
+      fontWeight: 600,
+      color: '#1a1a1a',
+      marginBottom: '1.25rem',
+    }
+  },
+  relatedGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "24px",
+    padding: "24px",
+    "@media (max-width: 1400px)": {
+      gridTemplateColumns: "repeat(3, 1fr)",
+    },
+    "@media (max-width: 1100px)": {
+      gridTemplateColumns: "repeat(2, 1fr)",
+    },
+    "@media (max-width: 767px)": {
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+      padding: "16px",
+    }
+  },
+  relatedCard: {
+    position: "relative",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      "& $relatedImage": {
+        transform: "translateY(-4px)",
+        boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+      },
+      "& $relatedTitle": {
+        opacity: 1,
+        transform: "translateY(0)",
+      },
+      "& $relatedActionBar": {
+        opacity: 1,
+        transform: "translateY(0)",
+      }
+    }
+  },
+  relatedImageBox: {
+    width: "100%",
+    aspectRatio: "1/0.6", // กำหนดสัดส่วน 1:0.9
+    position: "relative",
+    overflow: "hidden",
+    background: "#f8f9fa",
+    borderRadius: "20px",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
+  },
+  relatedImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover", // หรือ "contain" แล้วแต่ต้องการ
+    objectPosition: "center", // จัดตำแหน่งรูปให้อยู่กลาง
+    transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  relatedTitle: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: "32px 16px 16px",
+    background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))",
+    color: "#fff",
+    fontSize: "1rem",
+    fontWeight: 600,
+    opacity: 0,
+    transform: "translateY(10px)",
+    transition: "all 0.3s ease",
+    zIndex: 2,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    lineHeight: 1.4,
+  },
+  relatedActionBar: {
+    position: "absolute",
+    top: "16px",
+    right: "16px",
+    display: "flex",
+    gap: "8px",
+    opacity: 0,
+    transform: "translateY(-8px)",
+    transition: "all 0.3s ease",
+    zIndex: 3,
+  },
+  relatedActionBtn: {
+    width: "40px",
+    height: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255, 255, 255, 0.95)",
+    backdropFilter: "blur(8px)",
+    border: "none",
+    borderRadius: "48px",
+    color: "#555",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      background: "white",
+      transform: "translateY(-2px) scale(1.05)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      color: "#3F72AF",
+    },
+    "& svg": {
+      fontSize: "1.2rem",
+    }
+  },
+  relatedInfo: {
+    padding: "7px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: "12px",
+  },
+  relatedStats: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    "& .stat": {
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      color: "#94a3b8",
+      fontSize: "0.92rem",
+      fontWeight: 400,
+      "& svg": {
+        color: "#94a3b8",
+        fontSize: "1.05rem",
+      }
+    }
+  },
+  readMoreButton: {
+    background: 'none',
+    border: 'none',
+    color: '#3F72AF',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '8px 16px',
+    margin: '8px auto',
+    display: 'block',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      textDecoration: 'underline',
+      transform: 'translateY(-2px)'
+    }
+},
+detailsPopup: {
+position: 'fixed',
+top: '50%',
+left: '50%',
+transform: 'translate(-50%, -50%)',
+backgroundColor: '#fff',
+borderRadius: '12px',
+boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
+width: '90%',
+maxWidth: '500px',
+zIndex: 10001,
+},
+popupHeader: {
+display: 'flex',
+justifyContent: 'space-between',
+alignItems: 'center',
+padding: '16px 24px',
+borderBottom: '1px solid #eee',
+'& h2': {
+  margin: 0,
+  fontSize: '20px',
+  fontWeight: '600',
+},
+},
+popupContent: {
+padding: '24px',
+},
+statsRow: {
+display: 'flex',
+gap: '32px',
+marginBottom: '24px',
+},
+statItem: {
+display: 'flex',
+flexDirection: 'column',
+gap: '4px',
+'& .label': {
+  fontSize: '14px',
+  color: '#666',
+},
+'& .value': {
+  fontSize: '24px',
+  fontWeight: '600',
+},
+},
+dateInfo: {
+fontSize: '14px',
+color: '#666',
+marginBottom: '24px',
+},
+tagsSection: {
+'& h3': {
+  fontSize: '16px',
+  fontWeight: '500',
+  marginBottom: '12px',
+},
+},
+detailsTagsList: {
+display: 'flex',
+flexWrap: 'wrap',
+gap: '8px',
+},
+detailsTag: {
+padding: '6px 12px',
+backgroundColor: '#f5f5f5',
+borderRadius: '100px',
+fontSize: '14px',
+color: '#666',
+},
+modalBackdrop: {
+position: 'fixed',
+top: 0,
+left: 0,
+right: 0,
+bottom: 0,
+backgroundColor: 'rgba(0, 0, 0, 0.5)',
+zIndex: 10000,
+},
+popupCloseButton: {
+background: 'none',
+border: 'none',
+cursor: 'pointer',
+padding: '8px',
+color: '#666',
+'&:hover': {
+  color: '#000',
+},
+'& svg': {
+  width: '20px',
+  height: '20px',
+},
+},
 });
 
 const embedYouTube = (url: string) => {
-  if (!url) return "";
-  const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
-  return idMatch?.[1]
-    ? `https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&rel=0&modestbranding=1`
-    : url;
+if (!url) return "";
+const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/);
+return idMatch?.[1]
+? `https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&rel=0&modestbranding=1`
+: url;
 };
 
 // Add type definition for Resource
 interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  category: string;
-  tags: string[];
-  fileUrl: string;
-  thumbnailUrl: string;
-  gallery?: string[];
-  uploadedBy: string;
-  downloadCount: number;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
-  videoUrl?: string;
+id: string;
+title: string;
+description: string;
+type: string;
+category: string;
+tags: string[];
+fileUrl: string;
+thumbnailUrl: string;
+gallery?: string[];
+uploadedBy: string;
+downloadCount: number;
+viewCount: number;
+createdAt: string;
+updatedAt: string;
+videoUrl?: string;
 }
 
+const VideoPlayer = ({ src, title }) => {
+const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
+
+if (isYouTube) {
+const videoId = src.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/)?.[1];
+const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : src;
+return (
+  <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+    <iframe
+      width="100%"
+      height="600"
+      src={embedUrl}
+      title={title}
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      style={{ maxWidth: '100%', maxHeight: '70vh' }}
+    />
+  </div>
+);
+}
+
+return (
+<div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+  <video
+    src={src}
+    controls
+    autoPlay
+    style={{ maxWidth: '100%', maxHeight: '70vh' }}
+  />
+</div>
+);
+};
+
 const ResourceDetailPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { addDownload } = useDownloadHistory();
-  const classes = useStyles();
-  const { user } = useAuth();
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [showFullDesc, setShowFullDesc] = useState(false);
-  const descRef = useRef<HTMLDivElement>(null);
-  const [descOverflow, setDescOverflow] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const galleryRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const { isBookmarked, addBookmark, removeBookmark } = useBookmarks();
-  const [bookmarkStatus, setBookmarkStatus] = useState(false);
-  
-  const resource = resourcesData.resources.find((r) => r.id === id) as Resource;
-  
-  // Use gallery images from resource data
-  const images = resource?.gallery || [resource?.thumbnailUrl];
+const { id } = useParams();
+const navigate = useNavigate();
+const { addDownload } = useDownloadHistory();
+const classes = useStyles();
+const { user } = useAuth();
+const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+const [showFullDesc, setShowFullDesc] = useState(false);
+const descRef = useRef<HTMLDivElement>(null);
+const [descOverflow, setDescOverflow] = useState(false);
+const [selectedImage, setSelectedImage] = useState<string | null>(null);
+const galleryRef = useRef<HTMLDivElement>(null);
+const [canScrollLeft, setCanScrollLeft] = useState(false);
+const [canScrollRight, setCanScrollRight] = useState(true);
+const { isBookmarked, addBookmark, removeBookmark } = useBookmarks();
+const [bookmarkStatus, setBookmarkStatus] = useState(false);
+const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+const [showDetailsPopup, setShowDetailsPopup] = useState(false);
+const [showFullDescription, setShowFullDescription] = useState(false);
+const [likes, setLikes] = useState<{ [key: string]: boolean }>(() => {
+const savedLikes = localStorage.getItem('likes');
+return savedLikes ? JSON.parse(savedLikes) : {};
+});
+const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
 
-  if (!resource) {
-    return (
-      <div style={{ 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: "1rem",
-        background: "linear-gradient(180deg, #f8faff 0%, #ffffff 100%)",
-      }}>
-        <h2 style={{ fontSize: "2rem", color: "#112D4E" }}>ไม่พบข้อมูลทรัพยากร</h2>
-        <button 
-          className={classes.secondaryButton}
-          onClick={() => navigate(-1)}
-        >
-          กลับไปหน้าก่อนหน้า
-        </button>
-      </div>
-    );
-  }
+const resource = resourcesData.resources.find((r) => r.id === id) as Resource;
 
-  useEffect(() => {
-    if (descRef.current) {
-      setDescOverflow(descRef.current.scrollHeight > 300);
-    }
-  }, [resource.description]);
 
-  useEffect(() => {
-    if (resource) {
-      setBookmarkStatus(isBookmarked(resource.id));
-    }
-  }, [resource, isBookmarked]);
+if (!resource) {
+return (
+  <div style={{ 
+    minHeight: "100vh", 
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center",
+    flexDirection: "column",
+    gap: "1rem",
+    background: "linear-gradient(180deg, #f8faff 0%, #ffffff 100%)",
+  }}>
+    <h2 style={{ fontSize: "2rem", color: "#112D4E" }}>ไม่พบข้อมูลทรัพยากร</h2>
+    <button 
+      className={classes.secondaryButton}
+      onClick={() => navigate(-1)}
+    >
+      กลับไปหน้าก่อนหน้า
+    </button>
+  </div>
+);
+}
 
-  const handleOpenVideoModal = useCallback(() => {
-    setIsVideoModalOpen(true);
-    document.body.style.overflow = "hidden";
-  }, []);
+// Gallery images
+const images = useMemo(() => {
+return resource?.gallery || [resource?.thumbnailUrl];
+}, [resource]);
 
-  const handleCloseVideoModal = useCallback(() => {
-    setIsVideoModalOpen(false);
-    document.body.style.overflow = "auto";
-  }, []);
+useEffect(() => {
+if (descRef.current) {
+  setDescOverflow(descRef.current.scrollHeight > 300);
+}
+}, [resource.description]);
 
-  const relatedByCategory = resourcesData.resources
-    .filter((item) =>
-      item.category === resource.category &&
-      item.id !== resource.id
-    ).slice(0, 6);
+useEffect(() => {
+if (resource) {
+  setBookmarkStatus(isBookmarked(resource.id));
+  setLikeCounts(prev => ({
+    ...prev,
+    [resource.id]: resource.viewCount || 0
+  }));
+}
+}, [resource, isBookmarked]);
 
-  const handleLoginRedirect = () => {
-    navigate(`/login?redirect=/resource/${id}`);
-  };
+const handleOpenVideoModal = useCallback(() => {
+setIsVideoModalOpen(true);
+document.body.style.overflow = "hidden";
+}, []);
 
-  const handleDownload = () => {
-    if (!user) return;
-    addDownload(user.id, {
-      id: resource.id,
+const handleCloseVideoModal = useCallback(() => {
+setIsVideoModalOpen(false);
+document.body.style.overflow = "auto";
+}, []);
+
+const relatedByCategory = useMemo(() => {
+return resourcesData.resources
+  .filter((item) =>
+    item.category === resource.category &&
+    item.id !== resource.id
+  ).slice(0, 6);
+}, [resource]);
+
+const handleLoginRedirect = () => {
+navigate(`/login?redirect=/resource/${id}`);
+};
+
+const handleDownload = () => {
+if (!user) {
+  handleLoginRedirect();
+  return;
+}
+
+addDownload(user.id, {
+  id: resource.id,
+  title: resource.title,
+  description: resource.description,
+  type: resource.type,
+  fileUrl: resource.fileUrl,
+  downloadedAt: new Date().toISOString()
+});
+
+const link = document.createElement("a");
+link.href = resource.fileUrl;
+link.download = resource.title || "download";
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+};
+
+const isVideo = resource.type === "video";
+const isYouTube = resource.videoUrl?.includes("youtube.com") || resource.videoUrl?.includes("youtu.be");
+
+const checkScrollButtons = useCallback(() => {
+if (galleryRef.current) {
+  const { scrollLeft, scrollWidth, clientWidth } = galleryRef.current;
+  setCanScrollLeft(scrollLeft > 0);
+  setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
+}
+}, []);
+
+const scroll = useCallback((direction: 'left' | 'right') => {
+if (galleryRef.current) {
+  const scrollAmount = 300;
+  const newScrollLeft = galleryRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+  galleryRef.current.scrollTo({
+    left: newScrollLeft,
+    behavior: 'smooth'
+  });
+}
+}, []);
+
+useEffect(() => {
+const gallery = galleryRef.current;
+if (gallery) {
+  gallery.addEventListener('scroll', checkScrollButtons);
+  checkScrollButtons();
+  return () => gallery.removeEventListener('scroll', checkScrollButtons);
+}
+}, [checkScrollButtons]);
+
+const handleShare = async () => {
+try {
+  if (navigator.share) {
+    await navigator.share({
       title: resource.title,
-      description: resource.description,
-      type: resource.type,
-      fileUrl: resource.fileUrl,
-      downloadedAt: new Date().toISOString()
+      text: resource.description,
+      url: window.location.href,
     });
-    const link = document.createElement("a");
-    link.href = resource.fileUrl;
-    link.download = resource.title || "download";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('ลิงก์ถูกคัดลอกไปยังคลิปบอร์ดแล้ว');
+  }
+} catch (error) {
+  console.error('Error sharing:', error);
+}
+};
 
-  const isVideo = resource.type === "video";
-  const isYouTube = resource.videoUrl?.includes("youtube.com") || resource.videoUrl?.includes("youtu.be");
+const handleBookmark = () => {
+if (!user) {
+  handleLoginRedirect();
+  return;
+}
 
-  const checkScrollButtons = useCallback(() => {
-    if (galleryRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = galleryRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
-    }
-  }, []);
+if (bookmarkStatus) {
+  removeBookmark(resource.id);
+  setBookmarkStatus(false);
+} else {
+  addBookmark({
+    id: resource.id,
+    title: resource.title,
+    description: resource.description,
+    imageUrl: resource.thumbnailUrl,
+    type: resource.type,
+    category: resource.category,
+    createdAt: resource.createdAt
+  });
+  setBookmarkStatus(true);
+}
+};
 
-  const scroll = useCallback((direction: 'left' | 'right') => {
-    if (galleryRef.current) {
-      const scrollAmount = 300;
-      const newScrollLeft = galleryRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
-      galleryRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth'
-      });
-    }
-  }, []);
+const handleLike = () => {
+if (!user) {
+  handleLoginRedirect();
+  return;
+}
 
-  useEffect(() => {
-    const gallery = galleryRef.current;
-    if (gallery) {
-      gallery.addEventListener('scroll', checkScrollButtons);
-      checkScrollButtons();
-      return () => gallery.removeEventListener('scroll', checkScrollButtons);
-    }
-  }, [checkScrollButtons]);
+const newLikes = { ...likes };
+const newLikeCounts = { ...likeCounts };
 
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: resource.title,
-          text: resource.description,
-          url: window.location.href,
-        });
-      } else {
-        navigator.clipboard.writeText(window.location.href);
-        alert('ลิงก์ถูกคัดลอกไปยังคลิปบอร์ดแล้ว');
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
+if (newLikes[resource.id]) {
+  delete newLikes[resource.id];
+  newLikeCounts[resource.id] = (newLikeCounts[resource.id] || 0) - 1;
+} else {
+  newLikes[resource.id] = true;
+  newLikeCounts[resource.id] = (newLikeCounts[resource.id] || 0) + 1;
+}
 
-  const handleBookmark = () => {
-    if (!user) {
-      handleLoginRedirect();
-      return;
-    }
+setLikes(newLikes);
+setLikeCounts(newLikeCounts);
+localStorage.setItem('likes', JSON.stringify(newLikes));
+};
 
-    if (bookmarkStatus) {
-      removeBookmark(resource.id);
-      setBookmarkStatus(false);
-    } else {
-      addBookmark({
-        id: resource.id,
-        title: resource.title,
-        description: resource.description,
-        imageUrl: resource.thumbnailUrl,
-        type: resource.type,
-        category: resource.category,
-        createdAt: resource.createdAt
-      });
-      setBookmarkStatus(true);
-    }
-  };
-
-  return (
-    <div className={classes.container}>
-      <div className={classes.heroSection}>
-        <div className={classes.heroContent}>
-          <div className={classes.heroMain}>
-            <div className={classes.heroImageWrap}>
-              <img 
-                src={`${import.meta.env.BASE_URL}${resource.thumbnailUrl.replace(/^\//, '')}`}
-                alt={resource.title}
-                className={classes.heroImage}
-              />
-              {isVideo && (
-                <button
-                  className={classes.playButton}
-                  onClick={handleOpenVideoModal}
-                  aria-label="เล่นวิดีโอ"
-                >
-                  <FaPlay />
-                </button>
+return (
+<div className={classes.container}>
+  <div className={classes.heroSection}>
+    <div className={classes.heroContent}>
+      <div className={classes.heroMain}>
+        <div className={classes.heroImageWrap}>
+          <img 
+            src={`${import.meta.env.BASE_URL}${resource.thumbnailUrl.replace(/^\//, '')}`}
+            alt={resource.title}
+            className={classes.heroImage}
+          />
+          {isVideo && (
+            <button
+              className={classes.playButton}
+              onClick={handleOpenVideoModal}
+              aria-label="เล่นวิดีโอ"
+            >
+              <FaPlay />
+            </button>
+          )}
+        </div>
+        
+        <div className={classes.infoSection}>
+          <h1 className={classes.title}>{resource.title}</h1>
+          
+          <div className={classes.headerActions} style={{ marginBottom: '2rem' }}>
+            <button
+              className={`${classes.headerActionBtn} ${likes[resource.id] ? 'liked' : ''}`}
+              onClick={handleLike}
+              title={likes[resource.id] ? 'เลิกถูกใจ' : 'ถูกใจ'}
+            >
+              {likes[resource.id] ? <IoHeartSharp /> : <IoHeartOutline />}
+              {likeCounts[resource.id] > 0 && (
+                <span className={classes.actionCount}>{likeCounts[resource.id]}</span>
               )}
+            </button>
+            <button
+              className={`${classes.headerActionBtn} ${bookmarkStatus ? 'bookmarked' : ''}`}
+              onClick={handleBookmark}
+              title={bookmarkStatus ? 'นำออกจากบุ๊กมาร์ก' : 'เพิ่มในบุ๊กมาร์ก'}
+            >
+              {bookmarkStatus ? <IoBookmark /> : <IoBookmarkOutline />}
+            </button>
+            <button 
+              className={`${classes.headerActionBtn} download`}
+              onClick={handleDownload}
+            >
+              <FaDownload />
+              <span>ดาวน์โหลด</span>
+            </button>
+          </div>
+          
+        
+
+          <div className={classes.actionButtonsFixed}>
+            <div 
+              className={classes.buttonContainer}
+              onMouseEnter={(e) => {
+                const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                if (label) {
+                  label.classList.add('visible');
+                }
+              }}
+              onMouseLeave={(e) => {
+                const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                if (label) {
+                  label.classList.remove('visible');
+                }
+              }}
+            >
+              <button 
+                className={classes.circleButton}
+                onClick={handleShare}
+              >
+                <IoShareSocialSharp />
+              </button>
+              <div className={classes.buttonLabel}>Share</div>
             </div>
-            
-            <div className={classes.infoSection}>
-              <h1 className={classes.title}>{resource.title}</h1>
-              
-              <div className={classes.actionRow} style={{ gap: '1rem', marginBottom: '2rem' }}>
-                {user ? (
-                  <button 
-                    className={classes.primaryButton}
-                    onClick={handleDownload}
-                    style={{ flex: 2 }}
-                  >
-                    <FaDownload />
-                    ดาวน์โหลด
-                  </button>
-                ) : (
-                  <button 
-                    className={classes.primaryButton}
-                    onClick={handleLoginRedirect}
-                    style={{ flex: 2 }}
-                  >
-                    <FaDownload />
-                    เข้าสู่ระบบเพื่อดาวน์โหลด
-                  </button>
-                )}
-                
-                <button 
-                  className={classes.secondaryButton}
-                  onClick={handleShare}
-                  style={{ flex: 1 }}
-                >
-                  <FaShare />
-                  แชร์
-                </button>
-                
-                <button 
-                  className={classes.secondaryButton}
-                  onClick={handleBookmark}
-                  style={{ 
-                    flex: 1,
-                    background: bookmarkStatus ? 'rgba(63,114,175,0.1)' : undefined,
-                    borderColor: bookmarkStatus ? '#3F72AF' : undefined,
-                  }}
-                >
-                  <FaBookmark style={{ color: bookmarkStatus ? '#3F72AF' : undefined }} />
-                  {bookmarkStatus ? 'บันทึกแล้ว' : 'บันทึก'}
-                </button>
-              </div>
+            <div 
+              className={classes.buttonContainer}
+              onMouseEnter={(e) => {
+                const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                if (label) {
+                  label.classList.add('visible');
+                }
+              }}
+              onMouseLeave={(e) => {
+                const label = e.currentTarget.querySelector(`.${classes.buttonLabel}`);
+                if (label) {
+                  label.classList.remove('visible');
+                }
+              }}
+            >
+              <button 
+                className={classes.circleButton}
+                onClick={() => setShowDetailsPopup(true)}
+              >
+                <IoEllipsisVerticalCircle />
+              </button>
+              <div className={classes.buttonLabel}>More</div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {images.length > 1 && (
-            <div className={classes.gallerySection}>
-              <h2 className={classes.sectionTitle}>รูปภาพทั้งหมด</h2>
-              <button 
-                className={`${classes.carouselButton} ${classes.prevButton}`}
-                onClick={() => scroll('left')}
-                disabled={!canScrollLeft}
-                aria-label="Previous images"
-              >
-                <FaChevronLeft />
-              </button>
-              <button 
-                className={`${classes.carouselButton} ${classes.nextButton}`}
-                onClick={() => scroll('right')}
-                disabled={!canScrollRight}
-                aria-label="Next images"
-              >
-                <FaChevronRight />
-              </button>
-              <div className={classes.galleryGrid} ref={galleryRef}>
-                {images.map((image: string, index: number) => (
-                  <div 
-                    key={index}
-                    className={classes.galleryItem}
-                    onClick={() => setSelectedImage(image)}
+      {images.length > 1 && (
+        <div className={classes.gallerySection}>
+          <h2 className={classes.sectionTitle}>รูปภาพทั้งหมด</h2>
+          <button 
+            className={`${classes.carouselButton} ${classes.prevButton}`}
+            onClick={() => scroll('left')}
+            disabled={!canScrollLeft}
+            aria-label="Previous images"
+          >
+            <FaChevronLeft />
+          </button>
+          <button 
+            className={`${classes.carouselButton} ${classes.nextButton}`}
+            onClick={() => scroll('right')}
+            disabled={!canScrollRight}
+            aria-label="Next images"
+          >
+            <FaChevronRight />
+          </button>
+          <PhotoProvider
+            maskOpacity={0.8}
+            maskClassName="custom-photo-mask"
+            photoClosable={true}
+            bannerVisible={false}
+          >
+            <div className={classes.galleryGrid} ref={galleryRef}>
+              {images.map((image: string, index: number) => (
+                <div 
+                  key={index}
+                  className={classes.galleryItem}
+                >
+                  <PhotoView 
+                    src={`${import.meta.env.BASE_URL}${image.replace(/^\//, '')}`}
                   >
                     <img
                       src={`${import.meta.env.BASE_URL}${image.replace(/^\//, '')}`}
@@ -1045,204 +1635,235 @@ const ResourceDetailPage = () => {
                       className={classes.galleryImage}
                       loading="lazy"
                     />
-                  </div>
-                ))}
-              </div>
+                  </PhotoView>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className={classes.contentSection}>
-        <div className={classes.mainContent}>
-          {resource.description && (
-            <div style={{ marginTop: "2rem" }}>
-              <h2 className={classes.sectionTitle}>เนื้อหา</h2>
-              <div
-                ref={descRef}
-                className={classes.description}
-                style={{
-                  maxHeight: showFullDesc ? 'none' : 300,
-                  overflow: showFullDesc ? 'visible' : 'hidden',
-                  position: 'relative',
-                }}
-              >
-                {resource.description}
-                {!showFullDesc && descOverflow && (
-                  <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: 100,
-                    background: 'linear-gradient(to bottom, rgba(255,255,255,0), #fff)',
-                  }} />
-                )}
-              </div>
-              {descOverflow && (
-                <button
-                  onClick={() => setShowFullDesc(v => !v)}
-                  style={{
-                    marginTop: "1rem",
-                    background: "none",
-                    border: "none",
-                    color: "#3F72AF",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                >
-                  {showFullDesc ? "แสดงน้อยลง" : "อ่านเพิ่มเติม"}
-                </button>
-              )}
-            </div>
-          )}
-
-          <div style={{ 
-            marginTop: "3rem",
-            borderRadius: "16px",
-          }}>
-            <h2 className={classes.sectionTitle}>รายละเอียด</h2>
-            <div className={classes.detailsGrid}>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>หมวดหมู่</div>
-                <div className={classes.detailValue}>{resource.category}</div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>ประเภทไฟล์</div>
-                <div className={classes.detailValue}>{resource.type}</div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>เผยแพร่เมื่อ</div>
-                <div className={classes.detailValue}>
-                  {new Date(resource.createdAt).toLocaleDateString("th-TH")}
-                </div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>อัปเดตล่าสุด</div>
-                <div className={classes.detailValue}>
-                  {new Date(resource.updatedAt).toLocaleDateString("th-TH")}
-                </div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>จำนวนการดู</div>
-                <div className={classes.detailValue}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FaEye />
-                    {resource.viewCount || 0} ครั้ง
-                  </div>
-                </div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>จำนวนดาวน์โหลด</div>
-                <div className={classes.detailValue}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FaDownload />
-                    {resource.downloadCount || 0} ครั้ง
-                  </div>
-                </div>
-              </div>
-              <div className={classes.detailItem}>
-                <div className={classes.detailLabel}>ผู้เผยแพร่</div>
-                <div className={classes.detailValue}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FaHeart />
-                    {resource.uploadedBy}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-              <div className={classes.tagRow} style={{ marginBottom: "1.5rem" }}>
-                <span className={classes.tag}>
-                  {resource.type?.toUpperCase()}
-                </span>
-                {resource.tags && resource.tags.map((t, i) => (
-                  <span key={i} className={classes.tag}>{t}</span>
-                ))}
-              </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={classes.contentSectionGray}>
-        <div className={classes.relatedSection}>
-          <div className={classes.relatedHeader}>
-            <h2 className={classes.sectionTitle}>รายการที่เกี่ยวข้อง</h2>
-          </div>
-          <div className={classes.relatedGrid}>
-            {relatedByCategory.map((item) => (
-              <div
-                key={item.id}
-                className={classes.relatedCard}
-                onClick={() => navigate(`/resource/${item.id}`)}
-              >
-                <img
-                  src={`${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}`}
-                  alt={item.title}
-                  className={classes.relatedImage}
-                />
-                <div className={classes.relatedInfo}>
-                  <h3 className={classes.relatedTitle}>{item.title}</h3>
-                  <div className={classes.relatedMeta}>
-                    <span>{item.category}</span>
-                    <span>{new Date(item.createdAt).toLocaleDateString("th-TH")}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {selectedImage && (
-        <div className={classes.imageModal} onClick={() => setSelectedImage(null)}>
-          <img
-            src={`${import.meta.env.BASE_URL}${selectedImage.replace(/^\//, '')}`}
-            alt="รูปภาพขยาย"
-            className={classes.modalImage}
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
-      )}
-
-      {isVideoModalOpen && (
-        <div className={classes.videoModal} onClick={handleCloseVideoModal}>
-          <div className={classes.videoContainer} onClick={e => e.stopPropagation()}>
-            <button className={classes.closeButton} onClick={handleCloseVideoModal}>
-              <FaTimes />
-            </button>
-            {isYouTube ? (
-              <iframe
-                src={embedYouTube(resource.videoUrl || "")}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: 0,
-                }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={resource.title}
-              />
-            ) : (
-              <video
-                src={resource.fileUrl || resource.videoUrl}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background: "#000",
-                }}
-                controls
-                autoPlay
-                poster={resource.thumbnailUrl}
-              />
-            )}
-          </div>
+          </PhotoProvider>
         </div>
       )}
     </div>
-  );
+  </div>
+
+  <div className={classes.contentSection}>
+    <div className={classes.mainContent}>
+      {resource.description && (
+        <div style={{ marginTop: "2rem" }}>
+          <h2 className={classes.sectionTitle}>เนื้อหา</h2>
+          <div
+            ref={descRef}
+            className={classes.previewDescription}
+            style={{
+              maxHeight: showFullDesc ? 'none' : 300,
+              overflow: showFullDesc ? 'visible' : 'hidden',
+              position: 'relative',
+            }}
+          >
+            {resource.description}
+            {!showFullDesc && descOverflow && (
+              <div style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 100,
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0), #fff)',
+              }} />
+            )}
+          </div>
+          {descOverflow && (
+            <button
+              onClick={() => setShowFullDesc(v => !v)}
+              className={classes.readMoreButton}
+            >
+              {showFullDesc ? "แสดงน้อยลง" : "อ่านเพิ่มเติม"}
+            </button>
+          )}
+        </div>
+      )}
+
+      <div style={{ 
+        marginTop: "3rem",
+        borderRadius: "16px",
+      }}>
+        <h2 className={classes.sectionTitle}>รายละเอียด</h2>
+        <div className={classes.detailsGrid}>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>หมวดหมู่</div>
+            <div className={classes.detailValue}>{resource.category}</div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>ประเภทไฟล์</div>
+            <div className={classes.detailValue}>{resource.type}</div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>เผยแพร่เมื่อ</div>
+            <div className={classes.detailValue}>
+              {new Date(resource.createdAt).toLocaleDateString("th-TH")}
+            </div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>อัปเดตล่าสุด</div>
+            <div className={classes.detailValue}>
+              {new Date(resource.updatedAt).toLocaleDateString("th-TH")}
+            </div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>จำนวนการดู</div>
+            <div className={classes.detailValue}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaEye />
+                {resource.viewCount || 0} ครั้ง
+              </div>
+            </div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>จำนวนดาวน์โหลด</div>
+            <div className={classes.detailValue}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaDownload />
+                {resource.downloadCount || 0} ครั้ง
+              </div>
+            </div>
+          </div>
+          <div className={classes.detailItem}>
+            <div className={classes.detailLabel}>ผู้เผยแพร่</div>
+            <div className={classes.detailValue}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaHeart />
+                {resource.uploadedBy}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div className={classes.contentSectionGray}>
+    <div className={classes.relatedSection}>
+      <div className={classes.relatedHeader}>
+        <h2 className={classes.sectionTitle}>รายการที่เกี่ยวข้อง</h2>
+      </div>
+      <div className={classes.relatedGrid}>
+        {relatedByCategory.map((item) => (
+          <div
+            key={item.id}
+            className={classes.relatedCard}
+            onClick={() => navigate(`/resource/${item.id}`)}
+          >
+            <div className={classes.relatedImageBox}>
+              <img
+                src={item.thumbnailUrl ? `${import.meta.env.BASE_URL}${item.thumbnailUrl.replace(/^\//, '')}` : item.fileUrl}
+                alt={item.title}
+                className={classes.relatedImage}
+              />
+              <div className={classes.relatedTitle}>{item.title}</div>
+            </div>
+            <div className={classes.relatedInfo}>
+              <span style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400}}>
+                {item.category}
+              </span>
+              <div className={classes.relatedStats}>
+                <span className="stat">
+                  <IoHeart />
+                  {likeCounts[item.id] || 0}
+                </span>
+                <span className="stat">
+                  <IoEye />
+                  {item.viewCount || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {isVideoModalOpen && (
+    <div className={classes.videoModal} onClick={handleCloseVideoModal}>
+      <div className={classes.videoContainer} onClick={e => e.stopPropagation()}>
+        <button className={classes.closeButton} onClick={handleCloseVideoModal}>
+          <FaTimes />
+        </button>
+        {isYouTube ? (
+          <iframe
+            src={embedYouTube(resource.videoUrl || "")}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: 0,
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={resource.title}
+          />
+        ) : (
+          <video
+            src={resource.fileUrl || resource.videoUrl}
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#000",
+            }}
+            controls
+            autoPlay
+            poster={resource.thumbnailUrl}
+          />
+        )}
+      </div>
+    </div>
+  )}
+
+  {showDetailsPopup && (
+    <>
+      <div className={classes.modalBackdrop} onClick={() => setShowDetailsPopup(false)} />
+      <div className={classes.detailsPopup}>
+        <div className={classes.popupHeader}>
+          <h2>รายละเอียดเพิ่มเติม</h2>
+          <button className={classes.popupCloseButton} onClick={() => setShowDetailsPopup(false)}>
+            <FaTimes />
+          </button>
+        </div>
+        <div className={classes.popupContent}>
+          <div className={classes.statsRow}>
+            <div className={classes.statItem}>
+              <span className="label">ยอดดู</span>
+              <span className="value">{resource.viewCount || 0}</span>
+            </div>
+            <div className={classes.statItem}>
+              <span className="label">ยอดดาวน์โหลด</span>
+              <span className="value">{resource.downloadCount || 0}</span>
+            </div>
+            <div className={classes.statItem}>
+              <span className="label">ยอดถูกใจ</span>
+              <span className="value">{likeCounts[resource.id] || 0}</span>
+            </div>                
+          </div>
+          <div className={classes.dateInfo}>
+            โพสต์เมื่อ: {new Date(resource.createdAt).toLocaleDateString('th-TH', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+          {resource.tags && resource.tags.length > 0 && (
+            <div className={classes.tagsSection}>
+              <h3>แท็ก</h3>
+              <div className={classes.detailsTagsList}>
+                {resource.tags.map((tag, index) => (
+                  <span key={index} className={classes.detailsTag}>{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )}
+</div>
+);
 };
 
 export default ResourceDetailPage;
