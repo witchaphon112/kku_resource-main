@@ -938,7 +938,6 @@ const MainLayout = () => {
             <Link to="/images" className={`${classes.navLink}${isActive(location.pathname, "/images") ? " active" : ""}`}>รูปภาพ</Link>
             <Link to="/videos" className={`${classes.navLink}${isActive(location.pathname, "/videos") ? " active" : ""}`}>วิดีโอ</Link>
             <Link to="/graphics" className={`${classes.navLink}${isActive(location.pathname, "/graphics") ? " active" : ""}`}>กราฟฟิก</Link>
-            <Link to="/about" className={`${classes.navLink}${isActive(location.pathname, "/about") ? " active" : ""}`}>เกี่ยวกับเรา</Link>
           </nav>
 
           <div className={classes.rightIcons}>
@@ -1063,10 +1062,6 @@ const MainLayout = () => {
           <Link to="/graphics" className={`${classes.mobileMenuItem}${isActive(location.pathname, "/graphics") ? " active" : ""}`} onClick={() => setSidebarVisible(false)}>
             <i className="pi pi-images" />
             กราฟฟิก
-          </Link>
-          <Link to="/about" className={`${classes.mobileMenuItem}${isActive(location.pathname, "/about") ? " active" : ""}`} onClick={() => setSidebarVisible(false)}>
-            <i className="pi pi-info-circle" />
-            เกี่ยวกับเรา
           </Link>
         </div>
 

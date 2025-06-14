@@ -116,8 +116,6 @@ const ANIMATION_DURATION = {
 const HERO_DATA = [
   {
     id: "h1",
-    titlemain: "ภูมิอากาศและสิ่งแวดล้อมที่ มข.",
-    subtitle: "มุ่งมั่นลดการปล่อยก๊าซเรือนกระจก และสร้างความยั่งยืน...",
     imageUrl: `${import.meta.env.BASE_URL}mock/hero-1.jpg`,
   }
 ];
@@ -1734,7 +1732,6 @@ const useStyles = createUseStyles({
       display: 'flex',
       gap: '8px',
       '&:hover': {
-        background: '#3F72AF',
         transform: 'translateY(-2px)',
       },
     },
@@ -3106,38 +3103,7 @@ const MainPage = () => {
                                 className={classes.relatedImage}
                               />
                               <div className={classes.relatedTitle}>{item.title}</div>
-                              <div className={classes.relatedActionBar}>
-                                <button 
-                                  className={classes.relatedActionBtn}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handlePreview(e, item);
-                                  }}
-                                  title="Preview"
-                                >
-                                  <IoEye />
-                                </button>
-                                <button 
-                                  className={classes.relatedActionBtn}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDownload(e, item);
-                                  }}
-                                  title="Download"
-                                >
-                                  <FaDownload />
-                                </button>
-                                <button 
-                                  className={classes.relatedActionBtn}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleBookmark(e, item);
-                                  }}
-                                  title="Bookmark"
-                                >
-                                  {bookmarks.some(bookmark => bookmark.id === item.id) ? <FaHeart /> : <FaRegHeart />}
-                                </button>
-                              </div>
+                              
                             </div>
                             <div className={classes.relatedInfo}>
                               <span style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400}}>
