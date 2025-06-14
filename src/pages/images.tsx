@@ -511,28 +511,27 @@ const useStyles = createUseStyles({
   },
   previewModal: {
     position: 'fixed',
-    top: 0,
+    top: '50px', 
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch', // เปลี่ยนเป็น stretch เพื่อให้ content ยืดเต็มความสูง
     zIndex: 1000,
-    padding: '20px',
     backdropFilter: 'blur(8px)',
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: '16px',
+    borderRadius: '24px 24px 0 0',
     width: '100%',
-    maxWidth: '900px',
-    maxHeight: '90vh',
-    overflow: 'hidden',
+    height: '100%',
     position: 'relative',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-    animation: '$fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.2)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
   },
   modalHeader: {
     padding: '20px 24px',
@@ -2345,6 +2344,7 @@ const ImagesPage = () => {
           <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
             <div className={classes.modalHeader}>
               <h2 className={classes.modalTitle}>{previewItem.title}</h2>
+              
               <button className={classes.closeButton} onClick={closePreview}>
                 <FaTimes />
               </button>

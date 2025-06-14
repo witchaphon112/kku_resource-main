@@ -1,7 +1,6 @@
 import { User } from '../contexts/AuthContext';
 
 export const login = async (username: string, password: string): Promise<User> => {
-  // Mock login - in real app this would call an API
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -22,7 +21,6 @@ export const login = async (username: string, password: string): Promise<User> =
 };
 
 export const logout = async (): Promise<void> => {
-  // Mock logout - in real app this would call an API
   return new Promise((resolve) => {
     setTimeout(resolve, 1000);
   });
