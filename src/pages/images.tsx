@@ -4,7 +4,7 @@ import { createUseStyles } from "react-jss";
 import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter, FaSpinner, FaTimes, FaUser, FaFileAlt, FaImage, FaSort, FaCheck, FaList, FaTrophy, FaFolder, FaCode, FaGlobe, FaUndo, FaChevronDown, FaChevronLeft, FaChevronRight, FaTags, FaRegHeart, FaPalette, FaClock } from "react-icons/fa";
 import { BiFilterAlt } from 'react-icons/bi';
 import { MdFilterList, MdFilterAlt } from 'react-icons/md';
-import { IoEye, IoHeart, IoList, IoFilterOutline } from "react-icons/io5";
+import { IoEye, IoHeart, IoList, IoFilterOutline, IoTimeSharp } from "react-icons/io5";
 import resourcesData from "../mock/resources.json";
 import { useBookmarks } from "../contexts/BookmarkContext";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
@@ -2028,7 +2028,7 @@ const ImagesPage = () => {
               
               <div className={classes.filterSection}>
                 <h3 className={classes.filterTitle}>
-                  <FaClock />
+                  <IoTimeSharp />
                   ช่วงเวลา
                 </h3>
                 <select 
@@ -2040,10 +2040,10 @@ const ImagesPage = () => {
                   }))}
                 >
                   <option value="">ทั้งหมด</option>
-                  <option value="today">วันนี้</option>
-                  <option value="week">สัปดาห์นี้</option>
-                  <option value="month">เดือนนี้</option>
-                  <option value="year">ปีนี้</option>
+                  <option value="วันนี้">วันนี้</option>
+                  <option value="สัปดาห์นี้">สัปดาห์นี้</option>
+                  <option value="เดือนนี้">เดือนนี้</option>
+                  <option value="ปีนี้">ปีนี้</option>
                 </select>
               </div>
             </div>
@@ -2068,7 +2068,7 @@ const ImagesPage = () => {
                           category: prev.category.filter(c => c !== cat)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
@@ -2081,7 +2081,7 @@ const ImagesPage = () => {
                           tags: prev.tags.filter(t => t !== tag)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
@@ -2094,7 +2094,7 @@ const ImagesPage = () => {
                           technology: prev.technology.filter(t => t !== tech)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
@@ -2107,7 +2107,7 @@ const ImagesPage = () => {
                           awards: prev.awards.filter(a => a !== award)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
@@ -2120,7 +2120,7 @@ const ImagesPage = () => {
                           country: prev.country.filter(c => c !== country)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
@@ -2133,7 +2133,7 @@ const ImagesPage = () => {
                           year: prev.year.filter(y => y !== year)
                         }));
                       }}>
-                        <FaTimes />
+                        <IoTimeSharp />
                       </button>
                     </span>
                   ))}
