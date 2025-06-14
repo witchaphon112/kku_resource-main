@@ -121,14 +121,14 @@ const HERO_DATA = [
 ];
 
 const TRENDING_KEYWORDS = [
-  { text: "การแพทย์", bgColor: "#fff" },
-  { text: "วอลเปเปอร์", bgColor: "#fff" },
-  { text: "การเรียนการสอน", bgColor: "#fff" },
-  { text: "รอบรั้วมหาวิทยาลัย", bgColor: "#fff" },
-  { text: "ดนตรี", bgColor: "#fff" },
-  { text: "วิดีโอ", bgColor: "#fff" },
-  { text: "กราฟฟิก", bgColor: "#fff" },
-  { text: "ธรรมชาติ", bgColor: "#fff" },
+  { text: "โรงพยาบาล", bgColor: "#fff" },
+  { text: "ยา", bgColor: "#fff" },
+  { text: "มลพิษ", bgColor: "#fff" },
+  { text: "คลินิก", bgColor: "#fff" },
+  { text: "การทำหัตถการหัวใจ", bgColor: "#fff" },
+  { text: "ศูนย์นวัตกรรมการเรียนการสอน", bgColor: "#fff" },
+  { text: "นศ.มข. คว้ารางวัลชนะเลิศระดับชาติ", bgColor: "#fff" },
+  { text: "คณะเทคโนโลยี มหาวิทยาลัยขอนแก่น", bgColor: "#fff" },
 ];
 
 interface Resource {
@@ -1531,13 +1531,16 @@ const useStyles = createUseStyles({
     "&:hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+      color: '#ec4899',
+      background: '#fbcfe8',
+
     },
     "& i": {
       fontSize: "1rem"
     },
     "&.active": {
-      color: THEME.colors.secondary,
-      background: "#f0f5ff"
+      background: '#fbcfe8',
+      color: '#ec4899',
     }
   },
 
@@ -1939,7 +1942,7 @@ const useStyles = createUseStyles({
   },
   relatedImageBox: {
     width: "100%",
-    aspectRatio: "1/0.9",
+    aspectRatio: "1/0.6", // กำหนดสัดส่วน 1:0.9
     position: "relative",
     overflow: "hidden",
     background: "#f8f9fa",
@@ -1950,7 +1953,8 @@ const useStyles = createUseStyles({
   relatedImage: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
+    objectFit: "cover", // หรือ "contain" แล้วแต่ต้องการ
+    objectPosition: "center", // จัดตำแหน่งรูปให้อยู่กลาง
     transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
   },
   relatedTitle: {
@@ -2102,11 +2106,12 @@ const useStyles = createUseStyles({
   
   categoryShowcaseGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(6, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: "1rem",
-    maxWidth: "1400px",
+    maxWidth: "1200px",
     margin: "0 auto",
     padding: "0 2rem",
+    width: "100%",
     "@media (max-width: 1200px)": {
       gridTemplateColumns: "repeat(3, 1fr)",
     },
@@ -2848,8 +2853,8 @@ const MainPage = () => {
                       aria-label={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
                       onClick={(e) => handleBookmark(e, item)}
                     >
-                      <i className="pi pi-bookmark" />
-                    </button>
+                      <i className={`pi ${bookmarks.some(b => b.id === item.id) ? 'pi-bookmark-fill' : 'pi-bookmark'}`} />
+                      </button>
                     <button 
                       className={classes.cardActionBtn}
                       title="ดาวน์โหลด"

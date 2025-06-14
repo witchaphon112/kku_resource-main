@@ -541,6 +541,7 @@ const useStyles = createUseStyles({
     gap: "2.5rem",
     fontSize: 16,
     fontWeight: 600,
+    marginTop: "2rem",
     "@media (max-width: 900px)": {
       flexDirection: "column",
       alignItems: "center",
