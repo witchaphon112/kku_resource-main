@@ -2327,142 +2327,78 @@ const VideosPage = () => {
               ) : (
                 <>
                   {displayedItems.map((item, index) => (
-                    viewMode === 'grid' ? (
-                      <div
-                        key={item.id}
-                        className={classes.card}
-                        onClick={() => navigate(`/resource/${item.id}`)}
-                        style={{
-                          animationDelay: `${index * 0.1}s`
-                        }}
-                      >
-                        <div className={classes.cardImageBox}>
-                          {!loadedVideos.has(item.id) && (
-                            <div className={classes.imageLoader}>
-                              <FaSpinner className={classes.spinnerIcon} />
-                            </div>
-                          )}
-                          <img
-                            src={getImageUrl(item.thumbnailUrl)}
-                            alt={item.title}
-                            loading="lazy"
-                            onLoad={() => handleVideoLoad(item.id)}
-                            style={{ 
-                              opacity: loadedVideos.has(item.id) ? 1 : 0
-                            }}
-                          />
-                          <div className={classes.playButton}>
-                            <FaPlay />
+                    <div
+                      key={item.id}
+                      className={classes.card}
+                      onClick={() => navigate(`/resource/${item.id}`)}
+                      style={{
+                        animationDelay: `${index * 0.1}s`
+                      }}
+                    >
+                      <div className={classes.cardImageBox}>
+                        {!loadedVideos.has(item.id) && (
+                          <div className={classes.imageLoader}>
+                            <FaSpinner className={classes.spinnerIcon} />
                           </div>
-                          <div className={classes.cardTitle}>{item.title}</div>
-                          <div className={classes.cardActionBar}>
-                            <button 
-                              className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleDownload(e, item)}
-                              title={user ? "ดาวน์โหลด" : "กรุณาเข้าสู่ระบบเพื่อดาวน์โหลด"}
-                            >
-                              <FaDownload />
-                            </button>
-                            <button
-                              className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleLike(e, item)}
-                              title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
-                            >
-                              {likes[item.id] ? <IoHeart /> : <IoHeartOutline />}
-                            </button>
-                            <button
-                              className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleBookmark(e, item)}
-                              title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
-                            >
-                              {bookmarks.some(bookmark => bookmark.id === item.id) ? <IoBookmark /> : <IoBookmarkOutline />}
-                            </button>
-                          </div>
+                        )}
+                        <img
+                          src={getImageUrl(item.thumbnailUrl)}
+                          alt={item.title}
+                          loading="lazy"
+                          onLoad={() => handleVideoLoad(item.id)}
+                          style={{ 
+                            opacity: loadedVideos.has(item.id) ? 1 : 0
+                          }}
+                        />
+                        <div className={classes.playButton}>
+                          <FaPlay />
                         </div>
-                        <div className={classes.cardInfo} style={{borderRadius: '16px', boxShadow: 'none', padding: '5px 9px', margin: '5x 5px 0 8px'}}>
-                          <div className={classes.userInfo} style={{gap: '8px'}}>
-                            <span className="name" style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400, letterSpacing: 0}}>
-                              {item.category === 'medical' ? 'การแพทย์' : 
-                               item.category === 'education' ? 'การศึกษา' : 
-                               item.category === 'campus' ? 'รอบรั้วมหาลัย' : 
-                               item.category}
-                            </span>
-                          </div>
-                          <div className={classes.stats} style={{gap: '14px'}}>
-                            <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
-                              <FaDownload style={{color: '#94a3b8', fontSize: '1.05rem'}} />
-                              {formatNumber(item.downloadCount || 0)}
-                            </span>
-                            <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
-                              <IoEye style={{color: '#94a3b8', fontSize: '1.05rem'}} />
-                              {formatNumber(item.viewCount || 0)}
-                            </span>
-                          </div>
+                        <div className={classes.cardTitle}>{item.title}</div>
+                        <div className={classes.cardActionBar}>
+                          <button 
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleDownload(e, item)}
+                            title={user ? "ดาวน์โหลด" : "กรุณาเข้าสู่ระบบเพื่อดาวน์โหลด"}
+                          >
+                            <FaDownload />
+                          </button>
+                          <button
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleLike(e, item)}
+                            title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
+                          >
+                            {likes[item.id] ? <IoHeart /> : <IoHeartOutline />}
+                          </button>
+                          <button
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleBookmark(e, item)}
+                            title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
+                          >
+                            {bookmarks.some(bookmark => bookmark.id === item.id) ? <IoBookmark /> : <IoBookmarkOutline />}
+                          </button>
                         </div>
                       </div>
-                    ) : (
-                      <div 
-                        key={item.id}
-                        className={classes.listItem}
-                        onClick={() => navigate(`/resource/${item.id}`)}
-                      >
-                        <div className={classes.listItemImage}>
-                          {!loadedVideos.has(item.id) && (
-                            <div className={classes.imageLoader}>
-                              <FaSpinner className={classes.spinnerIcon} />
-                            </div>
-                          )}
-                          <img
-                            src={getImageUrl(item.thumbnailUrl)}
-                            alt={item.title}
-                            loading="lazy"
-                            onLoad={() => handleVideoLoad(item.id)}
-                          />
-                          <div className={classes.playButton}>
-                            <FaPlay />
-                          </div>
+                      <div className={classes.cardInfo} style={{borderRadius: '16px', boxShadow: 'none', padding: '5px 9px', margin: '5x 5px 0 8px'}}>
+                        <div className={classes.userInfo} style={{gap: '8px'}}>
+                          <span className="name" style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400, letterSpacing: 0}}>
+                            {item.category === 'medical' ? 'การแพทย์' : 
+                             item.category === 'education' ? 'การศึกษา' : 
+                             item.category === 'campus' ? 'รอบรั้วมหาลัย' : 
+                             item.category}
+                          </span>
                         </div>
-                        <div className={classes.listItemContent}>
-                          <h3 className={classes.listItemTitle}>{item.title}</h3>
-                          <div className={classes.listItemMeta}>
-                            <span>
-                              <FaDownload />
-                              {formatNumber(item.downloadCount || 0)} ดาวน์โหลด
-                            </span>
-                            <span>
-                              <IoEye />
-                              {formatNumber(item.viewCount || 0)} ครั้ง
-                            </span>
-                          </div>
-                          <div className={classes.listItemActions}>
-                            <button 
-                              className={`${classes.listItemBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleDownload(e, item)}
-                              title={user ? "ดาวน์โหลด" : "กรุณาเข้าสู่ระบบเพื่อดาวน์โหลด"}
-                            >
-                              <FaDownload />
-                              ดาวน์โหลด
-                            </button>
-                            <button
-                              className={`${classes.listItemBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleLike(e, item)}
-                              title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
-                            >
-                              {likes[item.id] ? <IoHeart /> : <IoHeartOutline />}
-                              {likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ"}
-                            </button>
-                            <button
-                              className={`${classes.listItemBtn} ${!user ? 'disabled' : ''}`}
-                              onClick={(e) => handleBookmark(e, item)}
-                              title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
-                            >
-                              {bookmarks.some(bookmark => bookmark.id === item.id) ? <IoBookmark /> : <IoBookmarkOutline />}
-                              บุ๊คมาร์ค
-                            </button>
-                          </div>
+                        <div className={classes.stats} style={{gap: '14px'}}>
+                          <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
+                            <FaDownload style={{color: '#94a3b8', fontSize: '1.05rem'}} />
+                            {formatNumber(item.downloadCount || 0)}
+                          </span>
+                          <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
+                            <IoEye style={{color: '#94a3b8', fontSize: '1.05rem'}} />
+                            {formatNumber(item.viewCount || 0)}
+                          </span>
                         </div>
                       </div>
-                    )
+                    </div>
                   ))}
                   {visibleItems < sortedItems.length && (
                     <div 
