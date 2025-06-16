@@ -21,6 +21,7 @@ import { DownloadHistoryProvider } from "./contexts/DownloadHistoryContext";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import { ResourceProvider } from './contexts/ResourceContext';
+import { ViewProvider } from './contexts/ViewContext';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
@@ -104,9 +105,11 @@ function App() {
           <ResourceProvider>
             <BookmarkProvider>
               <DownloadHistoryProvider>
-                <ScrollToTopButton />
-                <ScrollToTop />
-                <AppContent />
+                <ViewProvider>
+                  <ScrollToTopButton />
+                  <ScrollToTop />
+                  <AppContent />
+                </ViewProvider>
               </DownloadHistoryProvider>
             </BookmarkProvider>
           </ResourceProvider>

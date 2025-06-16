@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
@@ -1247,38 +1246,43 @@ updatedAt: string;
 videoUrl?: string;
 }
 
-const VideoPlayer = ({ src, title }) => {
-const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
-
-if (isYouTube) {
-const videoId = src.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/)?.[1];
-const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : src;
-return (
-  <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
-    <iframe
-      width="100%"
-      height="600"
-      src={embedUrl}
-      title={title}
-      frameBorder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowFullScreen
-      style={{ maxWidth: '100%', maxHeight: '70vh' }}
-    />
-  </div>
-);
+interface VideoPlayerProps {
+  src: string;
+  title: string;
 }
 
-return (
-<div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
-  <video
-    src={src}
-    controls
-    autoPlay
-    style={{ maxWidth: '100%', maxHeight: '70vh' }}
-  />
-</div>
-);
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title }) => {
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
+
+  if (isYouTube) {
+    const videoId = src.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^?&]+)/)?.[1];
+    const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : src;
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+        <iframe
+          width="100%"
+          height="600"
+          src={embedUrl}
+          title={title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ maxWidth: '100%', maxHeight: '70vh' }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000' }}>
+      <video
+        src={src}
+        controls
+        autoPlay
+        style={{ maxWidth: '100%', maxHeight: '70vh' }}
+      />
+    </div>
+  );
 };
 
 const ResourceDetailPage = () => {
@@ -1301,10 +1305,13 @@ const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 const [showDetailsPopup, setShowDetailsPopup] = useState(false);
 const [showFullDescription, setShowFullDescription] = useState(false);
 const [likes, setLikes] = useState<{ [key: string]: boolean }>(() => {
-const savedLikes = localStorage.getItem('likes');
-return savedLikes ? JSON.parse(savedLikes) : {};
+  const savedLikes = localStorage.getItem('likes');
+  return savedLikes ? JSON.parse(savedLikes) : {};
 });
-const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
+const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>(() => {
+  const savedLikeCounts = localStorage.getItem('likeCounts');
+  return savedLikeCounts ? JSON.parse(savedLikeCounts) : {};
+});
 
 const resource = resourcesData.resources.find((r) => r.id === id) as Resource;
 
@@ -1347,10 +1354,15 @@ if (resource) {
   setBookmarkStatus(isBookmarked(resource.id));
   setLikeCounts(prev => ({
     ...prev,
-    [resource.id]: resource.viewCount || 0
+    [resource.id]: prev[resource.id] || 0
   }));
 }
 }, [resource, isBookmarked]);
+
+// Save like counts to localStorage when they change
+useEffect(() => {
+  localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
+}, [likeCounts]);
 
 const handleOpenVideoModal = useCallback(() => {
 setIsVideoModalOpen(true);

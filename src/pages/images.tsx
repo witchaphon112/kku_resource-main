@@ -4,7 +4,7 @@ import { createUseStyles } from "react-jss";
 import { FaHeart, FaUniversity, FaBook, FaThLarge, FaRegBookmark, FaDownload, FaEye, FaFilter, FaSpinner, FaTimes, FaUser, FaFileAlt, FaImage, FaSort, FaCheck, FaList, FaTrophy, FaFolder, FaCode, FaGlobe, FaUndo, FaChevronDown, FaChevronLeft, FaChevronRight, FaTags, FaRegHeart, FaPalette, FaClock } from "react-icons/fa";
 import { BiFilterAlt } from 'react-icons/bi';
 import { MdFilterList, MdFilterAlt } from 'react-icons/md';
-import { IoEye, IoHeart, IoList, IoFilterOutline, IoTimeSharp } from "react-icons/io5";
+import { IoEye, IoHeart, IoList, IoFilterOutline, IoTimeSharp, IoBookmark, IoBookmarkOutline, IoHeartOutline, IoDownload } from "react-icons/io5";
 import resourcesData from "../mock/resources.json";
 import { useBookmarks } from "../contexts/BookmarkContext";
 import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
@@ -178,7 +178,7 @@ const useStyles = createUseStyles({
   },
   cardImageBox: {
     width: "100%",
-    aspectRatio: "1/0.9",
+    aspectRatio: "16/9",
     position: "relative",
     overflow: "hidden",
     background: "#f8f9fa",
@@ -335,6 +335,16 @@ const useStyles = createUseStyles({
       transform: "translateY(-2px) scale(1.05)",
       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
       color: "#3F72AF",
+    },
+    "&.disabled": {
+      opacity: 0.6,
+      cursor: "not-allowed",
+      "&:hover": {
+        transform: "none",
+        boxShadow: "none",
+        background: "rgba(255, 255, 255, 0.95)",
+        color: "#555",
+      }
     },
     "& svg": {
       fontSize: "1.2rem",
@@ -1047,12 +1057,14 @@ const useStyles = createUseStyles({
     }
   },
   listView: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    padding: "32px",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "24px",
+    padding: "24px",
     "@media (max-width: 767px)": {
-      padding: "24px",
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+      padding: "16px",
     }
   },
   listItem: {
@@ -1226,7 +1238,7 @@ const useStyles = createUseStyles({
     }
   },
   spinnerIcon: {
-    animation: "spin 1s linear infinite",
+    animation: "$spin 1s linear infinite",
     fontSize: "24px",
     color: "#3F72AF"
   },
@@ -1581,10 +1593,42 @@ const ImagesPage = () => {
   const { addDownload } = useDownloadHistory();
   const { user } = useAuth();
 
+  // Add likes state
+  const [likes, setLikes] = useState<Record<string, boolean>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+
+  // Load likes from localStorage on mount
+  useEffect(() => {
+    const savedLikes = localStorage.getItem('likes');
+    if (savedLikes) {
+      setLikes(JSON.parse(savedLikes));
+    }
+  }, []);
+
+  // Save likes to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('likes', JSON.stringify(likes));
+  }, [likes]);
+
+  // Add handleLike function
+  const handleLike = (e: React.MouseEvent, item: Resource) => {
+    e.stopPropagation();
+    if (!user) return;
+
+    setLikes(prev => ({
+      ...prev,
+      [item.id]: !prev[item.id]
+    }));
+
+    setLikeCounts(prev => ({
+      ...prev,
+      [item.id]: prev[item.id] ? (prev[item.id] || 0) - 1 : (prev[item.id] || 0) + 1
+    }));
+  };
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
-  const [page, setPage] = useState(1);
   const [openCats, setOpenCats] = useState<string[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1609,7 +1653,10 @@ const ImagesPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [sort, setSort] = useState('latest');
   
-  const itemsPerPage = 12;
+  const itemsPerLoad = 12;
+  const [visibleItems, setVisibleItems] = useState(12);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadingRef = useRef(null);
 
   const images = resourcesData.resources.filter((item) => item.type === "image");
   
@@ -1649,8 +1696,6 @@ const ImagesPage = () => {
         return false;
       }
 
-
-
       if (activeFilters.year?.length > 0) {
         const itemYear = new Date(item.createdAt).getFullYear().toString();
         if (!activeFilters.year.includes(itemYear)) return false;
@@ -1678,8 +1723,6 @@ const ImagesPage = () => {
       }
     });
   }, [filteredItems, sortBy]);
-  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
-  const paginatedItems = sortedItems.slice((page-1)*itemsPerPage, page*itemsPerPage);
 
   const toggleCat = (val: string) => {
     setOpenCats(open => open.includes(val) ? open.filter(v => v !== val) : [...open, val]);
@@ -1716,9 +1759,13 @@ const ImagesPage = () => {
     setPreviewItem(null);
   };
 
-  const handleDownload = async (e: React.MouseEvent, item: any) => {
+  const handleDownload = async (e: React.MouseEvent, item: Resource) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user) {
+      // Redirect to login or show message
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
     
     try {
       const response = await fetch(item.fileUrl);
@@ -1745,8 +1792,14 @@ const ImagesPage = () => {
     }
   };
 
-  const handleBookmark = (e: React.MouseEvent, item: any) => {
+  const handleBookmark = (e: React.MouseEvent, item: Resource) => {
     e.stopPropagation();
+    if (!user) {
+      // Redirect to login
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+
     if (bookmarks.some(bookmark => bookmark.id === item.id)) {
       removeBookmark(item.id);
     } else {
@@ -1775,19 +1828,16 @@ const ImagesPage = () => {
       }
       return [...newCategories, value];
     });
-    setPage(1);
   };
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    setPage(1);
   };
 
   const clearFilters = () => {
     setSelectedCategories(["all"]);
     setSearchQuery("");
     setSortBy("popular");
-    setPage(1);
   };
 
   useEffect(() => {
@@ -1840,7 +1890,6 @@ const ImagesPage = () => {
     });
     setSearchQuery('');
     setSortBy('popular');
-    setPage(1);
   };
 
   const totalActiveFilters = Object.values(activeFilters).flat().length;
@@ -1876,10 +1925,10 @@ const ImagesPage = () => {
   }, [showFilters]);
 
   const sortOptions: SortOption[] = [
-    { value: 'latest', label: 'Latest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'popular', label: 'Most Popular' },
-    { value: 'views', label: 'Most Viewed' },
+    { value: 'latest', label: 'ล่าสุด' },
+    { value: 'oldest', label: 'เก่าที่สุด' },
+    { value: 'popular', label: 'ยอดนิยม' },
+    { value: 'views', label: 'ยอดเข้าชมสูงสุด' },
   ];
 
   const activeFilterCount = useMemo(() => {
@@ -1889,10 +1938,57 @@ const ImagesPage = () => {
   }, [activeFilters]);
 
   const mockTags = [
-    "การแพทย์", "การศึกษา", "วิจัย", "นวัตกรรม", 
-    "เทคโนโลยี", "สุขภาพ", "การเรียนการสอน", 
-    "โรงพยาบาล", "คลินิก", "ห้องปฏิบัติการ"
+    "การศึกษา", "มหาลัยขอนแก่น", "มหาลัย", "แพทย์ศาสตร์"
   ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && !isLoading && visibleItems < sortedItems.length) {
+          setVisibleItems(prev => prev + itemsPerLoad);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1
+      }
+    );
+
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    return () => {
+      if (loadingRef.current) {
+        observer.unobserve(loadingRef.current);
+      }
+    };
+  }, [visibleItems, sortedItems.length, isLoading]);
+
+  const displayedItems = useMemo(() => {
+    return sortedItems.slice(0, visibleItems);
+  }, [sortedItems, visibleItems]);
+
+  useEffect(() => {
+    setVisibleItems(itemsPerLoad);
+  }, [sortedItems.length, activeFilters, searchQuery, sortBy]);
+
+  // Remove loading state since we're using infinite scroll
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
+  // Add formatNumber utility function
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
+  };
 
   return (
     <div className={classes.pageWrap}>
@@ -1906,9 +2002,9 @@ const ImagesPage = () => {
                 className={classes.sortSelect}
               >
                 <option value="latest">ล่าสุด</option>
-                <option value="oldest">เก่าสุด</option>
+                <option value="oldest">เก่าที่สุด</option>
                 <option value="popular">ยอดนิยม</option>
-                <option value="views">ดูมากที่สุด</option>
+                <option value="views">ยอดเข้าชมสูงสุด</option>
               </select>
             </div>
           </div>
@@ -1919,7 +2015,9 @@ const ImagesPage = () => {
             >
               <IoFilterOutline />
               ตัวกรอง
-              
+              {activeFilterCount > 0 && (
+                <span className={classes.filterCount}>{activeFilterCount}</span>
+              )}
             </button>
             <div className={classes.viewToggle}>
               <button
@@ -1940,72 +2038,69 @@ const ImagesPage = () => {
           </div>
         </div>
 
-        {/* Filter Bar */}
         {showFilters && (
           <div className={classes.filterBar}>
- 
-
-            {/* Filter Content */}
             <div className={classes.filterContent}>
               <div className={classes.filterSection}>
-              <h3 className={classes.filterTitle}>
+                <h3 className={classes.filterTitle}>
                   <IoList />
                   หมวดหมู่
-              </h3>
-              <div className={classes.categoriesList}>
-                <button
-                  className={`${classes.categoryButton} ${!activeFilters.category.length ? 'active' : ''}`}
-                  onClick={() => setActiveFilters(prev => ({ ...prev, category: [] }))}
-                >
-                  ทั้งหมด
-                </button>
-                <button
-                  className={`${classes.categoryButton} ${activeFilters.category.includes('medical') ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveFilters(prev => ({
-                      ...prev,
-                      category: prev.category.includes('medical') 
-                        ? prev.category.filter(c => c !== 'medical')
-                        : [...prev.category, 'medical']
-                    }));
-                  }}
-                >
-                  การแพทย์
-                </button>
-                <button
-                  className={`${classes.categoryButton} ${activeFilters.category.includes('education') ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveFilters(prev => ({
-                      ...prev,
-                      category: prev.category.includes('education')
-                        ? prev.category.filter(c => c !== 'education')
-                        : [...prev.category, 'education']
-                    }));
-                  }}
-                >
-                  การศึกษา
-                </button>
-                <button
-                  className={`${classes.categoryButton} ${activeFilters.category.includes('campus') ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveFilters(prev => ({
-                      ...prev,
-                      category: prev.category.includes('campus')
-                        ? prev.category.filter(c => c !== 'campus')
-                        : [...prev.category, 'campus']
-                    }));
-                  }}
-                >
-                  รอบรั้วมหาลัย
-                </button>
-              </div>  
-            </div>
+                </h3>
+                <div className={classes.categoriesList}>
+                  <button
+                    className={`${classes.categoryButton} ${!activeFilters.category.length ? 'active' : ''}`}
+                    onClick={() => setActiveFilters(prev => ({ ...prev, category: [] }))}
+                  >
+                    ทั้งหมด
+                  </button>
+                  <button
+                    className={`${classes.categoryButton} ${activeFilters.category.includes('medical') ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilters(prev => ({
+                        ...prev,
+                        category: prev.category.includes('medical') 
+                          ? prev.category.filter(c => c !== 'medical')
+                          : [...prev.category, 'medical']
+                      }));
+                    }}
+                  >
+                    การแพทย์
+                  </button>
+                  <button
+                    className={`${classes.categoryButton} ${activeFilters.category.includes('education') ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilters(prev => ({
+                        ...prev,
+                        category: prev.category.includes('education')
+                          ? prev.category.filter(c => c !== 'education')
+                          : [...prev.category, 'education']
+                      }));
+                    }}
+                  >
+                    การศึกษา
+                  </button>
+                  <button
+                    className={`${classes.categoryButton} ${activeFilters.category.includes('campus') ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilters(prev => ({
+                        ...prev,
+                        category: prev.category.includes('campus')
+                          ? prev.category.filter(c => c !== 'campus')
+                          : [...prev.category, 'campus']
+                      }));
+                    }}
+                  >
+                    รอบรั้วมหาลัย
+                  </button>
+                </div>
+              </div>
+
               <div className={classes.filterSection}>
-              <h3 className={classes.filterTitle}>
+                <h3 className={classes.filterTitle}>
                   <FaTags />
                   แท็ก
                 </h3>
-              <div className={classes.tagsList}>
+                <div className={classes.tagsList}>
                   {mockTags.map((tag, index) => (
                     <button
                       key={index}
@@ -2024,7 +2119,7 @@ const ImagesPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className={classes.filterSection}>
                 <h3 className={classes.filterTitle}>
                   <IoTimeSharp />
@@ -2084,71 +2179,6 @@ const ImagesPage = () => {
                       </button>
                     </span>
                   ))}
-                  {activeFilters.technology.map((tech, index) => (
-                    <span key={`tech-${index}`} className={classes.activeFilterTag}>
-                      {tech}
-                      <button onClick={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          technology: prev.technology.filter(t => t !== tech)
-                        }));
-                      }}>
-                        <IoTimeSharp />
-                      </button>
-                    </span>
-                  ))}
-                  {activeFilters.awards.map((award, index) => (
-                    <span key={`award-${index}`} className={classes.activeFilterTag}>
-                      {award}
-                      <button onClick={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          awards: prev.awards.filter(a => a !== award)
-                        }));
-                      }}>
-                        <IoTimeSharp />
-                      </button>
-                    </span>
-                  ))}
-                  {activeFilters.country.map((country, index) => (
-                    <span key={`country-${index}`} className={classes.activeFilterTag}>
-                      {country}
-                      <button onClick={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          country: prev.country.filter(c => c !== country)
-                        }));
-                      }}>
-                        <IoTimeSharp />
-                      </button>
-                    </span>
-                  ))}
-                  {activeFilters.year.map((year, index) => (
-                    <span key={`year-${index}`} className={classes.activeFilterTag}>
-                      {year}
-                      <button onClick={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          year: prev.year.filter(y => y !== year)
-                        }));
-                      }}>
-                        <IoTimeSharp />
-                      </button>
-                    </span>
-                  ))}
-                  {activeFilters.timeframe && (
-                    <span className={classes.activeFilterTag}>
-                      {activeFilters.timeframe}
-                      <button onClick={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          timeframe: null
-                        }));
-                      }}>
-                        <FaTimes />
-                      </button>
-                    </span>
-                  )}
                 </div>
                 <button 
                   className={classes.clearFiltersBtn}
@@ -2173,215 +2203,104 @@ const ImagesPage = () => {
         <div className={classes.contentWrap}>
           <main className={`${classes.main}`}>
             <div className={viewMode === 'grid' ? classes.grid : classes.listView}>
-              {loading ? (
-                Array.from({ length: itemsPerPage }).map((_, index) => (
-                  <div 
-                    key={`skeleton-${index}`} 
-                    className={`${viewMode === 'grid' ? classes.card : classes.listItem} ${classes.shimmer}`} 
-                    style={{ 
-                      height: viewMode === 'grid' ? "360px" : "210px",
-                      animationDelay: `${index * 0.1}s`
-                    }} 
-                  />
-                ))
-              ) : paginatedItems.length === 0 ? (
+              {displayedItems.length === 0 ? (
                 <div className={classes.emptyState}>
                   <FaImage />
                   <p>ไม่พบรูปภาพที่ตรงกับเงื่อนไขการค้นหา</p>
                 </div>
               ) : (
-                paginatedItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className={classes.card}
-                    onClick={() => navigate(`/resource/${item.id}`)}
-                    style={{
-                      animationDelay: `${index * 0.1}s`
-                    }}
-                  >
-                    <div className={classes.cardImageBox}>
-                      {!loadedImages.has(item.id) && (
-                        <div className={classes.imageLoader}>
-                          <FaSpinner className={classes.spinnerIcon} />
+                <>
+                  {displayedItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className={classes.card}
+                      onClick={() => navigate(`/resource/${item.id}`)}
+                      style={{
+                        animationDelay: `${index * 0.1}s`
+                      }}
+                    >
+                      <div className={classes.cardImageBox}>
+                        {!loadedImages.has(item.id) && (
+                          <div className={classes.imageLoader}>
+                            <FaSpinner className={classes.spinnerIcon} />
+                          </div>
+                        )}
+                        <img
+                          src={getImageUrl(item.thumbnailUrl)}
+                          alt={item.title}
+                          loading="lazy"
+                          onLoad={() => handleImageLoad(item.id)}
+                          style={{ 
+                            opacity: loadedImages.has(item.id) ? 1 : 0
+                          }}
+                        />
+                        <div className={classes.cardTitle}>{item.title}</div>
+                        <div className={classes.cardActionBar}>
+                          <button 
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleDownload(e, item)}
+                            title={user ? "ดาวน์โหลด" : "กรุณาเข้าสู่ระบบเพื่อดาวน์โหลด"}
+                          >
+                            <FaDownload />
+                          </button>
+                          <button
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleLike(e, item)}
+                            title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
+                          >
+                            {likes[item.id] ? <IoHeart /> : <IoHeartOutline />}
+                          </button>
+                          <button
+                            className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                            onClick={(e) => handleBookmark(e, item)}
+                            title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
+                          >
+                            {bookmarks.some(bookmark => bookmark.id === item.id) ? <IoBookmark /> : <IoBookmarkOutline />}
+                          </button>
                         </div>
-                      )}
-                      <img
-                        src={getImageUrl(item.thumbnailUrl)}
-                        alt={item.title}
-                        loading="lazy"
-                        onLoad={() => handleImageLoad(item.id)}
-                        style={{ 
-                          opacity: loadedImages.has(item.id) ? 1 : 0
-                        }}
-                      />
-                      <div className={classes.cardTitle}>{item.title}</div>
-                      <div className={classes.cardActionBar}>
-                        <button 
-                          className={classes.cardActionBtn}
-                          onClick={(e) => handlePreview(e, item)}
-                          title="Preview"
-                        >
-                          <IoEye />
-                        </button>
-                        <button 
-                          className={classes.cardActionBtn}
-                          onClick={(e) => handleDownload(e, item)}
-                          title="Download"
-                        >
-                          <FaDownload />
-                        </button>
-                        <button 
-                          className={classes.cardActionBtn}
-                          onClick={(e) => handleBookmark(e, item)}
-                          title="Bookmark"
-                        >
-                          {bookmarks.some(bookmark => bookmark.id === item.id) ? <FaHeart /> : <FaRegHeart />}
-                        </button>
+                      </div>
+                      <div className={classes.cardInfo} style={{borderRadius: '16px', boxShadow: 'none', padding: '5px 9px', margin: '5x 5px 0 8px'}}>
+                        <div className={classes.userInfo} style={{gap: '8px'}}>
+                          <span className="name" style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400, letterSpacing: 0}}>
+                            {item.category === 'medical' ? 'การแพทย์' : 
+                             item.category === 'education' ? 'การศึกษา' : 
+                             item.category === 'campus' ? 'รอบรั้วมหาลัย' : 
+                             item.category}
+                          </span>
+                        </div>
+                        <div className={classes.stats} style={{gap: '14px'}}>
+                          <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
+                            <FaDownload style={{color: '#94a3b8', fontSize: '1.05rem'}} />
+                            {formatNumber(item.downloadCount || 0)}
+                          </span>
+                          <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
+                            <IoEye style={{color: '#94a3b8', fontSize: '1.05rem'}} />
+                            {formatNumber(item.viewCount || 0)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className={classes.cardInfo} style={{borderRadius: '16px', boxShadow: 'none', padding: '5px 9px', margin: '5x 5px 0 8px'}}>
-                      <div className={classes.userInfo} style={{gap: '8px'}}>
-                        <span className="name" style={{fontSize: '0.92rem', color: '#64748b', fontWeight: 400, letterSpacing: 0}}>
-                          {item.category}
-                        </span>
-                      </div>
-                      <div className={classes.stats} style={{gap: '14px'}}>
-                        <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
-                          <IoHeart style={{color: '#94a3b8', fontSize: '1.05rem'}} />
-                          {item.downloadCount || 0}
-                        </span>
-                        <span className="stat" style={{color: '#94a3b8', fontSize: '0.92rem', fontWeight: 400}}>
-                          <IoEye style={{color: '#94a3b8', fontSize: '1.05rem'}} />
-                          {item.viewCount || 0}
-                        </span>
-                      </div>
+                  ))}
+                  {visibleItems < sortedItems.length && (
+                    <div 
+                      ref={loadingRef} 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        padding: '2rem',
+                        gridColumn: '1 / -1',
+                        width: '100%'
+                      }}
+                    >
+                      <FaSpinner className={classes.spinnerIcon} />
                     </div>
-                  </div>
-                ))
+                  )}
+                </>
               )}
             </div>
-            {!loading && paginatedItems.length > 0 && (
-              <div className={classes.pagination}>
-                <button
-                  className={`${classes.pageBtn} ${page === 1 ? 'disabled' : ''}`}
-                  onClick={() => page > 1 && setPage(page - 1)}
-                  disabled={page === 1}
-                >
-                  <i className="pi pi-chevron-left" />
-                </button>
-                
-                {totalPages <= 7 ? (
-                  Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-                    <button
-                      key={num}
-                      className={`${classes.pageBtn} ${page === num ? 'active' : ''}`}
-                      onClick={() => setPage(num)}
-                    >
-                      {num}
-                    </button>
-                  ))
-                ) : (
-                  <>
-                    <button
-                      className={`${classes.pageBtn} ${page === 1 ? 'active' : ''}`}
-                      onClick={() => setPage(1)}
-                    >
-                      1
-                    </button>
-                    
-                    {page > 3 && <span className={classes.pageEllipsis}>...</span>}
-                    
-                    {page > 2 && (
-                      <button
-                        className={classes.pageBtn}
-                        onClick={() => setPage(page - 1)}
-                      >
-                        {page - 1}
-                      </button>
-                    )}
-                    
-                    {page !== 1 && page !== totalPages && (
-                      <button className={`${classes.pageBtn} active`}>
-                        {page}
-                      </button>
-                    )}
-                    
-                    {page < totalPages - 1 && (
-                      <button
-                        className={classes.pageBtn}
-                        onClick={() => setPage(page + 1)}
-                      >
-                        {page + 1}
-                      </button>
-                    )}
-                    
-                    {page < totalPages - 2 && <span className={classes.pageEllipsis}>...</span>}
-                    
-                    <button
-                      className={`${classes.pageBtn} ${page === totalPages ? 'active' : ''}`}
-                      onClick={() => setPage(totalPages)}
-                    >
-                      {totalPages}
-                    </button>
-                  </>
-                )}
-                
-                <button
-                  className={`${classes.pageBtn} ${page === totalPages ? 'disabled' : ''}`}
-                  onClick={() => page < totalPages && setPage(page + 1)}
-                  disabled={page === totalPages}
-                >
-                  <i className="pi pi-chevron-right" />
-                </button>
-              </div>
-            )}
           </main>
         </div>
       </div>
-
-      {previewItem && (
-        <div className={classes.previewModal} onClick={closePreview}>
-          <div className={classes.modalContent} onClick={e => e.stopPropagation()}>
-            <div className={classes.modalHeader}>
-              <h2 className={classes.modalTitle}>{previewItem.title}</h2>
-              
-              <button className={classes.closeButton} onClick={closePreview}>
-                <FaTimes />
-              </button>
-            </div>
-            <div className={classes.modalBody}>
-              <div className={classes.previewImageContainer}>
-                <img
-                  src={getImageUrl(previewItem.thumbnailUrl)}
-                  alt={previewItem.title}
-                  className={classes.previewImage}
-                />
-              </div>
-              <div className={classes.previewInfo}>
-                <h3>{previewItem.title}</h3>
-                <div className={classes.previewMeta}>
-                  {previewItem.tags?.map((tag: string, index: number) => (
-                    <span key={index}>
-                      <FaTags />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className={classes.previewActions}>
-                          <button className={classes.previewActionBtn} onClick={(e) => { e.stopPropagation(); handleDownload(e, previewItem); }}>
-            <FaDownload />
-            ดาวน์โหลด
-          </button>
-          <button className={classes.previewActionBtn} onClick={(e) => { e.stopPropagation(); handleBookmark(e, previewItem); }}>
-            {bookmarks.some(bookmark => bookmark.id === previewItem.id) ? <FaHeart /> : <FaRegHeart />}
-            บุ๊กมาร์ก
-          </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

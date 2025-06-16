@@ -889,7 +889,7 @@ const MainLayout = () => {
           { label: "โปรไฟล์", icon: "pi pi-user", command: () => navigate("/profile") },
           { label: "ประวัติการดาวน์โหลด", icon: "pi pi-download", command: () => navigate("/downloads-history") },
           ...(user?.role === "admin"
-            ? [{ label: "อัปโหลด (แอดมิน)", icon: "pi pi-upload", command: () => navigate("/admin") }]
+            ? [{ label: "อัปโหลด", icon: "pi pi-upload", command: () => navigate("/admin") }]
             : []),
           { separator: true },
         ]
@@ -1090,7 +1090,7 @@ const MainLayout = () => {
               {user?.role === "admin" && (
                 <Link to="/admin" className={`${classes.mobileMenuItem}${isActive(location.pathname, "/admin") ? " active" : ""}`} onClick={() => setSidebarVisible(false)}>
                   <i className="pi pi-upload" />
-                  อัปโหลด (แอดมิน)
+                  อัปโหลด
                 </Link>
               )}
               <button

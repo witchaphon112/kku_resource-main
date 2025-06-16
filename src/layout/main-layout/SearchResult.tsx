@@ -18,9 +18,14 @@ import {
   FaCheck,
   FaPlay,
   FaPalette,
-  FaImage
+  FaImage,
+  FaHeart,
+  FaBookmark
 } from "react-icons/fa";
+import { IoHeart, IoHeartOutline, IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import FilterModal from './FilterModal';
+import { useBookmarks } from "../../contexts/BookmarkContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 type ViewMode = 'list' | 'grid';
 
@@ -69,6 +74,16 @@ const getYearCounts = (resources: Resource[]) => {
 const getUniqueYears = (resources: Resource[]) => {
   const years = resources.map(item => (new Date(item.createdAt).getFullYear() + 543).toString());
   return Array.from(new Set(years)).sort((a, b) => Number(b) - Number(a));
+};
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
 };
 
 const useStyles = createUseStyles<string, StyleProps>({
@@ -166,23 +181,23 @@ const useStyles = createUseStyles<string, StyleProps>({
       display: 'flex',
       position: 'fixed',
       bottom: '24px',
-      right: '20px',
+      right: '24px',
       zIndex: 90,
       alignItems: 'center',
-      gap: '8px',
-      background: '#3F72AF',
+      gap: '10px',
+      background: 'linear-gradient(45deg, #3F72AF, #112D4E)',
       color: '#fff',
       border: 'none',
-      padding: '12px 20px',
+      padding: '14px 24px',
       borderRadius: '100px',
-      fontSize: '0.95rem',
+      fontSize: '1rem',
       fontWeight: 600,
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      boxShadow: '0 4px 12px rgba(63,114,175,0.3)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxShadow: '0 6px 16px rgba(17,45,78,0.15)',
       '&:active': {
         transform: 'scale(0.96)',
-        boxShadow: '0 2px 8px rgba(63,114,175,0.2)',
+        boxShadow: '0 4px 12px rgba(17,45,78,0.12)',
       },
       '@supports (padding-bottom: env(safe-area-inset-bottom))': {
         bottom: 'calc(24px + env(safe-area-inset-bottom))',
@@ -192,51 +207,53 @@ const useStyles = createUseStyles<string, StyleProps>({
 
   viewToggle: {
     display: 'flex',
-    gap: 6,
+    gap: 8,
     marginLeft: 'auto',
-    background: '#f8f9fa',
-    borderRadius: '8px',
-    padding: '4px',
+    background: '#fff',
+    borderRadius: '12px',
+    padding: '6px',
+    border: '1px solid rgba(219,226,239,0.6)',
+    boxShadow: '0 2px 8px rgba(17,45,78,0.05)',
     '@media (max-width: 768px)': {
-      gap: 2,
-      padding: '3px',
+      gap: 4,
+      padding: '4px',
     },
     '@media (max-width: 480px)': {
       width: '100%',
       marginLeft: 0,
-      marginTop: '8px',
+      marginTop: '12px',
     }
   },
 
   viewToggleButton: {
     background: 'transparent',
     border: 'none',
-    padding: '8px 12px',
-    borderRadius: '6px',
+    padding: '10px 16px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
-    gap: 6,
-    fontSize: 14,
+    gap: 8,
+    fontSize: 15,
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '@media (max-width: 768px)': {
-      padding: '6px 10px',
-      fontSize: 13,
-      gap: 4,
+      padding: '8px 12px',
+      fontSize: 14,
+      gap: 6,
     },
     '@media (max-width: 480px)': {
       flex: 1,
       justifyContent: 'center',
-      padding: '8px 6px',
-      fontSize: 12,
+      padding: '10px 8px',
+      fontSize: 13,
     }
   },
 
   viewToggleButtonActive: {
     color: '#fff',
     backgroundColor: '#3F72AF',
-    boxShadow: '0 2px 4px rgba(63,114,175,0.2)',
+    boxShadow: '0 2px 8px rgba(63,114,175,0.2)',
     '&:hover': {
       backgroundColor: '#112D4E',
     }
@@ -246,7 +263,7 @@ const useStyles = createUseStyles<string, StyleProps>({
     color: '#3F72AF',
     backgroundColor: 'transparent',
     '&:hover': {
-      backgroundColor: '#e9ecef',
+      backgroundColor: 'rgba(63,114,175,0.08)',
     }
   },
 
@@ -266,34 +283,35 @@ const useStyles = createUseStyles<string, StyleProps>({
   },
 
   resultHeader: {
-    fontWeight: 900,
-    fontSize: 21,
-    marginBottom: 18,
+    fontWeight: 800,
+    fontSize: 24,
+    marginBottom: 24,
     color: "#112D4E",
-    letterSpacing: 0.1,
+    letterSpacing: "-0.01em",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 10,
-    padding: "16px 20px",
-    background: "#F9F7F7",
-    borderRadius: 12,
-    boxShadow: "0 1.5px 8px rgba(63,114,175,0.08)",
+    gap: 16,
+    padding: "20px 24px",
+    background: "linear-gradient(to right, #F9F7F7, #F8F9FA)",
+    borderRadius: 16,
+    boxShadow: "0 4px 20px rgba(17,45,78,0.05)",
+    border: "1px solid rgba(219,226,239,0.6)",
     '@media (max-width: 1024px)': {
-      fontSize: 19,
-      padding: "14px 18px",
+      fontSize: 22,
+      padding: "18px 20px",
     },
     '@media (max-width: 768px)': {
-      fontSize: 16,
-      padding: "12px 14px",
+      fontSize: 20,
+      padding: "16px 18px",
       flexDirection: "column",
-      gap: 12,
+      gap: 14,
       alignItems: "flex-start",
     },
     '@media (max-width: 480px)': {
-      fontSize: 15,
-      padding: "10px 12px",
-      marginBottom: 12,
+      fontSize: 18,
+      padding: "14px 16px",
+      marginBottom: 16,
     }
   },
 
@@ -311,38 +329,38 @@ const useStyles = createUseStyles<string, StyleProps>({
   listItem: {
     display: "flex",
     alignItems: "flex-start",
-    gap: 18,
-    borderRadius: 13,
-    marginBottom: 18,
-    background: "#fffdfa",
-    boxShadow: "0 2px 12px rgba(63,114,175,0.08)",
-    padding: "1.3rem 1.1rem",
-    transition: "all 0.2s ease",
+    gap: 24,
+    borderRadius: 16,
+    marginBottom: 24,
+    background: "#fff",
+    boxShadow: "0 4px 20px rgba(17,45,78,0.05)",
+    padding: "1.5rem",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
-    border: "1px solid #f0f0f0",
+    border: "1px solid rgba(219,226,239,0.6)",
     '@media (max-width: 1024px)': {
-      padding: "1.1rem 1rem",
-      gap: 14,
+      padding: "1.2rem",
+      gap: 20,
     },
     '@media (max-width: 768px)': {
       flexDirection: "column",
-      gap: 12,
+      gap: 16,
       padding: "1rem",
-      marginBottom: 0,
-      borderRadius: 10,
+      marginBottom: 16,
+      borderRadius: 12,
     },
     '@media (max-width: 480px)': {
-      padding: "0.8rem",
-      gap: 8,
-      borderRadius: 8,
+      padding: "0.9rem",
+      gap: 12,
+      borderRadius: 10,
     },
     "&:hover": {
       background: "#F9F7F7",
-      boxShadow: "0 4px 16px rgba(63,114,175,0.12)",
-      transform: "translateY(-2px)",
+      boxShadow: "0 12px 24px rgba(17,45,78,0.08)",
+      transform: "translateY(-4px)",
       '@media (max-width: 768px)': {
-        transform: "none",
-        background: "#f8f9fa",
+        transform: "translateY(-2px)",
+        boxShadow: "0 8px 16px rgba(17,45,78,0.06)",
       }
     }
   },
@@ -363,23 +381,26 @@ const useStyles = createUseStyles<string, StyleProps>({
   },
 
   thumb: {
-    width: 150,
-    height: 150,
+    width: 180,
+    height: 180,
     objectFit: "cover",
-    borderRadius: 10,
-    background: "#f8f8f8",
-    border: "1.2px solid #DBE2EF",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    borderRadius: 12,
+    background: "linear-gradient(45deg, #f8f9fa, #e9ecef)",
+    border: "1px solid rgba(219,226,239,0.6)",
+    boxShadow: "0 4px 12px rgba(17,45,78,0.05)",
+    transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
     '@media (max-width: 1024px)': {
-      width: 130,
-      height: 130,
+      width: 150,
+      height: 150,
     },
     '@media (max-width: 768px)': {
       width: "100%",
-      height: 200,
+      height: 220,
+      borderRadius: 10,
     },
     '@media (max-width: 480px)': {
-      height: 180,
+      height: 200,
+      borderRadius: 8,
     }
   },
 
@@ -388,55 +409,54 @@ const useStyles = createUseStyles<string, StyleProps>({
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 12,
     '@media (max-width: 768px)': {
       width: "100%",
-      gap: 6,
+      gap: 10,
     }
   },
 
   title: {
-    fontWeight: 900,
-    fontSize: "1.09rem",
+    fontWeight: 800,
+    fontSize: "1.2rem",
     color: "#112D4E",
-    marginBottom: 8,
+    marginBottom: 12,
     cursor: "pointer",
-    lineHeight: 1.4,
+    lineHeight: 1.5,
+    letterSpacing: "-0.01em",
     "&:hover": { 
-      textDecoration: "underline", 
-      color: "#3F72AF" 
+      color: "#3F72AF",
+      textDecoration: "none",
     },
     '@media (max-width: 1024px)': {
-      fontSize: "1.05rem",
+      fontSize: "1.1rem",
+      marginBottom: 10,
     },
     '@media (max-width: 768px)': {
-      fontSize: "1rem",
-      marginBottom: 6,
-      whiteSpace: "normal",
-      overflow: "visible",
-      textOverflow: "initial",
+      fontSize: "1.05rem",
+      marginBottom: 8,
     },
     '@media (max-width: 480px)': {
-      fontSize: "0.95rem",
+      fontSize: "1rem",
     }
   },
 
   gridView: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "1.2rem",
     margin: "20px 0",
     '@media (max-width: 1200px)': {
-      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-      gap: "1.3rem",
+      gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+      gap: "1.1rem",
     },
     '@media (max-width: 1024px)': {
       gridTemplateColumns: "repeat(2, 1fr)", 
-      gap: "1.2rem",
+      gap: "1rem",
     },
     '@media (max-width: 768px)': {
       gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1rem",
+      gap: "0.8rem",
       margin: "16px 0",
     },
     '@media (max-width: 480px)': {
@@ -448,27 +468,27 @@ const useStyles = createUseStyles<string, StyleProps>({
 
   gridItem: {
     background: "#fff",
-    borderRadius: "12px",
+    borderRadius: "16px",
     overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-    transition: "all 0.2s ease",
-    border: "1px solid #f0f0f0",
+    boxShadow: "0 4px 20px rgba(17,45,78,0.05)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    border: "1px solid rgba(219,226,239,0.6)",
     height: "100%",
     display: "flex",
     flexDirection: "column",
+    cursor: "pointer",
+    '&:hover': {
+      transform: "translateY(-8px)",
+      boxShadow: "0 12px 24px rgba(17,45,78,0.08)",
+      '& img': {
+        transform: "scale(1.08)",
+      }
+    },
     '@media (max-width: 768px)': {
-      borderRadius: "10px",
-      boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
-    },
-    '@media (max-width: 480px)': {
-      borderRadius: "8px",
-    },
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.08)",
-      '@media (max-width: 768px)': {
-        transform: "translateY(-2px)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+      borderRadius: "12px",
+      '&:hover': {
+        transform: "translateY(-4px)",
+        boxShadow: "0 8px 16px rgba(17,45,78,0.06)",
       }
     }
   },
@@ -476,8 +496,8 @@ const useStyles = createUseStyles<string, StyleProps>({
   gridThumb: {
     position: "relative",
     width: "100%",
-    paddingTop: "60%",
-    background: "#f5f5f5",
+    paddingTop: "66.67%", // 3:2 aspect ratio
+    background: "linear-gradient(45deg, #f8f9fa, #e9ecef)",
     overflow: "hidden",
     "& img": {
       position: "absolute",
@@ -486,60 +506,56 @@ const useStyles = createUseStyles<string, StyleProps>({
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      transition: "transform 0.3s ease",
-    },
-    "&:hover img": {
-      transform: "scale(1.05)",
-      '@media (max-width: 768px)': {
-        transform: "none",
-      }
+      transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
     }
   },
 
   cardActionBar: {
     position: "absolute",
-    bottom: "8px",
-    right: "8px",
+    bottom: "12px",
+    right: "12px",
     display: "flex",
-    gap: "6px",
+    gap: "8px",
     zIndex: 3,
     '@media (max-width: 768px)': {
       position: "static",
       justifyContent: "center",
-      padding: "8px 0 0 0",
+      padding: "12px 0 4px 0",
       marginTop: "auto",
       background: "transparent",
-      gap: "8px",
+      gap: "10px",
     }
   },
 
   cardActionBtn: {
-    background: "rgba(255,255,255,0.95)",
+    background: "rgba(255,255,255,0.98)",
     border: "none",
-    padding: "6px 10px",
-    borderRadius: "6px",
+    padding: "8px 12px",
+    borderRadius: "8px",
     color: "#3F72AF",
     display: "flex",
     alignItems: "center",
-    gap: "4px",
-    fontSize: "0.8rem",
+    gap: "6px",
+    fontSize: "0.85rem",
     fontWeight: 600,
     cursor: "pointer",
-    transition: "all 0.2s ease",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    backdropFilter: "blur(8px)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
     '@media (max-width: 768px)': {
       flex: 1,
       justifyContent: "center",
-      padding: "8px 12px",
-      fontSize: "0.85rem",
+      padding: "10px 14px",
+      fontSize: "0.9rem",
       background: "#fff",
-      borderRadius: "8px",
+      borderRadius: "10px",
       border: "1px solid #e0e0e0",
     },
     "&:hover": {
       background: "#3F72AF",
       color: "#fff",
-      transform: "translateY(-1px)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(63,114,175,0.2)",
       '@media (max-width: 768px)': {
         transform: "none",
         background: "#3F72AF",
@@ -555,14 +571,7 @@ const useStyles = createUseStyles<string, StyleProps>({
     display: "flex",
     flexDirection: "column",
     gap: "12px",
-    flex: 1,
-    '@media (max-width: 768px)': {
-      padding: "12px",
-      gap: "8px"
-    },
-    '@media (max-width: 480px)': {
-      padding: "10px",
-    }
+    flex: 1
   },
 
   gridTitle: {
@@ -574,17 +583,41 @@ const useStyles = createUseStyles<string, StyleProps>({
     "-webkit-line-clamp": 2,
     "-webkit-box-orient": "vertical",
     overflow: "hidden",
-    marginBottom: "4px",
-    '@media (max-width: 768px)': {
-      fontSize: "0.95rem",
-      "-webkit-line-clamp": 3,
-    },
-    '@media (max-width: 480px)': {
-      fontSize: "0.9rem",
+    marginBottom: "4px"
+  },
+
+  gridMeta: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    fontSize: "0.85rem",
+    color: "#666",
+    marginTop: "auto",
+    paddingTop: "12px",
+    borderTop: "1px solid #f0f0f0"
+  },
+
+  gridStats: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    "& span": {
+      display: "flex",
+      alignItems: "center",
+      gap: "4px"
     }
   },
 
-  
+  gridCategory: {
+    background: "rgba(63,114,175,0.08)",
+    color: "#3F72AF",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    fontSize: "0.8rem",
+    fontWeight: 600,
+    alignSelf: "flex-start"
+  },
+
   pagination: {
     display: "flex",
     justifyContent: "center",
@@ -645,10 +678,10 @@ const useStyles = createUseStyles<string, StyleProps>({
     '@media (max-width: 768px)': {
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px',
-      padding: '8px 0',
-      borderTop: '1px solid #f0f0f0',
-      marginTop: '8px',
+      gap: '12px',
+      padding: '12px 0',
+      borderTop: '1px solid rgba(219,226,239,0.4)',
+      marginTop: '12px',
     }
   },
 
@@ -658,89 +691,90 @@ const useStyles = createUseStyles<string, StyleProps>({
       justifyContent: 'space-between',
       alignItems: 'center',
       fontSize: '0.85rem',
+      color: '#666',
+      '& > span': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+      }
     }
   },
 
   typeIndicator: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '4px',
-    padding: '4px 8px',
-    borderRadius: '12px',
+    gap: '6px',
+    padding: '6px 12px',
+    borderRadius: '20px',
     fontSize: '0.75rem',
     fontWeight: 600,
     textTransform: 'uppercase',
+    letterSpacing: '0.02em',
     position: 'absolute',
-    top: '8px',
-    left: '8px',
+    top: '12px',
+    left: '12px',
     zIndex: 2,
+    backdropFilter: 'blur(8px)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     '@media (max-width: 768px)': {
       position: 'relative',
       top: 'auto',
       left: 'auto',
       alignSelf: 'flex-start',
-      marginBottom: '4px',
+      marginBottom: '8px',
+      fontSize: '0.7rem',
     }
   },
 
   loadingCard: {
-    background: '#f8f9fa',
-    borderRadius: '8px',
-    padding: '16px',
-    animation: '$pulse 1.5s ease-in-out infinite',
+    background: 'linear-gradient(110deg, #f5f6f7 8%, #fff 18%, #f5f6f7 33%)',
+    borderRadius: '12px',
+    padding: '20px',
+    animation: '$shimmer 1.5s linear infinite',
+    backgroundSize: '200% 100%',
+    boxShadow: '0 4px 20px rgba(17,45,78,0.05)',
+    border: '1px solid rgba(219,226,239,0.6)',
   },
 
-  '@keyframes pulse': {
-    '0%': {
-      opacity: 1,
-    },
-    '50%': {
-      opacity: 0.5,
-    },
-    '100%': {
-      opacity: 1,
-    },
-  },
-
-  mobileActionContainer: {
-    '@media (max-width: 768px)': {
-      position: 'sticky',
-      bottom: '16px',
-      background: '#fff',
-      padding: '12px 16px',
-      borderRadius: '12px',
-      boxShadow: '0 -2px 12px rgba(0,0,0,0.1)',
-      margin: '16px -16px -16px -16px',
-      display: 'flex',
-      gap: '8px',
+  '@keyframes shimmer': {
+    to: {
+      backgroundPosition: '-200% 0',
     }
   },
 
   emptyState: {
     textAlign: 'center',
-    padding: '40px 20px',
+    padding: '48px 24px',
     color: '#666',
+    background: '#fff',
+    borderRadius: '16px',
+    boxShadow: '0 4px 20px rgba(17,45,78,0.05)',
+    border: '1px solid rgba(219,226,239,0.6)',
     '@media (max-width: 768px)': {
-      padding: '30px 16px',
+      padding: '36px 20px',
     },
     '& svg': {
-      fontSize: '3rem',
-      marginBottom: '16px',
-      color: '#ccc',
+      fontSize: '3.5rem',
+      marginBottom: '20px',
+      color: '#3F72AF',
+      opacity: 0.2,
     },
     '& h3': {
-      fontSize: '1.2rem',
-      fontWeight: 600,
-      margin: '0 0 8px 0',
+      fontSize: '1.3rem',
+      fontWeight: 700,
+      color: '#112D4E',
+      margin: '0 0 12px 0',
       '@media (max-width: 768px)': {
-        fontSize: '1.1rem',
+        fontSize: '1.2rem',
       }
     },
     '& p': {
-      fontSize: '0.95rem',
+      fontSize: '1rem',
       margin: 0,
+      color: '#666',
+      lineHeight: 1.6,
       '@media (max-width: 768px)': {
-        fontSize: '0.9rem',
+        fontSize: '0.95rem',
       }
     }
   },
@@ -794,20 +828,23 @@ const useStyles = createUseStyles<string, StyleProps>({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(255,255,255,0.8)',
+    background: 'rgba(255,255,255,0.9)',
+    backdropFilter: 'blur(4px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 9999
+    zIndex: 9999,
+    animation: '$fadeIn 0.3s ease'
   },
 
   loadingSpinner: {
-    width: '40px',
-    height: '40px',
-    border: '3px solid #f3f3f3',
+    width: '48px',
+    height: '48px',
+    border: '3px solid rgba(63,114,175,0.1)',
     borderTop: '3px solid #3F72AF',
     borderRadius: '50%',
-    animation: '$spin 1s linear infinite'
+    animation: '$spin 1s linear infinite',
+    boxShadow: '0 4px 12px rgba(63,114,175,0.1)'
   },
 
   '@keyframes spin': {
@@ -815,47 +852,234 @@ const useStyles = createUseStyles<string, StyleProps>({
     '100%': { transform: 'rotate(360deg)' }
   },
 
+  '@keyframes fadeIn': {
+    from: { opacity: 0 },
+    to: { opacity: 1 }
+  },
+
   errorContainer: {
-    padding: '20px',
-    margin: '20px 0',
-    background: '#fee',
-    border: '1px solid #fcc',
-    borderRadius: '8px',
+    padding: '24px',
+    margin: '24px 0',
+    background: '#fff',
+    border: '1px solid rgba(231,76,60,0.2)',
+    borderRadius: '12px',
     textAlign: 'center',
-    color: '#e74c3c'
+    color: '#e74c3c',
+    boxShadow: '0 4px 20px rgba(231,76,60,0.05)',
+    animation: '$fadeIn 0.3s ease'
   },
 
   errorButton: {
-    marginTop: '10px',
-    padding: '8px 16px',
+    marginTop: '16px',
+    padding: '10px 20px',
     background: '#e74c3c',
     color: '#fff',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
+    fontSize: '0.95rem',
+    fontWeight: 600,
     cursor: 'pointer',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 2px 8px rgba(231,76,60,0.2)',
     '&:hover': {
-      background: '#c0392b'
+      background: '#c0392b',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 12px rgba(231,76,60,0.3)',
     }
   },
 
   categoryLabel: {
-    backgroundColor: '#f0f7ff',
-    padding: '6px 12px',
-    borderRadius: '20px',
-    color: '#3F72AF',
-    fontSize: '0.9rem',
+    backgroundColor: "rgba(63,114,175,0.08)",
+    padding: "6px 14px",
+    borderRadius: "20px",
+    color: "#3F72AF",
+    fontSize: "0.9rem",
     fontWeight: 600,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px'
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    transition: "all 0.2s ease",
+    border: "1px solid rgba(63,114,175,0.12)",
+    "&:hover": {
+      backgroundColor: "rgba(63,114,175,0.12)",
+    }
   },
 
   metaInfo: {
-    color: '#666',
-    fontSize: '0.9rem',
+    color: "#666",
+    fontSize: "0.9rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    transition: "color 0.2s ease",
+    "&:hover": {
+      color: "#3F72AF"
+    }
+  },
+
+  actionButtons: {
+    position: 'absolute',
+    right: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    zIndex: 3,
+  },
+
+  topActions: {
+    top: '12px',
+  },
+
+  bottomActions: {
+    bottom: '12px',
+  },
+
+  actionButton: {
+    width: '40px',
+    height: '40px',
     display: 'flex',
     alignItems: 'center',
-    gap: '6px'
+    justifyContent: 'center',
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(8px)',
+    border: 'none',
+    borderRadius: '50%',
+    color: '#666',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+    '&:hover': {
+      background: '#fff',
+      transform: 'scale(1.05)',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+    },
+    '&.active': {
+      color: '#0066cc',
+    },
+    '&.disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+      '&:hover': {
+        transform: 'none',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      }
+    }
+  },
+
+  downloadButton: {
+    position: 'absolute',
+    left: '12px',
+    top: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(8px)',
+    border: 'none',
+    borderRadius: '20px',
+    color: '#666',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+    zIndex: 3,
+    '&:hover': {
+      background: '#fff',
+      transform: 'scale(1.02)',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+    },
+    '&.disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+      '&:hover': {
+        transform: 'none',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      }
+    }
+  },
+
+  card: {
+    position: 'relative',
+    background: '#fff',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+    }
+  },
+
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    paddingTop: '56.25%', // 16:9 aspect ratio
+    backgroundColor: '#f5f5f5',
+  },
+
+  thumbnail: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+
+  cardContent: {
+    padding: '16px',
+  },
+
+  tag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '6px 12px',
+    borderRadius: '20px',
+    backgroundColor: 'rgba(63,114,175,0.06)',
+    color: '#3F72AF',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+    marginRight: '8px',
+    marginBottom: '8px',
+    border: '1px solid rgba(63,114,175,0.1)',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: 'rgba(63,114,175,0.1)',
+      transform: 'translateY(-1px)',
+    }
+  },
+
+  stats: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px',
+    color: '#666',
+    fontSize: '0.875rem',
+    marginTop: '16px',
+    paddingTop: '16px',
+    borderTop: '1px solid rgba(219,226,239,0.4)',
+    '@media (max-width: 768px)': {
+      gap: '12px',
+      marginTop: '12px',
+      paddingTop: '12px',
+    }
+  },
+
+  statItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'color 0.2s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      color: '#3F72AF'
+    }
   },
 });
 
@@ -988,6 +1212,64 @@ const SearchResult: React.FC = () => {
     }
   };
 
+  const [likes, setLikes] = useState<Record<string, boolean>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const savedLikes = localStorage.getItem('likes');
+    if (savedLikes) {
+      setLikes(JSON.parse(savedLikes));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('likes', JSON.stringify(likes));
+  }, [likes]);
+
+  const handleLike = (e: React.MouseEvent, item: Resource) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+
+    setLikes(prev => ({
+      ...prev,
+      [item.id]: !prev[item.id]
+    }));
+
+    setLikeCounts(prev => ({
+      ...prev,
+      [item.id]: prev[item.id] ? (prev[item.id] || 0) - 1 : (prev[item.id] || 0) + 1
+    }));
+  };
+
+  const handleBookmark = (e: React.MouseEvent, item: Resource) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+
+    if (bookmarks.some(bookmark => bookmark.id === item.id)) {
+      removeBookmark(item.id);
+    } else {
+      addBookmark({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        imageUrl: item.thumbnailUrl,
+        fileUrl: item.fileUrl,
+        type: item.type,
+        category: item.category,
+        createdAt: item.createdAt,
+        tags: item.tags
+      });
+    }
+  };
+
   const renderGridView = () => (
     <div className={classes.gridView}>
       {pagedResults.map((item) => {
@@ -998,136 +1280,88 @@ const SearchResult: React.FC = () => {
           campus: "รอบรั้วมหาวิทยาลัย"
         };
 
-        const formattedDate = item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
-          day: 'numeric',
-          month: 'numeric',
-          year: 'numeric',
-          calendar: 'buddhist'
-        });
-
-        const typeInfo = getTypeInfo(item.type);
-        const TypeIcon = typeInfo.icon;
-
         return (
           <div 
-            className={classes.gridItem} 
+            className={classes.card} 
             key={item.id} 
             onClick={() => navigate(`/resource/${item.id}`)}
           >
-            <div className={classes.gridThumb}>
+            <div className={classes.imageContainer}>
               <img
                 src={item.thumbnailUrl || "/no-image.png"}
                 alt={item.title}
-                loading="lazy"
+                className={classes.thumbnail}
               />
               
-              <div 
-                className={classes.typeIndicator}
-                style={{ 
-                  background: typeInfo.color,
-                  color: '#fff'
+              <button 
+                className={classes.downloadButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(e, item);
                 }}
+                title="ดาวน์โหลด"
               >
-                <TypeIcon size={10} />
-                {typeInfo.label}
-              </div>
+                <FaDownload size={16} />
+                ดาวน์โหลด
+              </button>
 
-              <div className={classes.cardActionBar}>
-                <button 
-                  className={classes.cardActionBtn} 
-                  title="ดูตัวอย่าง"
-                  onClick={(e) => handlePreview(e, item.id)}
+              <div className={`${classes.actionButtons} ${classes.bottomActions}`}>
+                <button
+                  className={`${classes.actionButton} ${!user ? 'disabled' : ''} ${likes[item.id] ? 'active' : ''}`}
+                  onClick={(e) => handleLike(e, item)}
+                  title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
                 >
-                  <FaEye size={12} />
-                  <span className={classes.hideOnMobile}>ดูตัวอย่าง</span>
-                  <span className={classes.showOnMobile}>ดู</span>
+                  {likes[item.id] ? <IoHeart size={18} /> : <IoHeartOutline size={18} />}
                 </button>
-                <button 
-                  className={classes.cardActionBtn} 
-                  title="ดาวน์โหลด"
-                  onClick={(e) => handleDownload(e, item)}
+                <button
+                  className={`${classes.actionButton} ${!user ? 'disabled' : ''} ${bookmarks.some(b => b.id === item.id) ? 'active' : ''}`}
+                  onClick={(e) => handleBookmark(e, item)}
+                  title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
                 >
-                  <FaDownload size={12} />
-                  <span className={classes.hideOnMobile}>ดาวน์โหลด</span>
-                  <span className={classes.showOnMobile}>โหลด</span>
+                  {bookmarks.some(bookmark => bookmark.id === item.id) ? 
+                    <IoBookmark size={18} /> : 
+                    <IoBookmarkOutline size={18} />
+                  }
                 </button>
               </div>
             </div>
 
-            <div className={classes.gridContent}>
-              <div className={classes.gridTitle}>{item.title}</div>
-              
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px'
-              }}>
-                <span style={{
-                  background: '#f0f7ff',
-                  color: '#3F72AF',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600
-                }}>
+            <div className={classes.cardContent}>
+              <h3 className={classes.title}>{item.title}</h3>
+              <div style={{ marginBottom: '12px' }}>
+                {item.tags?.map((tag, index) => (
+                  <span key={index} className={classes.tag}>{tag}</span>
+                ))}
+              </div>
+              <div className={classes.metadata}>
+                <span className={classes.categoryLabel}>
+                  <FaFileAlt size={12} />
                   {categoryMap[item.category] || item.category}
                 </span>
+                <span className={classes.metaInfo}>
+                  <FaUser size={12} />
+                  {item.createdAt && new Date(item.createdAt).toLocaleDateString('th-TH', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    calendar: 'buddhist'
+                  })}
+                </span>
+                <span className={classes.metaInfo}>
+                  <FaDownload size={12} />
+                  {item.downloadCount || 0} ครั้ง
+                </span>
               </div>
-
-              <div className={classes.mobileMeta}>
-                <div className={classes.mobileMetaRow}>
-                  <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                    {formattedDate}
-                  </span>
-                  <span style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '4px',
-                    color: '#666',
-                    fontSize: '0.85rem'
-                  }}>
-                    <FaDownload size={10} />
-                    {item.downloadCount || 0}
-                  </span>
+              <div className={classes.stats}>
+                <div className={classes.statItem}>
+                  <FaEye size={14} />
+                  <span>{formatNumber(item.viewCount || 0)}</span>
+                </div>
+                <div className={classes.statItem}>
+                  <IoHeartOutline size={14} />
+                  <span>{formatNumber(likeCounts[item.id] || 0)}</span>
                 </div>
               </div>
-
-              {item.tags && item.tags.length > 0 && (
-                <div style={{ 
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '4px',
-                  marginTop: '8px'
-                }}>
-                  {item.tags.slice(0, 2).map(tag => (
-                    <span 
-                      key={tag}
-                      style={{
-                        background: 'rgba(63,114,175,0.08)',
-                        color: '#3F72AF',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                        fontWeight: 500
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {item.tags.length > 2 && (
-                    <span style={{
-                      background: 'rgba(63,114,175,0.08)',
-                      color: '#3F72AF',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem'
-                    }}>
-                      +{item.tags.length - 2}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         );
@@ -1212,6 +1446,10 @@ const SearchResult: React.FC = () => {
               <FaDownload size={12} />
               {item.downloadCount || 0} ครั้ง
             </span>
+            <span className={classes.metaInfo}>
+              <IoHeart size={12} style={{ color: likes[item.id] ? '#e74c3c' : '#666' }} />
+              {likeCounts[item.id] || 0} ถูกใจ
+            </span>
           </div>
 
           {item.tags && item.tags.length > 0 && (
@@ -1266,11 +1504,30 @@ const SearchResult: React.FC = () => {
             >
               <FaDownload size={14} /> ดาวน์โหลด
             </button>
+            <button
+              className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+              onClick={(e) => handleLike(e, item)}
+              title={user ? (likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ") : "กรุณาเข้าสู่ระบบเพื่อถูกใจ"}
+            >
+              {likes[item.id] ? <IoHeart size={14} /> : <IoHeartOutline size={14} />}
+              {likes[item.id] ? "เลิกถูกใจ" : "ถูกใจ"}
+            </button>
+            <button
+              className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+              onClick={(e) => handleBookmark(e, item)}
+              title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
+            >
+              {bookmarks.some(bookmark => bookmark.id === item.id) ? 
+                <IoBookmark size={14} /> : 
+                <IoBookmarkOutline size={14} />
+              }
+              บุ๊คมาร์ค
+            </button>
           </div>
         </div>
       </li>
     );
-  }, [classes, navigate, handlePreview, handleDownload]);
+  }, [classes, navigate, handlePreview, handleDownload, handleLike, handleBookmark, likes, likeCounts, bookmarks, user]);
 
   const renderListView = () => (
     <ul className={classes.list}>
@@ -1654,16 +1911,7 @@ const SearchResult: React.FC = () => {
             </span>
           </div>
           <div className={classes.viewToggle}>
-            <button 
-              className={`${classes.viewToggleButton} ${
-                viewMode === 'list' ? classes.viewToggleButtonActive : classes.viewToggleButtonInactive
-              }`}
-              onClick={() => setViewMode('list')}
-              type="button"
-            >
-              <FaList size={window.innerWidth < 480 ? 12 : 14} />
-              <span>รายการ</span>
-            </button>
+            
             <button 
               className={`${classes.viewToggleButton} ${
                 viewMode === 'grid' ? classes.viewToggleButtonActive : classes.viewToggleButtonInactive
@@ -1805,7 +2053,7 @@ const SearchResult: React.FC = () => {
                     fontSize: '0.9rem'
                   }}>
                     <FaDownload size={14} />
-                    ดาวน์โหลด: {previewItem.downloadCount || 0} ครั้ง
+                    {previewItem.downloadCount || 0} ครั้ง
                   </span>
                 </div>
 

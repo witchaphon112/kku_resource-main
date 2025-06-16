@@ -11,8 +11,9 @@ import { Column } from "primereact/column";
 import { Chart } from "primereact/chart";
 import { TabView, TabPanel } from "primereact/tabview";
 import { Tag } from "primereact/tag";
+import { Dialog } from "primereact/dialog";
 import { createUseStyles } from "react-jss";
-import { useResources } from "../contexts/ResourceContext";
+import { uploadMockFile, getMockResources, deleteMockResource, MockResource } from "../services/mockUploadService";
 
 const COLORS = {
   primary: "#2d3436",
@@ -398,8 +399,173 @@ const AdminUploadPage = () => {
   const [type, setType] = useState<ResourceType | null>(null);
   const [category, setCategory] = useState<'medical' | 'education' | 'campus' | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [resources, setResources] = useState<MockResource[]>([]);
+  const [loading, setLoading] = useState(false);
   const toast = useRef<Toast>(null);
-  const { resources, addResource } = useResources();
+  
+  // Add states for edit modal
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedResource, setSelectedResource] = useState<MockResource | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editType, setEditType] = useState<ResourceType | null>(null);
+  const [editCategory, setEditCategory] = useState<'medical' | 'education' | 'campus' | null>(null);
+  const [editFile, setEditFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    loadResources();
+  }, []);
+
+  const loadResources = async () => {
+    try {
+      const data = await getMockResources();
+      setResources(data);
+    } catch (error) {
+      console.error('Error loading resources:', error);
+      toast.current?.show({
+        severity: "error",
+        summary: "เกิดข้อผิดพลาด",
+        detail: "ไม่สามารถโหลดข้อมูลได้",
+      });
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!title || !type || !category || !file) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "ข้อมูลไม่ครบ",
+        detail: "กรุณากรอกข้อมูลและเลือกไฟล์ให้ครบถ้วน",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await uploadMockFile(file, {
+        title,
+        description,
+        type,
+        category,
+        uploadedBy: "admin", // Use actual user ID here
+      });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "อัปโหลดสำเร็จ",
+        detail: "ข้อมูลของคุณถูกบันทึกแล้ว",
+      });
+
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setType(null);
+      setCategory(null);
+      setFile(null);
+
+      // Reload resources
+      await loadResources();
+    } catch (error) {
+      console.error('Error uploading:', error);
+      toast.current?.show({
+        severity: "error",
+        summary: "เกิดข้อผิดพลาด",
+        detail: "ไม่สามารถอัปโหลดไฟล์ได้",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMockResource(id);
+      toast.current?.show({
+        severity: "success",
+        summary: "ลบสำเร็จ",
+        detail: "ลบข้อมูลเรียบร้อยแล้ว",
+      });
+      await loadResources();
+    } catch (error) {
+      console.error('Error deleting:', error);
+      toast.current?.show({
+        severity: "error",
+        summary: "เกิดข้อผิดพลาด",
+        detail: "ไม่สามารถลบข้อมูลได้",
+      });
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!selectedResource || !editType || !editCategory) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "ข้อมูลไม่ครบ",
+        detail: "กรุณากรอกข้อมูลให้ครบถ้วน",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Delete the old resource
+      await deleteMockResource(selectedResource.id);
+
+      // Get the file to upload
+      let fileToUpload: File;
+      if (editFile) {
+        // Use the new file if provided
+        fileToUpload = editFile;
+      } else {
+        // Use the existing file if no new file is provided
+        const response = await fetch(selectedResource.fileUrl);
+        const blob = await response.blob();
+        fileToUpload = new File([blob], selectedResource.fileUrl.split('/').pop() || 'file', { type: blob.type });
+      }
+
+      // Create a new resource with updated data
+      await uploadMockFile(fileToUpload, {
+        title: editTitle,
+        description: editDescription,
+        type: editType,
+        category: editCategory,
+        uploadedBy: selectedResource.uploadedBy,
+      });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "แก้ไขสำเร็จ",
+        detail: "ข้อมูลถูกอัพเดทแล้ว",
+      });
+
+      // Close modal and reset form
+      setEditModalVisible(false);
+      setSelectedResource(null);
+      setEditFile(null);
+      
+      // Reload resources
+      await loadResources();
+    } catch (error) {
+      console.error('Error updating:', error);
+      toast.current?.show({
+        severity: "error",
+        summary: "เกิดข้อผิดพลาด",
+        detail: "ไม่สามารถแก้ไขข้อมูลได้",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openEditModal = (resource: MockResource) => {
+    setSelectedResource(resource);
+    setEditTitle(resource.title);
+    setEditDescription(resource.description);
+    setEditType(resource.type);
+    setEditCategory(resource.category as 'medical' | 'education' | 'campus');
+    setEditFile(null);
+    setEditModalVisible(true);
+  };
 
   const typeOptions = [
     { label: "รูปภาพ", value: "image" },
@@ -413,48 +579,7 @@ const AdminUploadPage = () => {
     { label: "รอบรั้วมหาวิทยาลัย", value: "campus" },
   ];
 
-  const handleUpload = () => {
-    if (!title || !type || !category || !file) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "ข้อมูลไม่ครบ",
-        detail: "กรุณากรอกข้อมูลและเลือกไฟล์ให้ครบถ้วน",
-      });
-      return;
-    }
-
-    const newResource = {
-      id: `r${String(resources.length + 1).padStart(4, '0')}`,
-      title,
-      description,
-      type,
-      category: category,
-      tags: [],
-      fileUrl: URL.createObjectURL(file),
-      thumbnailUrl: URL.createObjectURL(file),
-      uploadedBy: "admin", // Use actual user ID here
-      downloadCount: 0,
-      viewCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    addResource(newResource);
-
-    toast.current?.show({
-      severity: "success",
-      summary: "อัปโหลดสำเร็จ",
-      detail: "ข้อมูลของคุณถูกบันทึกแล้ว",
-    });
-
-    setTitle("");
-    setDescription("");
-    setType(null);
-    setCategory(null);
-    setFile(null);
-  };
-
-  const typeTemplate = (rowData: Resource) => {
+  const typeTemplate = (rowData: MockResource) => {
     const typeMap: Record<ResourceType, { label: string; className: string }> = {
       image: { label: "รูปภาพ", className: "image" },
       video: { label: "วิดีโอ", className: "video" },
@@ -464,7 +589,7 @@ const AdminUploadPage = () => {
     return <Tag value={type.label} className={`${classes.tag} ${type.className}`} />;
   };
 
-  const categoryTemplate = (rowData: Resource) => {
+  const categoryTemplate = (rowData: MockResource) => {
     const categories = Array.isArray(rowData.category) ? rowData.category : [rowData.category];
     return (
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -477,6 +602,25 @@ const AdminUploadPage = () => {
           const category = categoryMap[cat] || { label: cat, className: "image" };
           return <Tag key={index} value={category.label} className={`${classes.tag} ${category.className}`} />;
         })}
+      </div>
+    );
+  };
+
+  const actionTemplate = (rowData: MockResource) => {
+    return (
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-text"
+          onClick={() => openEditModal(rowData)}
+          tooltip="แก้ไข"
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-danger p-button-rounded p-button-text"
+          onClick={() => handleDelete(rowData.id)}
+          tooltip="ลบ"
+        />
       </div>
     );
   };
@@ -525,6 +669,7 @@ const AdminUploadPage = () => {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="ระบุชื่อไฟล์"
                   className={classes.input}
+                  disabled={loading}
                 />
               </div>
 
@@ -537,6 +682,7 @@ const AdminUploadPage = () => {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="อธิบายรายละเอียดของไฟล์"
                   className={classes.input}
+                  disabled={loading}
                 />
               </div>
 
@@ -549,6 +695,7 @@ const AdminUploadPage = () => {
                   onChange={(e) => setType(e.value as ResourceType | null)}
                   placeholder="เลือกประเภทไฟล์"
                   className={classes.dropdown}
+                  disabled={loading}
                 />
               </div>
 
@@ -561,6 +708,7 @@ const AdminUploadPage = () => {
                   onChange={(e) => setCategory(e.value as 'medical' | 'education' | 'campus' | null)}
                   placeholder="เลือกหมวดหมู่"
                   className={classes.dropdown}
+                  disabled={loading}
                 />
               </div>
 
@@ -574,6 +722,7 @@ const AdminUploadPage = () => {
                   uploadHandler={(e: FileUploadHandlerEvent) => setFile(e.files[0])}
                   accept="image/*,video/*"
                   className={classes.fileUpload}
+                  disabled={loading}
                 />
               </div>
 
@@ -583,6 +732,8 @@ const AdminUploadPage = () => {
                   icon="pi pi-upload"
                   onClick={handleUpload}
                   className={classes.submitButton}
+                  loading={loading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -597,13 +748,17 @@ const AdminUploadPage = () => {
               rows={10}
               rowsPerPageOptions={[5, 10, 20]}
               className={classes.table}
+              loading={loading}
             >
               <Column field="id" header="ID" style={{ width: '5%' }} />
-              <Column field="title" header="ชื่อไฟล์" style={{ width: '30%' }} />
+              <Column field="title" header="ชื่อไฟล์" style={{ width: '25%' }} />
               <Column field="type" header="ประเภท" body={typeTemplate} style={{ width: '15%' }} />
-              <Column field="category" header="หมวดหมู่" body={categoryTemplate} style={{ width: '20%' }} />
-              <Column field="createdAt" header="วันที่อัปโหลด" style={{ width: '15%' }} body={(rowData) => new Date(rowData.createdAt).toLocaleDateString('th-TH')} />
-              <Column field="viewCount" header="จำนวนการเข้าชม" style={{ width: '15%' }} />
+              <Column field="category" header="หมวดหมู่" body={categoryTemplate} style={{ width: '15%' }} />
+              <Column field="createdAt" header="วันที่อัปโหลด" style={{ width: '15%' }} 
+                body={(rowData) => new Date(rowData.createdAt).toLocaleDateString('th-TH')} 
+              />
+              <Column field="viewCount" header="จำนวนการเข้าชม" style={{ width: '10%' }} />
+              <Column body={actionTemplate} style={{ width: '10%' }} />
             </DataTable>
           </Card>
         </TabPanel>
@@ -625,6 +780,116 @@ const AdminUploadPage = () => {
           </div>
         </TabPanel>
       </TabView>
+
+      {/* Add edit modal */}
+      <Dialog
+        visible={editModalVisible}
+        onHide={() => setEditModalVisible(false)}
+        header="แก้ไขข้อมูล"
+        modal
+        className={classes.card}
+        style={{ width: '50vw', maxWidth: '600px' }}
+      >
+        <div className="p-fluid grid">
+          <div className="col-12 mb-3">
+            <label htmlFor="editTitle" className={classes.formLabel}>ชื่อไฟล์</label>
+            <InputText
+              id="editTitle"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              placeholder="ระบุชื่อไฟล์"
+              className={classes.input}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="col-12 mb-3">
+            <label htmlFor="editDescription" className={classes.formLabel}>คำอธิบาย</label>
+            <InputTextarea
+              id="editDescription"
+              value={editDescription}
+              rows={4}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="อธิบายรายละเอียดของไฟล์"
+              className={classes.input}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="col-12 md:col-6 mb-3">
+            <label htmlFor="editType" className={classes.formLabel}>ประเภท</label>
+            <Dropdown
+              id="editType"
+              value={editType}
+              options={typeOptions}
+              onChange={(e) => setEditType(e.value as ResourceType | null)}
+              placeholder="เลือกประเภทไฟล์"
+              className={classes.dropdown}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="col-12 md:col-6 mb-3">
+            <label htmlFor="editCategory" className={classes.formLabel}>หมวดหมู่</label>
+            <Dropdown
+              id="editCategory"
+              value={editCategory}
+              options={categoryOptions}
+              onChange={(e) => setEditCategory(e.value as 'medical' | 'education' | 'campus' | null)}
+              placeholder="เลือกหมวดหมู่"
+              className={classes.dropdown}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="col-12 mb-4">
+            <label className={classes.formLabel}>อัปโหลดไฟล์ใหม่ (ไม่จำเป็น)</label>
+            <FileUpload
+              mode="basic"
+              auto
+              customUpload
+              chooseLabel="เลือกไฟล์"
+              uploadHandler={(e: FileUploadHandlerEvent) => setEditFile(e.files[0])}
+              accept="image/*,video/*"
+              className={classes.fileUpload}
+              disabled={loading}
+            />
+            {selectedResource && !editFile && (
+              <small className="text-gray-500 mt-2 block">
+                ใช้ไฟล์เดิม: {selectedResource.fileUrl.split('/').pop()}
+              </small>
+            )}
+            {editFile && (
+              <div className="mt-2 flex align-items-center">
+                <span className="text-gray-700 mr-2">ไฟล์ที่เลือก: {editFile.name}</span>
+                <Button
+                  icon="pi pi-times"
+                  className="p-button-rounded p-button-text p-button-danger"
+                  onClick={() => setEditFile(null)}
+                  disabled={loading}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="col-12 text-right">
+            <Button
+              label="ยกเลิก"
+              icon="pi pi-times"
+              onClick={() => setEditModalVisible(false)}
+              className="p-button-text mr-2"
+              disabled={loading}
+            />
+            <Button
+              label="บันทึก"
+              icon="pi pi-check"
+              onClick={handleEdit}
+              loading={loading}
+              disabled={loading}
+            />
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 };

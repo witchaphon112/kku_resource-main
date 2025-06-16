@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createUseStyles } from "react-jss";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import Modal from "../components/Modal";
 import { Dropdown } from 'primereact/dropdown';
 import { IoEye, IoHeart, IoBookmarkOutline, IoBookmark, IoShareSocialSharp, IoEllipsisVerticalCircle, IoCopy, IoOpenOutline } from "react-icons/io5";
-import { FaDownload, FaHeart, FaRegHeart, FaTimes } from "react-icons/fa";
+import { FaDownload, FaHeart, FaRegHeart, FaTimes, FaThLarge, FaList, FaPlay, FaImage, FaVideo, FaPalette } from "react-icons/fa";
 import { IoHeartOutline, IoHeartSharp} from "react-icons/io5";
-
+import { useAuth } from "../contexts/AuthContext";
+import { useBookmarks, BookmarkedItem } from "../contexts/BookmarkContext";
+import { useDownloadHistory } from "../contexts/DownloadHistoryContext";
 
 import resourcesData from "../mock/resources.json";
 import "react-photo-view/dist/react-photo-view.css";
@@ -1382,6 +1384,7 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     boxShadow: "0 4px 15px rgba(183,28,28,0.18)",
     zIndex: 2,
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   },
   playIcon: {
     fontSize: "1.7rem",
@@ -1516,31 +1519,36 @@ const useStyles = createUseStyles({
   },
 
   cardActionBtn: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    border: "none",
-    background: "rgba(255, 255, 255, 0.9)",
-    color: "#666",
+    width: "40px",
+    height: "40px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    background: "rgba(255, 255, 255, 0.95)",
+    backdropFilter: "blur(8px)",
+    border: "none",
+    borderRadius: "48px",
+    color: "#555",
     cursor: "pointer",
     transition: "all 0.2s ease",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
     "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-      color: '#ec4899',
-      background: '#fbcfe8',
-
+      background: "white",
+      transform: "translateY(-2px) scale(1.05)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      color: "#3F72AF",
     },
-    "& i": {
-      fontSize: "1rem"
+    "&.disabled": {
+      opacity: 0.6,
+      cursor: "not-allowed",
+      "&:hover": {
+        transform: "none",
+        boxShadow: "none",
+        background: "rgba(255, 255, 255, 0.95)",
+        color: "#555",
+      }
     },
-    "&.active": {
-      background: '#fbcfe8',
-      color: '#ec4899',
+    "& svg": {
+      fontSize: "1.2rem",
     }
   },
 
@@ -2370,6 +2378,11 @@ const useStyles = createUseStyles({
       transform: 'translateY(-2px)'
     }
   },
+  loader: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: '1rem',
+  },
 });
 
 const embedYouTube = (url: string): string => {
@@ -2422,6 +2435,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title }) => {
 const MainPage = () => {
   const classes = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+  const { addDownload } = useDownloadHistory();
 
   const [heroIndex, setHeroIndex] = useState(0);
   const [imageResources, setImageResources] = useState<Photo[]>([]);
@@ -2431,19 +2448,15 @@ const MainPage = () => {
   const [gallerySortBy, setGallerySortBy] = useState("latest");
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [visibleItems, setVisibleItems] = useState(13);
-  const itemsPerLoad = 13;
+  const [likes, setLikes] = useState<Record<string, boolean>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const loadingRef = useRef(null);
-  const [likes, setLikes] = useState<{ [key: string]: boolean }>(() => {
-    const savedLikes = localStorage.getItem('likes');
-    return savedLikes ? JSON.parse(savedLikes) : {};
-  });
-  const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const itemsPerLoad = 13;
 
   const filteredGalleryItems = useMemo(() => {
     let items = resourcesData.resources;
@@ -2486,15 +2499,29 @@ const MainPage = () => {
     setIsPreviewOpen(true);
   };
 
-  const handleBookmark = (e: React.MouseEvent, item: any) => {
+  const handleBookmark = (e: React.MouseEvent, item: Resource) => {
     e.stopPropagation();
-    setBookmarks(prev => {
-      const isBookmarked = prev.some(b => b.id === item.id);
-      if (isBookmarked) {
-        return prev.filter(b => b.id !== item.id);
-      }
-      return [...prev, item];
-    });
+    if (!user) {
+      return;
+    }
+    
+    const bookmarkItem: BookmarkedItem = {
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      imageUrl: item.thumbnailUrl,
+      fileUrl: item.fileUrl,
+      type: item.type,
+      category: item.category,
+      createdAt: item.createdAt,
+      tags: item.tags
+    };
+
+    if (isBookmarked(item.id)) {
+      removeBookmark(item.id);
+    } else {
+      addBookmark(bookmarkItem);
+    }
   };
 
   const handleDownload = async (e: React.MouseEvent, item: any) => {
@@ -2517,24 +2544,25 @@ const MainPage = () => {
   };
 
   const handleLoadMore = () => {
-    setVisibleItems(prev => prev + itemsPerLoad);
+    setIsLoading(true);
+    setTimeout(() => {
+      setVisibleItems(prev => prev + itemsPerLoad);
+      setIsLoading(false);
+    }, 1000);
   };
 
-  const handleLike = (item: any) => {
-    const newLikes = { ...likes };
-    const newLikeCounts = { ...likeCounts };
-
-    if (newLikes[item.id]) {
-      delete newLikes[item.id];
-      newLikeCounts[item.id] = (newLikeCounts[item.id] || 0) - 1;
-    } else {
-      newLikes[item.id] = true;
-      newLikeCounts[item.id] = (newLikeCounts[item.id] || 0) + 1;
-    }
-
-    setLikes(newLikes);
-    setLikeCounts(newLikeCounts);
-    localStorage.setItem('likes', JSON.stringify(newLikes));
+  const handleLike = (item: Resource) => {
+    if (!user) return;
+    
+    setLikes(prev => ({
+      ...prev,
+      [item.id]: !prev[item.id]
+    }));
+    
+    setLikeCounts(prev => ({
+      ...prev,
+      [item.id]: prev[item.id] ? prev[item.id] - 1 : (prev[item.id] || 0) + 1
+    }));
   };
 
   const renderHeroTemplate = (item: { imageUrl: string;}) => (
@@ -2577,23 +2605,18 @@ const MainPage = () => {
   });
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && !isLoading && visibleItems < filteredGalleryItems.length) {
-          setIsLoading(true);
-          setTimeout(() => {
-            setVisibleItems(prev => prev + itemsPerLoad);
-            setIsLoading(false);
-          }, 500); // Add a small delay to prevent rapid loading
-        }
-      },
-      {
-        root: null,
-        rootMargin: '100px',
-        threshold: 0.1
+    const options = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && !isLoading) {
+        handleLoadMore();
       }
-    );
+    }, options);
 
     if (loadingRef.current) {
       observer.observe(loadingRef.current);
@@ -2604,7 +2627,7 @@ const MainPage = () => {
         observer.unobserve(loadingRef.current);
       }
     };
-  }, [visibleItems, filteredGalleryItems.length, isLoading]);
+  }, [loadingRef, isLoading]);
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -2835,33 +2858,27 @@ const MainPage = () => {
                     />
                   </PhotoView>
 
-                  <div className={classes.cardActionBar} onClick={e => e.stopPropagation()}>
+                  <div className={classes.cardActionBar}>
                     <button 
-                      className={`${classes.cardActionBtn} ${likes[item.id] ? 'active' : ''}`}
-                      title={likes[item.id] ? "ยกเลิกถูกใจ" : "ถูกใจ"}
-                      aria-label={likes[item.id] ? "ยกเลิกถูกใจ" : "ถูกใจ"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLike(item);
-                      }}
+                      className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                      onClick={(e) => handleDownload(e, item)}
+                      title={user ? "Download" : "Login to download"}
                     >
-                      <i className={`pi ${likes[item.id] ? 'pi-heart-fill' : 'pi-heart'}`} />
+                      <FaDownload />
                     </button>
                     <button 
-                      className={`${classes.cardActionBtn} ${bookmarks.some(b => b.id === item.id) ? 'active' : ''}`}
-                      title={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
-                      aria-label={bookmarks.some(b => b.id === item.id) ? "ลบบุ๊คมาร์ค" : "บุ๊คมาร์ค"}
-                      onClick={(e) => handleBookmark(e, item)}
+                      className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                      onClick={(e) => handleLike(item)}
+                      title={user ? "Like" : "Login to like"}
                     >
-                      <i className={`pi ${bookmarks.some(b => b.id === item.id) ? 'pi-bookmark-fill' : 'pi-bookmark'}`} />
-                      </button>
+                      {likes[item.id] ? <IoHeartSharp /> : <IoHeartOutline />}
+                    </button>
                     <button 
-                      className={classes.cardActionBtn}
-                      title="ดาวน์โหลด"
-                      aria-label="ดาวน์โหลด"
-                      onClick={(e) => handleDownload(e, item)}
+                      className={`${classes.cardActionBtn} ${!user ? 'disabled' : ''}`}
+                      onClick={(e) => handleBookmark(e, item)}
+                      title={user ? "บุ๊คมาร์ค" : "กรุณาเข้าสู่ระบบเพื่อบุ๊คมาร์ค"}
                     >
-                      <i className="pi pi-download" />
+                      {isBookmarked(item.id) ? <IoBookmark /> : <IoBookmarkOutline />}
                     </button>
                   </div>
                   <div 
@@ -3249,6 +3266,8 @@ const MainPage = () => {
           </div>
         </>
       )}
+
+  
     </>
   );
 };
